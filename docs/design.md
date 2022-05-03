@@ -120,7 +120,7 @@ public:
     OrthogonalList();
     ~OrthogonalList();
     void insert(value_type data_in);
-    Node* find(value_type data_in);
+    int find(value_type data_in);
     void erase(value_type data_in);
     bool empty();
     void clear();
@@ -160,6 +160,7 @@ template <typename _Key, typename _Tp> struct Hashmap;
 template <size_t maxlen>
 class Str {
 private:
+    size_t len;
     char str[maxlen];
 public:
     Str();
@@ -167,6 +168,7 @@ public:
     Str(const std::string &_str);
     template <size_t len> Str(const Str<len> *_str);
     ~Str();
+    size_t length() const;
     // 类型转换
     operator const char*() const;
     operator std::string() const;
@@ -271,7 +273,7 @@ struct UserInfo {
     Name name; // 姓名
     MailAddr maddr; // 邮件地址
     int pri; // 优先级
-    UserInfo(args...);
+    UserInfo(args...); // args...表示省略参数 会在代码文件中补全
     ~UserInfo();
     friend std::ostream& operator << (std::ostream &os, const UserInfo &us);
 };
@@ -295,7 +297,7 @@ private:
     BPTree<Username, UserInfo> user;
     Hashmap <Username, bool> online;
 public:
-    int add_user(args...);
+    int add_user(args...); // args...表示省略参数 会在代码文件中补全
    	int login(const Username &u, const Password &p);
     int logout(const Username &u);
     int query_profile(const Username &u, const Username &u);
@@ -326,7 +328,7 @@ struct TrainInfo {
    	Date start_date, end_date; // 售卖时间区间
     Segtree<max_stanum> seat[max_date]; // 每一车次的余票量
     
-    TrainInfo(args...);
+    TrainInfo(args...); // args...表示省略参数 会在代码文件中补全
     ~TrainInfo();
     friend std::ostream& operator << (std::ostream &os, const TrainInfo& tr);
 };
@@ -362,7 +364,7 @@ public:
 	
     int rest_ticket(TrainID &id, Date &d, Station &s, Station &t);
     
-    int add_train(args...);
+    int add_train(args...); // args...表示省略参数 会在代码文件中补全
     int release_train(const TrainID &id);
     int undo_release(const TrainID &id); // 用于rollback
     int query_train(const TrainID &id, const Date &date);
@@ -401,7 +403,7 @@ struct TraxInfo {
     int price; // 票价
     int num; // 购票量
     
-    TraxInfo(args...);
+    TraxInfo(args...); // args...表示省略参数 会在代码文件中补全
     ~TraxInfo();
     firend std::ostream& operator << (std::ostream &os, const TraxInfo &o);
 };
@@ -437,7 +439,7 @@ public:
 ```c++
 struct Log {
 	int idx; // 时间戳
-    std::string opt; // 回滚所需的操作及其信息
+    Str<1024> opt; // 回滚所需的操作及其信息
 };
 ```
 
@@ -474,21 +476,22 @@ struct SysManager {
     ~SysManager();
     
     // 系统接口
+    // args...表示省略参数 会在代码文件中补全
     int Main(std::string &cmd);
-    int add_user(...);
-    int login(...);
-    int logout(...);
-    int query_profile(...);
-    int modify_profile(...);
-    int add_train(...);
-    int release_train(...);
-    int query_train(...);
-    int query_ticket(...);
-    int query_transfer(...);
-    int buy_ticket(...);
-    int query_order(...);
-    int refund_ticket(...);
-    int rollback(...);
+    int add_user(args...);
+    int login(args...);
+    int logout(args...);
+    int query_profile(args...);
+    int modify_profile(args...);
+    int add_train(args...);
+    int release_train(args...);
+    int query_train(args...);
+    int query_ticket(args...);
+    int query_transfer(args...);
+    int buy_ticket(args...);
+    int query_order(args...);
+    int refund_ticket(args...);
+    int rollback(args...);
     int clear();
     int exit();
     
