@@ -15,7 +15,7 @@ public:
 	exception() {}
     exception(const std::string &var, const std::string &det): variant(var), detail(det) {}
 	exception(const exception &e): variant(e.variant), detail(e.detail) {}
-	std::string what() {
+	virtual std::string what() {
 		return "[" + variant + "]" + detail;
 	}
 };
@@ -27,35 +27,30 @@ class container_error: public exception {
 public: 
     container_error(): exception() {}
     container_error(const std::string &msg): exception("containner_error", msg) {}
-    std::string what() {return exception::what(); }
 };
 
 class index_out_of_bound: public container_error {
 public:
     index_out_of_bound(): container_error("index_out_of_bound") {}
     index_out_of_bound(const std::string &msg): container_error("index_out_of_bound, " + msg) {}
-    std::string what() {return container_error::what(); }
 };
 
 class runtime_error: public container_error {
 public: 
     runtime_error(): container_error("runtime_error") {}
     runtime_error(const std::string &msg): container_error("runtime_error, " + msg) {}
-    std::string what() {return container_error::what(); }
 };
 
 class invalid_iterator: public container_error {
 public: 
 	invalid_iterator(): container_error("invalid_interator") {}
     invalid_iterator(const std::string &msg): container_error("invalid_iterator, " + msg) {}
-    std::string what() {return container_error::what(); }
 };
 
 class container_is_empty: public container_error {
 public: 
 	container_is_empty(): container_error("container_is_empty") {}
     container_is_empty(const std::string &msg): container_error("container_is_empty, " + msg) {}
-    std::string what() {return container_error::what(); }
 };
 
 /**
@@ -64,27 +59,18 @@ public:
 struct invalid_argument: public exception {
     invalid_argument(): exception("invalid_argument", "no detail") {}
     invalid_argument(const std::string &msg): exception("invalid_argument", msg) {}
-    std::string what() {return exception::what(); }
 };
 struct length_error: public exception {
     length_error(): exception("length_error", "no detail") {}
     length_error(const std::string &msg): exception("length_error", msg) {}
-    std::string what() {return exception::what(); }
 };
 struct out_of_range: public exception {
     out_of_range(): exception("out_of_range", "no detail") {}
     out_of_range(const std::string &msg): exception("out_of_range", msg) {}
-    std::string what() {return exception::what(); }
-};
-struct out_of_range: public exception {
-    out_of_range(): exception("out_of_range", "no detail") {}
-    out_of_range(const std::string &msg): exception("out_of_range", msg) {}
-    std::string what() {return exception::what(); }
 };
 struct range_error: public exception {
     range_error(): exception("range_error", "no detail") {}
     range_error(const std::string &msg): exception("range_error", msg) {}
-    std::string what() {return exception::what(); }
 };
 
 /**
@@ -93,7 +79,6 @@ struct range_error: public exception {
 struct user_error: public exception {
     user_error(): exception("user_error", "no detail") {}
     user_error(const std::string &msg): exception("user_error", msg) {}
-    std::string what() {return exception::what(); }
 };
 /**
  * @brief train exceptions
@@ -101,7 +86,6 @@ struct user_error: public exception {
 struct train_error: public exception {
     train_error(): exception("train_error", "no detail") {}
     train_error(const std::string &msg): exception("train_error", msg) {}
-    std::string what() {return exception::what(); }
 };
 
 /**
@@ -110,7 +94,6 @@ struct train_error: public exception {
 struct transaction_error: public exception {
     transaction_error(): exception("transaction_error", "no detail") {}
     transaction_error(const std::string &msg): exception("transaction_error", msg) {}
-    std::string what() {return exception::what(); }
 };
 
 /**
@@ -119,7 +102,6 @@ struct transaction_error: public exception {
 struct query_exceptions: public exception {
     query_exceptions(): exception("query_exceptions", "no detail") {}
     query_exceptions(const std::string &msg): exception("query_exceptions", msg) {}
-    std::string what() {return exception::what(); }
 };
 
 /**
@@ -128,7 +110,6 @@ struct query_exceptions: public exception {
 struct rollback_error: public exception {
     rollback_error(): exception("rollback_error", "no detail") {}
     rollback_error(const std::string &msg): exception("rollback_error", msg) {}
-    std::string what() {return exception::what(); }
 };
 
 }
