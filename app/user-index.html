@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+
+<!-- 前端好难写QAQ -->
+
+<html lang="zh-CN">
+
+<head>
+    <title>用户主页 · Ticket System</title>
+    <link rel="icon" href="./resource/arona.ico">
+    
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="Modem514 EternalFir">
+    <meta name="description" content="a simple web front end for course assignment">
+
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.3.1/css/bootstrap.min.css">
+    <!-- <link rel="stylesheet" href="./static/index.css"> -->
+
+    <style>
+        #sidebar {
+            position: fixed;
+            background-color: #9fc5e8;
+            height: 100%;
+        }
+    </style>
+
+</head>
+
+<body class="bg-light">
+    <!-- navbar -->
+    <nav class="navbar navbar-dark navbar-expand-lg sticky-top bg-primary">
+        <!-- brand -->
+        <div class="navbar-brand mr-auto ml-2">
+            <img src="./resource/arona.png" width="48rem" class="mr-3 rounded">
+            <a class="navbar-brand" href="#">用户主页</a>
+        </div>
+        <!-- toggler -->
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <!-- collapse content -->
+        <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="#announce">公告</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#log">日志</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">指南</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">关于</a>
+                </li>
+            </ul>
+            <span class="navbar-nav ml-auto">
+                <a class="nav-link" href="#">个人中心</a>
+            </span>
+            <span class="navbar-nav ml-2">
+                <a class="nav-link" href="./index.html">登出</a>
+            </span>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <nav id="sidebar" class="col-2 mr-0 px-4 pt-4 md-3">
+                <div class="card pt-3" style="width:100%">
+                    <img class="card-img-top" src="./resource/shiroko.jpg" alt="Card image" style="width:50%; align-self: center;">
+                    <div class="card-body">
+                      <h4 class="card-title">user: XCW</h4>
+                      <p class="card-text">absract of userInfo here</p>
+                      <a href="#" class="btn btn-primary">See Full Profile</a>
+                    </div>
+                </div>
+
+                <div class="container pl-0 mt-3" style="width:100%; ">
+                    <h5 class="text-primary">用户操作</h5>
+                    <div class="list-group-flush">
+                      <a href="#" class="list-group-item list-group-item-action text-light" style="background-color: #9fc5e8;">查询车票</a>
+                      <a href="#" class="list-group-item list-group-item-action text-light" style="background-color: #9fc5e8;">购买车票</a>
+                      <a href="#" class="list-group-item list-group-item-action text-light" style="background-color: #9fc5e8;">退订车票</a>
+                      <a href="#" class="list-group-item list-group-item-action text-light" style="background-color: #9fc5e8;">交易记录</a>
+                    </div>
+                  
+                  </div>
+                <!-- <div class="container">
+                    <div class="card-header">其他</div>
+                    <div class="card-body">首页</div>
+                    <div class="card-body">公告</div>
+                    <div class="card-body">日志</div>
+                    <div class="card-body">指南</div>
+                </div> -->
+            </nav>
+            
+            <div class="wrapper ml-auto col-10 pt-3">
+                <main role="main" class="mx-3">
+                    <h2>Contents will be Filled in Here</h2>
+                    <div class="card shadow my-3">
+                        <div class="card-header">
+                            <strong>The Gettysburg Address</strong>
+                        </div>
+                        <div class="card-body">
+                            <p>Four score and seven years ago our fathers brought forth, on this continent, a new nation, conceived in Liberty, and dedicated to the proposition that all men are created equal. </p>
+                            <p>Now we are engaged in a great civil war, testing whether that nation, or any nation so conceived and so dedicated, can long endure. 
+                                We are met on a great battle-field of that war. We have come to dedicate a portion of that field, as a final resting place for those who here gave their lives that nation might live. 
+                                It is altogether fitting and proper that we should do this. 
+                            </p>
+                            <p>But, in a larger sense, we can not dedicate -- we can not consecrate -- we can not hallow -- this ground. 
+                                The brave men, living and dead, who struggled here, have consecrated it, far above our poor power to add or detract. 
+                                The world will little note, nor long remember what we say here, but it can never forget what they did here. 
+                                It is for us the living, rather, to be dedicated here to the unfinished work which they who fought here have thus far so nobly advanced. 
+                                It is rather for us to be here dedicated to the great task remaining before us -- that from these honored dead we take increased devotion to that cause for which they gave the last full measure of devotion 
+                                -- that we here highly resolve that these dead shall not have died in vain -- that this nation, under God, shall have a new birth of freedom 
+                                -- and that government of the people, by the people, for the people, shall not perish from the earth.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="card shadow my-3">
+                        <div class="card-header">
+                            <strong>The Gettysburg Address</strong>
+                        </div>
+                        <div class="card-body">
+                            <p>Four score and seven years ago our fathers brought forth, on this continent, a new nation, conceived in Liberty, and dedicated to the proposition that all men are created equal. </p>
+                            <p>Now we are engaged in a great civil war, testing whether that nation, or any nation so conceived and so dedicated, can long endure. 
+                                We are met on a great battle-field of that war. We have come to dedicate a portion of that field, as a final resting place for those who here gave their lives that nation might live. 
+                                It is altogether fitting and proper that we should do this. 
+                            </p>
+                            <p>But, in a larger sense, we can not dedicate -- we can not consecrate -- we can not hallow -- this ground. 
+                                The brave men, living and dead, who struggled here, have consecrated it, far above our poor power to add or detract. 
+                                The world will little note, nor long remember what we say here, but it can never forget what they did here. 
+                                It is for us the living, rather, to be dedicated here to the unfinished work which they who fought here have thus far so nobly advanced. 
+                                It is rather for us to be here dedicated to the great task remaining before us -- that from these honored dead we take increased devotion to that cause for which they gave the last full measure of devotion 
+                                -- that we here highly resolve that these dead shall not have died in vain -- that this nation, under God, shall have a new birth of freedom 
+                                -- and that government of the people, by the people, for the people, shall not perish from the earth.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="card shadow my-3">
+                        <div class="card-header">
+                            <strong>The Gettysburg Address</strong>
+                        </div>
+                        <div class="card-body">
+                            <p>Four score and seven years ago our fathers brought forth, on this continent, a new nation, conceived in Liberty, and dedicated to the proposition that all men are created equal. </p>
+                            <p>Now we are engaged in a great civil war, testing whether that nation, or any nation so conceived and so dedicated, can long endure. 
+                                We are met on a great battle-field of that war. We have come to dedicate a portion of that field, as a final resting place for those who here gave their lives that nation might live. 
+                                It is altogether fitting and proper that we should do this. 
+                            </p>
+                            <p>But, in a larger sense, we can not dedicate -- we can not consecrate -- we can not hallow -- this ground. 
+                                The brave men, living and dead, who struggled here, have consecrated it, far above our poor power to add or detract. 
+                                The world will little note, nor long remember what we say here, but it can never forget what they did here. 
+                                It is for us the living, rather, to be dedicated here to the unfinished work which they who fought here have thus far so nobly advanced. 
+                                It is rather for us to be here dedicated to the great task remaining before us -- that from these honored dead we take increased devotion to that cause for which they gave the last full measure of devotion 
+                                -- that we here highly resolve that these dead shall not have died in vain -- that this nation, under God, shall have a new birth of freedom 
+                                -- and that government of the people, by the people, for the people, shall not perish from the earth.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="card shadow my-3">
+                        <div class="card-header">
+                            <strong>The Gettysburg Address</strong>
+                        </div>
+                        <div class="card-body">
+                            <p>Four score and seven years ago our fathers brought forth, on this continent, a new nation, conceived in Liberty, and dedicated to the proposition that all men are created equal. </p>
+                            <p>Now we are engaged in a great civil war, testing whether that nation, or any nation so conceived and so dedicated, can long endure. 
+                                We are met on a great battle-field of that war. We have come to dedicate a portion of that field, as a final resting place for those who here gave their lives that nation might live. 
+                                It is altogether fitting and proper that we should do this. 
+                            </p>
+                            <p>But, in a larger sense, we can not dedicate -- we can not consecrate -- we can not hallow -- this ground. 
+                                The brave men, living and dead, who struggled here, have consecrated it, far above our poor power to add or detract. 
+                                The world will little note, nor long remember what we say here, but it can never forget what they did here. 
+                                It is for us the living, rather, to be dedicated here to the unfinished work which they who fought here have thus far so nobly advanced. 
+                                It is rather for us to be here dedicated to the great task remaining before us -- that from these honored dead we take increased devotion to that cause for which they gave the last full measure of devotion 
+                                -- that we here highly resolve that these dead shall not have died in vain -- that this nation, under God, shall have a new birth of freedom 
+                                -- and that government of the people, by the people, for the people, shall not perish from the earth.
+                            </p>
+                        </div>
+                    </div>
+
+                </main>
+
+                <footer class="footer bg-dark py-3">
+                    <div class="text-center text-light">
+                        Ticket Manangement System &copy; 2022
+                    </div>
+                </footer>
+
+            </div>
+
+
+        </div>
+    </div>
+
+
+
+</body>
+
+<script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+<script src="https://cdn.staticfile.org/popper.js/1.15.0/umd/popper.min.js"></script>
+<script src="https://cdn.staticfile.org/twitter-bootstrap/4.3.1/js/bootstrap.min.js"></script>
+<!-- <script src="./static/index.js"></script> -->
+
+
+</html>
