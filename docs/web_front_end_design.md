@@ -14,7 +14,7 @@
 
 应用Client分为普通用户客户端与管理员客户端，分别对应以下操作
 
-![](https://s3.bmp.ovh/imgs/2022/05/10/a2045a0720858bb2.jpg)
+![](https://s3.bmp.ovh/imgs/2022/05/11/a16a06440a76361e.jpg)
 
 
 
@@ -39,23 +39,23 @@
 
      展示动态、公告、日志等内容，用户可以由首页登录、查看使用指南、查看网站信息等
 
-     ![](https://s3.bmp.ovh/imgs/2022/05/10/7d451689f857f889.jpg)
+     ![](https://s3.bmp.ovh/imgs/2022/05/11/996db5e0e58e1cbb.jpg)
 
-     ![](https://s3.bmp.ovh/imgs/2022/05/10/9cd349b57a150113.jpg)
+     ![](https://s3.bmp.ovh/imgs/2022/05/11/ecd6dd0e5420fae2.jpg)
 
-     ![](https://s3.bmp.ovh/imgs/2022/05/10/67d1a1ba7cd09d75.jpg)
+     ![](https://s3.bmp.ovh/imgs/2022/05/11/8a978284d3546205.jpg)
 
    + ``/ticketsystem/login``
 
      登录界面，登陆成功后跳转用户/管理员主页
 
-     <img src="https://s3.bmp.ovh/imgs/2022/05/10/adb93959462db288.jpg" width=500>
+     <img src="https://s3.bmp.ovh/imgs/2022/05/11/3593fa4fd66d037e.jpg" width=500>
 
    + ``/ticketsystem/user/``，``/ticketsystem/admin/``
 
      用户主页与管理员主页，通过右侧面板可以进行交易和管理操作
 
-     ![](https://s3.bmp.ovh/imgs/2022/05/10/8a1c87f2f836febc.jpg)
+     ![](https://s3.bmp.ovh/imgs/2022/05/11/e2af75f0e4cf24d7.jpg)
 
 2. Web Server
 
