@@ -22,7 +22,7 @@ private:
     char str[maxlen + 2];
 
 public:
-    Str() = default;
+    Str(): len(0) {str[0] = '\0'; }
     Str(const char *_str) {
         len = strlen(_str);
         assert(len <= maxlen);
@@ -47,7 +47,8 @@ public:
     size_t length() const {return len; }
     const char* c_str() const {return str; }
 
-    operator std::string() {return std::string(str); }
+    operator bool() const {return len != 0; }
+    operator std::string() const {return std::string(str); }
 
     char& operator [] (size_t idx) {
         assert(idx >= 0 && idx < maxlen);
@@ -77,24 +78,77 @@ template <size_t maxl1, size_t maxl2>
 bool operator == (const Str<maxl1> &lhs, const Str<maxl2> &rhs) {
     return strcmp(lhs.c_str(), rhs.c_str()) == 0;
 }
+template <size_t maxl>
+bool operator == (const Str<maxl> &lhs, const char *rhs) {
+    return strcmp(lhs.c_str(), rhs) == 0;
+}
+template <size_t maxl>
+bool operator == (const Str<maxl> &lhs, const std::string &rhs) {
+    return strcmp(lhs.c_str(), rhs.c_str()) == 0;
+}
+
 template <size_t maxl1, size_t maxl2>
 bool operator != (const Str<maxl1> &lhs, const Str<maxl2> &rhs) {
     return strcmp(lhs.c_str(), rhs.c_str()) != 0;
 }
+template <size_t maxl>
+bool operator != (const Str<maxl> &lhs, const char *rhs) {
+    return strcmp(lhs.c_str(), rhs) != 0;
+}
+template <size_t maxl>
+bool operator != (const Str<maxl> &lhs, const std::string &rhs) {
+    return strcmp(lhs.c_str(), rhs.c_str()) != 0;
+}
+
 template <size_t maxl1, size_t maxl2>
 bool operator < (const Str<maxl1> &lhs, const Str<maxl2> &rhs) {
     return strcmp(lhs.c_str(), rhs.c_str()) < 0;
 }
+template <size_t maxl>
+bool operator < (const Str<maxl> &lhs, const char *rhs) {
+    return strcmp(lhs.c_str(), rhs) < 0;
+}
+template <size_t maxl>
+bool operator < (const Str<maxl> &lhs, const std::string &rhs) {
+    return strcmp(lhs.c_str(), rhs.c_str()) < 0;
+}
+
 template <size_t maxl1, size_t maxl2>
 bool operator <= (const Str<maxl1> &lhs, const Str<maxl2> &rhs) {
     return strcmp(lhs.c_str(), rhs.c_str()) <= 0;
 }
+template <size_t maxl>
+bool operator <= (const Str<maxl> &lhs, const char *rhs) {
+    return strcmp(lhs.c_str(), rhs) <= 0;
+}
+template <size_t maxl>
+bool operator <= (const Str<maxl> &lhs, const std::string &rhs) {
+    return strcmp(lhs.c_str(), rhs.c_str()) <= 0;
+}
+
 template <size_t maxl1, size_t maxl2>
 bool operator > (const Str<maxl1> &lhs, const Str<maxl2> &rhs) {
     return strcmp(lhs.c_str(), rhs.c_str()) > 0;
 }
+template <size_t maxl>
+bool operator > (const Str<maxl> &lhs, const char *rhs) {
+    return strcmp(lhs.c_str(), rhs) > 0;
+}
+template <size_t maxl>
+bool operator > (const Str<maxl> &lhs, const std::string &rhs) {
+    return strcmp(lhs.c_str(), rhs.c_str()) > 0;
+}
+
 template <size_t maxl1, size_t maxl2>
 bool operator >= (const Str<maxl1> &lhs, const Str<maxl2> &rhs) {
+    return strcmp(lhs.c_str(), rhs.c_str()) >= 0;
+}
+template <size_t maxl>
+bool operator >= (const Str<maxl> &lhs, const char *rhs) {
+    return strcmp(lhs.c_str(), rhs) >= 0;
+}
+template <size_t maxl>
+bool operator >= (const Str<maxl> &lhs, const std::string &rhs) {
     return strcmp(lhs.c_str(), rhs.c_str()) >= 0;
 }
 

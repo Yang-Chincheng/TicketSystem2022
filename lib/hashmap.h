@@ -1,5 +1,5 @@
 /**
- * implement a container like std::linked_hashmap
+ * implement a container like std::hashmap
  */
 #ifndef SJTU_MAP_HPP
 #define SJTU_MAP_HPP
@@ -12,7 +12,7 @@
 
 namespace ticket {
     /**
-     * In linked_hashmap, iteration ordering is differ from map,
+     * In hashmap, iteration ordering is differ from map,
      * which is the order in which keys were inserted into the map.
      * You should maintain a doubly-linked list running through all
      * of its entries to keep the correct iteration order.
@@ -139,13 +139,13 @@ template <
 	typename _Hash = std::hash<_Key>, 
 	typename _Equal = std::equal_to<_Key>
 >
-class linked_hashmap {
+class hashmap {
 
 public:
 	/**
 	 * the internal type of data.
 	 * it should have a default constructor, a copy constructor.
-	 * You can use sjtu::linked_hashmap as value_type by typedef.
+	 * You can use sjtu::hashmap as value_type by typedef.
 	 */
 	using key_type        = _Key;
 	using mapped_type     = _Tp;
@@ -161,7 +161,7 @@ public:
 	
 	using Listnode = _List_node<value_type>;
 	using Hashnode = _Hashmap_node<value_type>;
-	using Self = linked_hashmap<_Key, _Tp, _Hash, _Equal>;
+	using Self = hashmap<_Key, _Tp, _Hash, _Equal>;
 	using iterator = _Linked_Hashmap_iter_base<Self*>;
 	using const_iterator = _Linked_Hashmap_iter_base<const Self*>;
 
@@ -307,7 +307,7 @@ public:
 	/**
 	 * TODO two constructors
 	 */
-	linked_hashmap(): hasher(), equal()
+	hashmap(): hasher(), equal()
 	{
 		length = DEFAULT_INITCAP;
 		loadfactor = DEFAULT_LOADFAC;
@@ -315,7 +315,7 @@ public:
 		table = allocate_table(length);
 		size_ = 0, head = tail = new Listnode();
 	}
-	linked_hashmap(const linked_hashmap &o): hasher(o.hasher), equal(o.equal)
+	hashmap(const hashmap &o): hasher(o.hasher), equal(o.equal)
 	{
 		loadfactor = o.loadfactor;
 		threshold = o.threshold;
@@ -325,7 +325,7 @@ public:
 	/**
 	 * TODO assignment operator
 	 */
-	linked_hashmap& operator= (const linked_hashmap &o) {
+	hashmap& operator= (const hashmap &o) {
 		if(&o == this) return *this;
 		clear_node(), copy(o);
 		hasher = o.hasher, equal = o.equal;
@@ -338,7 +338,7 @@ public:
 	/**
 	 * TODO Destructors
 	 */
-	~linked_hashmap() {
+	~hashmap() {
 		clear_node();
 	}
  
