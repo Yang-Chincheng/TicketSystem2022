@@ -30,7 +30,7 @@ private:
     bptree<Username, UserInfo> user;
     hashmap<Username, bool, StrHasher> online;
 public:
-    UserManager(): user("user_data_storage"), online() {}
+    UserManager(): user("user"), online() {}
     UserManager(const UserManager &o) = delete;
     ~UserManager() = default;
 

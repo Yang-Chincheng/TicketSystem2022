@@ -28,11 +28,11 @@ int UserManager::add_user(
     user.get(cur_usr, cur_info);
     // privledge not high enough
     if(priv >= cur_info.pri) {
-       throw user_error("current user doesn't have enough privledge, failed to create the new user"); 
+       throw user_error("current user doesn't have enough privledge, failed to create new account"); 
     }
     // new user already exists
     if(user.search(new_usr)) {
-        throw user_error("username already exists, failed to create the new user");
+        throw user_error("username already exists, failed to create new account");
     }
     // success
     user.insert(new_usr, UserInfo(pwd, name, maddr, priv));
