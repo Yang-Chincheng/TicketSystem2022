@@ -18,10 +18,25 @@ struct UserInfo {
     int pri;
 
     UserInfo() = default;
-    UserInfo(const Password &ps, const Name &nm, const MailAddr &ma, int pr)
-    : pwd(ps), name(nm), maddr(ma), pri(pr) {}
     UserInfo(const UserInfo &o) = default;
-    friend std::ostream& operator << (std::ostream& os, const UserInfo &usr);
+    UserInfo(
+        const Password &ps, 
+        const Name &nm, 
+        const MailAddr &ma, 
+        int pr
+    ): pwd(ps), name(nm), maddr(ma), pri(pr) {}
+
+};
+
+struct UserPack: public UserInfo, public InfoPack {
+    Username uid;
+
+    UserPack() = default;
+    UserPack(const UserPack &o) = default;
+    UserPack(const Username &_uid, const UserInfo &info)
+    : UserInfo(info), uid(_uid) {}
+
+    friend std::ostream& operator << (std::ostream &os, const UserPack &pack);
 
 };
 
@@ -55,7 +70,7 @@ public:
     int query_profile(
         const Username &cur_usr,
         const Username &qry_usr,
-        UserInfo &info
+        UserPack &pack
     );
 
     int modify_profile(

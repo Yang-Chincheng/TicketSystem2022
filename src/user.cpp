@@ -5,8 +5,8 @@
 
 namespace ticket {
 
-std::ostream& operator << (std::ostream& os, const UserInfo &usr) {
-    os << usr.name << " " << usr.maddr << " " << usr.pri;
+std::ostream& operator << (std::ostream& os, const UserPack &pack) {
+    os << pack.uid << " " << pack.name << " " << pack.pwd << " " << pack.maddr << " " << pack.pri;
     return os;
 }
 
@@ -72,14 +72,16 @@ int UserManager::logout(const Username &usr)
 }
 
 int UserManager::query_profile(
-    const Username &cur_usr, const Username &qry_usr, UserInfo &info
+    const Username &cur_usr, const Username &qry_usr, UserPack &pack
 ) {
     // cur_usr does not exist / hasn't logged in 
     if(!online[cur_usr]) {
         throw user_error("current user does not exist or hasn't logged in");
     }
     if(cur_usr == qry_usr) {
+        UserInfo info;
         user.get(cur_usr, info);
+        pack = UserPack(cur_usr, info);
         return 0;
     }
     // query user does not exist
@@ -93,7 +95,7 @@ int UserManager::query_profile(
     if(cur_info.pri <= qry_info.pri) {
         throw user_error("privilege not enough");
     }
-    info = qry_info;
+    pack = UserPack(qry_usr, qry_info);
     return 0;
 }
 

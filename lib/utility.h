@@ -67,6 +67,9 @@ void mergesort(T arr, int l, int r, T tmp) {
     for(int i = 0; i < t; ++i) arr[i + l] = tmp[i];
 }
 
+// base of information pack classes 
+struct InfoPack {};
+
 }
 
 

@@ -71,7 +71,7 @@ int TrainInfo::total_price(int s, int t) {
     return line.price[t] - line.price[s];
 }
 
-int TrainInfo::rest_seat(int d, int s, int t) {
+int TrainInfo::query_seat(int d, int s, int t) {
     if(d < 0) d += day_num;
     int res = 0x7fffffff;
     for(int i = s; i < t; ++i) res = std::min(res, seat[d][i]);
@@ -84,7 +84,7 @@ int TrainInfo::search_station(const Station &sta, int st = 1, int ed = 0) {
     return 0;
 }
 
-std::ostream& operator << (std::ostream &os, const LineInfoPack &pack) {
+std::ostream& operator << (std::ostream &os, const LinePack &pack) {
     os << pack.type << std::endl;
     Time cur;
     for(int i = 1; i <= pack.sta_num; ++i) {
@@ -108,7 +108,7 @@ std::ostream& operator << (std::ostream &os, const LineInfoPack &pack) {
     return os;
 }
 
-std::ostream& operator << (std::ostream &os, const TravelInfoPack &pack) {
+std::ostream& operator << (std::ostream &os, const TravelPack &pack) {
     os << pack.id << " " << pack.strt << " " << pack.leav << " -> ";
     os << pack.term << " " << pack.arri << " ";
     os << pack.price << " " << pack.seat << std::endl;
@@ -185,7 +185,7 @@ int TrainManager::release_train(const TrainID &id) {
     return 0;
 }
 
-int TrainManager::query_train(const TrainID &id, const Date &date, LineInfoPack &Dinfo) {
+int TrainManager::query_train(const TrainID &id, const Date &date, LinePack &Dinfo) {
     if(!train.search(id)) {
         throw train_error("train not found");
     }
@@ -196,26 +196,20 @@ int TrainManager::query_train(const TrainID &id, const Date &date, LineInfoPack 
     }
     Time time(tr.st_time);
     time.date = date;
-    Dinfo = LineInfoPack(tr.line, time, tr.type, tr.seat[date - tr.st_date]);
+    Dinfo = LinePack(tr.line, time, tr.type, tr.seat[date - tr.st_date]);
     return 0;
 }
 
 struct TimeCmp {
     // query_ticket: answer sorting
-    bool operator () (const TravelInfoPack &lhs, const TravelInfoPack &rhs) const {
+    bool operator () (const TravelPack &lhs, const TravelPack &rhs) const {
         int t1 = lhs.arri - lhs.leav;
         int t2 = rhs.arri - rhs.leav;
         if(t1 != t2) return t1 < t2;
         return lhs.id < rhs.id;
     }
-    // query_transfer: first train comparison
-    bool operator () (const TravelInfoPack &lhs, const TravelInfoPack &rhs, int) const {
-        int t1 = lhs.arri - lhs.leav;
-        int t2 = rhs.arri - rhs.leav;
-        return t1 < t2;
-    }
     // query_transfer: answer comparison
-    bool operator () (const TransInfoPack &lhs, const TransInfoPack &rhs) const {
+    bool operator () (const TransPack &lhs, const TransPack &rhs) const {
         int t1 = lhs.second.arri - lhs.first.leav;
         int t2 = rhs.second.arri - lhs.first.leav;
         if(t1 != t2) return t1 < t2;
@@ -227,17 +221,12 @@ struct TimeCmp {
 
 struct PriceCmp {
     // query_ticket: answer sorting
-    bool operator () (const TravelInfoPack &lhs, const TravelInfoPack &rhs) const {
+    bool operator () (const TravelPack &lhs, const TravelPack &rhs) const {
         if(lhs.price != rhs.price) return lhs.price < rhs.price;
         return lhs.id < rhs.id;
     }
-    // query_transfer: first train comparison
-    bool operator () (const TravelInfoPack &lhs, const TravelInfoPack &rhs, int) const {
-        if(lhs.price != rhs.price) return lhs.price < rhs.price;
-        return lhs.arri - lhs.leav < rhs.arri - rhs.leav;
-    }
     // query_transfer: answer comparison
-    bool operator () (const TransInfoPack &lhs, const TransInfoPack &rhs) const {
+    bool operator () (const TransPack &lhs, const TransPack &rhs) const {
         int p1 = lhs.first.price + lhs.second.price;
         int p2 = rhs.first.price + rhs.second.price;
         if(p1 != p2) return p1 < p2;
@@ -248,11 +237,14 @@ struct PriceCmp {
 };
 
 template <typename Cmp>
-int TrainManager::query_ticket(const Station &strt, const Station &term, const Date &date, vector<TravelInfoPack> &Tinfo) {
+int TrainManager::query_ticket(const Station &strt, const Station &term, const Date &date, vector<TravelPack> &Tinfo) {
     Tinfo.clear();
     PassTrain ps;
     TrainInfo tr;
     // enumerate each train passing the start station
+    if(!station.search(strt)) {
+        throw train_error("result not found");
+    }
     station.get(strt, ps);
     for(int i = 1; i <= ps.pnum; ++i) {
         // rough check using abstract
@@ -265,9 +257,9 @@ int TrainManager::query_ticket(const Station &strt, const Station &term, const D
             int tidx = tr.search_station(term, sidx);
             if(tidx) {
                 int day = date - ptr->st_date;
-                int res_seat = tr.rest_seat(day, sidx, tidx);
+                int res_seat = tr.query_seat(day, sidx, tidx);
                 if(res_seat == 0) break;
-                Tinfo.push_back(TravelInfoPack(
+                Tinfo.push_back(TravelPack(
                     ptr->id, strt, term,
                     tr.leave_time(day, sidx), tr.arrive_time(day, tidx),
                     tr.total_price(sidx, tidx),
@@ -278,21 +270,24 @@ int TrainManager::query_ticket(const Station &strt, const Station &term, const D
     }
     // no train satisfies all the conditions
     if(Tinfo.empty()) {
-        throw train_error("no result was found");
+        throw train_error("result not found");
     }
     // sort the answer
-    vector<TransInfoPack> tmp; tmp.resize(Tinfo.size());
-    mergesort<vector<TravelInfoPack>, Cmp>(Tinfo, 0, Tinfo.size() - 1, tmp);
+    vector<TransPack> tmp; tmp.resize(Tinfo.size());
+    mergesort<vector<TravelPack>, Cmp>(Tinfo, 0, Tinfo.size() - 1, tmp);
     return 0;
 }
 
 template <typename Cmp>
-int TrainManager::query_transfer(const Station &strt, const Station &term, const Date &date, TransInfoPack &Tinfo) {
+int TrainManager::query_transfer(const Station &strt, const Station &term, const Date &date, TransPack &Tinfo) {
     bool tag = 0;
     PassTrain ps_s, ps_t;
     TrainInfo tr_s, tr_t;
     hashmap<Station, int> mp;
     
+    if(!station.search(strt) || !station.search(term)) {
+        throw train_error("result not found");
+    } 
     station.get(strt, ps_s);
     station.get(term, ps_t);
     // enumerate all the train passing the start station
@@ -321,11 +316,11 @@ int TrainManager::query_transfer(const Station &strt, const Station &term, const
                     Time arri_ex = tr_s.arrive(day_s, ex_idx);
                     if(arri_ex <= tr_t.leave_time(-1, k)) {
                         int day_t = std::max(0, arri_ex.date - tr_t.leave_time(0, k).date);
-                        int res_s = tr_s.rest_seat(day_s, ptr_s->idx, ex_idx);
-                        int res_t = tr_t.rest_seat(day_t, k, ptr_t->idx);
+                        int res_s = tr_s.query_seat(day_s, ptr_s->idx, ex_idx);
+                        int res_t = tr_t.query_seat(day_t, k, ptr_t->idx);
                         if(!res_s || !res_t) continue;
-                        TransInfoPack cur(
-                            TravelInfoPack(
+                        TransPack cur(
+                            TravelPack(
                                 ptr_s->id,
                                 strt, ex_sta,
                                 tr_s.leave_time(day_s, ptr_s->idx),
@@ -333,7 +328,7 @@ int TrainManager::query_transfer(const Station &strt, const Station &term, const
                                 tr_s.total_price(ptr_s->idx, ex_idx),
                                 res_s
                             ),
-                            TravelInfoPack(
+                            TravelPack(
                                 ptr_t->id,
                                 ex_sta, term,
                                 tr_t.leave_time(day_t, k),
@@ -350,10 +345,55 @@ int TrainManager::query_transfer(const Station &strt, const Station &term, const
         }
     }
     if(!tag) {
-        throw train_error("no result was found");
+        throw train_error("result not found");
     }
     return 0;
 }
 
+int TrainManager::query_seat(const TrainID &id, const Date &date, const Station &strt, const Station &term, TicketPack &pack) {
+    if(!train.search(id)) {
+        throw train_error("train not found");
+    }
+    TrainInfo tr;
+    train.get(id, tr);
+    int sidx = 0, tidx = 0;
+    sidx = tr.search_station(strt);
+    if(sidx) tidx = tr.search_station(term, sidx);
+    if(!sidx || !tidx) {
+        throw train_error("station not found");    
+    }
+    Date st_date = tr.leave_time(0, sidx).date;
+    Date ed_date = tr.leave_time(-1, sidx).date;
+    if(date < st_date || date > ed_date) {
+        throw train_error("no schedule in this day");
+    }
+    int day = date - st_date;
+    pack.price = tr.total_price(sidx, tidx);
+    pack.seat = tr.query_seat(day, sidx, tidx);
+    return 0;
+}
+
+int TrainManager::modify_seat(const TrainID &id, const Date &date, const Station &strt, const Station &term, int delta) {
+    if(!train.search(id)) {
+        throw train_error("train not found");
+    }
+    TrainInfo tr;
+    train.get(id, tr);
+    int sidx = 0, tidx = 0;
+    sidx = tr.search_station(strt);
+    if(sidx) tidx = tr.search_station(term, sidx);
+    if(!sidx || !tidx) {
+        throw train_error("station not found");    
+    }
+    Date st_date = tr.leave_time(0, sidx).date;
+    Date ed_date = tr.leave_time(-1, sidx).date;
+    if(date < st_date || date > ed_date) {
+        throw train_error("no schedule in this day");
+    }
+    int day = date - st_date;
+    tr.modify_seat(day, sidx, tidx, delta);
+    train.insert(id, tr);
+    return 0;
+}
 
 }

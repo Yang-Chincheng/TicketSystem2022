@@ -33,12 +33,12 @@ struct LineInfo {
 
 };
 
-struct LineInfoPack: public LineInfo {
+struct LinePack: public LineInfo, public InfoPack {
     Time st_time;
     char type;
     int seat[max_stanum];
-    LineInfoPack() = default;
-    LineInfoPack(
+    LinePack() = default;
+    LinePack(
         const LineInfo &info, 
         const Time &_st_time, 
         char _type, 
@@ -47,7 +47,8 @@ struct LineInfoPack: public LineInfo {
         type = _type;
         for(int i = 1; i < info.sta_num; ++i) seat[i] = _seat[i];
     }
-    friend std::ostream& operator << (std::ostream &os, const LineInfoPack &info);
+    friend std::ostream& operator << (std::ostream &os, const LinePack &info);
+
 };
 
 struct TrainInfo {
@@ -79,20 +80,21 @@ struct TrainInfo {
     Time arrive_time(int day, int idx);
     Time leave_time(int day, int idx);
     int total_price(int s, int t);
-    int rest_seat(int d, int s, int t);
+    int query_seat(int d, int s, int t);
+    int modify_seat(int d, int s, int t, int del);
     int search_station(const Station &sta, int st, int ed);
 
 };
 
-struct TravelInfoPack {
+struct TravelPack: public InfoPack {
     TrainID id;
     Station strt, term;
     Time leav, arri;
     int price;
     int seat;
 
-    TravelInfoPack() = default;
-    TravelInfoPack(
+    TravelPack() = default;
+    TravelPack(
         const TrainID &_id,
         const Station &_strt, const Station &_term, 
         const Time &_leav, const Time &_arri,
@@ -101,12 +103,21 @@ struct TravelInfoPack {
         price = _price, seat = _seat;
     }
 
-    friend std::ostream& operator << (std::ostream &os, const TravelInfoPack &pack);
+    friend std::ostream& operator << (std::ostream &os, const TravelPack &pack);
 
 };
 
-using TransInfoPack = pair<TravelInfoPack, TravelInfoPack>;
+using TransPack = pair<TravelPack, TravelPack>;
 
+#ifndef _TICKET_INFO_PACK_
+#define _TICKET_INFO_PACK_
+struct TicketPack: public InfoPack {
+    int price, seat;
+    TicketPack() = default;
+    TicketPack(int _price, int _seat): price(_price), seat(_seat) {}
+    TicketPack(const TicketPack &o) = default;
+};
+#endif
 
 const int max_pnum = 10000;
 
@@ -152,7 +163,7 @@ public:
     int query_train(
         const TrainID& id, 
         const Date &date,
-        LineInfoPack &Dinfo
+        LinePack &pack
     );
 
     template <typename _Cmp>
@@ -160,7 +171,7 @@ public:
         const Station &strt,
         const Station &term,
         const Date &date,
-        vector<TravelInfoPack> &Tinfo
+        vector<TravelPack> &pack
     );
 
     template <typename _Cmp>
@@ -168,16 +179,15 @@ public:
         const Station &strt,
         const Station &term,
         const Date &date,
-        TransInfoPack &Tinfo
+        TransPack &pack
     );
 
-    static int query_seat(
-        const TrainInfo &tr,
+    int query_seat(
+        const TrainID &id,
         const Date &date, 
         const Station &strt,
         const Station &term,
-        TravelInfoPack &info,
-        const TrainID &id
+        TicketPack &pack
     );
 
     int modify_seat(
