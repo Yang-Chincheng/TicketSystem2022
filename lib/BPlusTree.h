@@ -311,8 +311,8 @@ public:
         // 找到对应的叶节点
         while (!object_node.if_leaf) {
 
-            std::cerr << object_node.my_num << ' ' << object_node.data[0].key << ' ' << object_node.elements_num
-                      << std::endl;
+//            std::cerr << object_node.my_num << ' ' << object_node.data[0].key << ' ' << object_node.elements_num
+//                      << std::endl;
 
             int l, r, mid, pos;
             l = 0;
@@ -329,8 +329,8 @@ public:
             index_.read(reinterpret_cast<char *>(&object_node), sizeof(Node_));
         }
 
-        std::cerr << object_node.my_num << ' ' << object_node.data[0].key << ' ' << object_node.elements_num
-                  << std::endl;
+//        std::cerr << object_node.my_num << ' ' << object_node.data[0].key << ' ' << object_node.elements_num
+//                  << std::endl;
 
 
         // 找到节点内的对应项进行删除
@@ -571,9 +571,9 @@ private:
 
     void BreakNode_(Node_ node_in) {
 
-
-        std::cerr << "Broke node: " << node_in.my_num << ' ' << node_in.data[0].key << ' '
-                  << node_in.elements_num << std::endl;
+//
+//        std::cerr << "Broke node: " << node_in.my_num << ' ' << node_in.data[0].key << ' '
+//                  << node_in.elements_num << std::endl;
 
 
         int new_node_num;
@@ -725,8 +725,8 @@ private:
 
     void MergeNode_(Node_ &node_in) {
 
-        std::cerr << "Merged node: " << node_in.my_num << ' ' << node_in.data[0].key << ' '
-                  << node_in.elements_num << std::endl;
+//        std::cerr << "Merged node: " << node_in.my_num << ' ' << node_in.data[0].key << ' '
+//                  << node_in.elements_num << std::endl;
 
 
         Node_ first_node;
@@ -749,7 +749,7 @@ private:
                     BreakNode_(root_);
 
 
-                std::cerr << "Height decreased: " << node_in.elements_num << std::endl;
+//                std::cerr << "Height decreased: " << node_in.elements_num << std::endl;
             }
             return;
         }
@@ -805,8 +805,11 @@ private:
         index_.write(reinterpret_cast<char *>(&parent_node), sizeof(Node_));
 
         // 若上一级块过小，则也需进行并块
-        if (parent_node.elements_num <= k_min_size)
+        if (parent_node.elements_num <= k_min_size){
             MergeNode_(parent_node);
+            index_.seekg(k_head_preserved+ sizeof(Node_)*first_node.my_num);
+            index_.read(reinterpret_cast<char*>(&first_node), sizeof(Node_));
+        }
         // 对并后的块进行检查，看是否需要裂块
         if (first_node.elements_num >= k_max_size)
             BreakNode_(first_node);
