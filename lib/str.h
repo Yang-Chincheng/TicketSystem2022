@@ -172,7 +172,7 @@ using Username = Str<usr_len>;
 using Password = Str<psw_len>;
 using Name = Str<name_len>;
 using MailAddr = Str<maddr_len>;
-using trainID = Str<trID_len>;
+using TrainID = Str<trID_len>;
 using Station = Str<sta_len>;
 using Command = Str<cmd_len>;
 

@@ -16,6 +16,14 @@ Date& Date::operator -= (int days) {
     while(day <= 0) day += __day_number[--month];
     return *this;
 }
+Date Date::operator + (int days) {
+    Date ret(*this); ret += days;
+    return ret;
+}
+Date Date::operator - (int days) {
+    Date ret(*this); ret -= days;
+    return ret; 
+}
 
 Date::operator std::string() const {
     std::string ret = "";
@@ -101,6 +109,15 @@ Time& Time::operator -= (int mins) {
         }
     }
     return *this;
+}
+
+Time Time::operator + (int mins) const {
+    Time ret(*this); ret += mins;
+    return ret;
+}
+Time Time::operator - (int mins) const {
+    Time ret(*this); ret -= mins;
+    return ret;
 }
 
 bool operator == (const Time& lhs, const Time& rhs) {

@@ -32,6 +32,9 @@ struct Date {
 
     Date& operator += (int days);
     Date& operator -= (int days);
+    Date  operator +  (int days);
+    Date  operator -  (int days);
+
 
     operator std::string() const;
 
@@ -74,6 +77,8 @@ struct Time {
 
     Time& operator += (int mins);
     Time& operator -= (int mins);
+    Time  operator +  (int mins) const;
+    Time  operator -  (int mins) const;
 
     friend bool operator == (const Time& lhs, const Time& rhs);
     friend bool operator != (const Time& lhs, const Time& rhs);

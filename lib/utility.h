@@ -39,26 +39,32 @@ struct pair {
  * 
  */
 
-template <typename T, typename Cmp = std::less<T>>
-void _sort_func(T *arr, int l, int r, T* tmp, Cmp comp) {
-    if(l == r) return ;
+template <typename T>
+struct traits {
+    using value_type = T::value_type;
+};
+
+template <typename T>
+struct traits <T*> {
+    using value_type = T;
+};
+
+template <
+    typename T, 
+    typename Cmp = std::less<typename traits<T>::value_type>
+>
+void mergesort(T arr, int l, int r, T tmp) {
+    if(l >= r) return ;
     int mid = (l + r) >> 1;
-    _sort_func(arr, l, mid, tmp, comp);
-    _sort_func(arr, mid + 1, r, tmp, comp);
+    mergesort(arr, l, mid, tmp);
+    mergesort(arr, mid + 1, r, tmp);
     int x = l, y = mid + 1, t = 0;
     while(x <= mid && y <= r) {
-        tmp[t++] = (comp(arr[x], arr[y])? arr[x++]: arr[y++]);
+        tmp[t++] = (Cmp()(arr[x], arr[y])? arr[x++]: arr[y++]);
     }
     while(x <= mid) tmp[t++] = arr[x++];
     while(y <= r) tmp[t++] = arr[y++];
-    for(int i = 0; i < t; ++i) tmp[i + l] = arr[i];
-}
-
-template <typename T, typename Cmp>
-void mergesort(T *arr, int l, int r, Cmp comp) {
-    T tmp = new T[r - l + 1];
-    _sort_func(arr, l, r, tmp, comp);
-    delete [] tmp;
+    for(int i = 0; i < t; ++i) arr[i + l] = tmp[i];
 }
 
 }

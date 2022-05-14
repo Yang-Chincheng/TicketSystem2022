@@ -301,6 +301,10 @@ public:
 		deallocate(_arr);
 		_arr = _new_arr;
 	}
+
+	void resize(size_type siz) {
+		while(_cap < siz) double_space();
+	}
 };
 
 }
