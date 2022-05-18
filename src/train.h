@@ -112,10 +112,19 @@ using TransPack = pair<TravelPack, TravelPack>;
 #ifndef _TICKET_INFO_PACK_
 #define _TICKET_INFO_PACK_
 struct TicketPack: public InfoPack {
-    int price, seat;
+    int day, sidx, tidx;
+    int price;
     TicketPack() = default;
-    TicketPack(int _price, int _seat): price(_price), seat(_seat) {}
+    TicketPack(int _d, int _s, int _t, int _p): price(_p), day(_d), sidx(_s), tidx(_t) {}
     TicketPack(const TicketPack &o) = default;
+};
+#endif
+
+#ifndef _TICKET_PENDING_REQUEST_
+#define _TICKET_PENDING_REQUEST_
+struct PendingReq {
+    Username user;
+    int id, sidx, tidx, num;
 };
 #endif
 
@@ -182,20 +191,22 @@ public:
         TransPack &pack
     );
 
-    int query_seat(
+    int check_request(
         const TrainID &id,
         const Date &date, 
         const Station &strt,
         const Station &term,
+        int num,
         TicketPack &pack
     );
 
-    int modify_seat(
+    int check_pending(
         const TrainID &id,
-        const Date &date, 
-        const Station &strt,
-        const Station &term,
-        int delta
+        int day, 
+        int refnd_sidx, 
+        int refnd_tidx,
+        int refnd_num,
+        vector<PendingReq> &req
     );
 
 };
