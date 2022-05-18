@@ -137,6 +137,10 @@ int UserManager::modify_profile(
     return 0;
 }
 
+int UserManager::is_online(const Username &user) {
+    return online[user];
+}
+
 int UserManager::clear() {
     online.clear(), user.clear();
     return 0;
