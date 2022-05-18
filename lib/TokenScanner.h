@@ -41,7 +41,9 @@ public:
         return T(ans);
     }
 
-    void RollBack() { //重新处理此命令
+
+
+    void RollBack() { //重新处理此条指令
         pos_ = 0;
     }
 
@@ -60,6 +62,18 @@ public:
 template<>
 int TokenScanner::Next_Token<int>() {
     int ans = 0;
+    while (buff_[pos_] == spilt_ && pos_ < length_)
+        pos_++;
+    while (buff_[pos_] != spilt_ && pos_ < length_) {
+        ans = ans * 10 + int(buff_[pos_]);
+        pos_++;
+    }
+    return ans;
+}
+
+template<>
+unsigned long TokenScanner::Next_Token<unsigned long >() {
+    unsigned long  ans = 0;
     while (buff_[pos_] == spilt_ && pos_ < length_)
         pos_++;
     while (buff_[pos_] != spilt_ && pos_ < length_) {
