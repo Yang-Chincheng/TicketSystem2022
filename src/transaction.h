@@ -10,8 +10,8 @@
 
 namespace ticket {
 
-#ifndef _RECORD_PENDING_INFO_
-#define _RECORD_PENDING_INFO_
+#ifndef _RECORD_PENDING_
+#define _RECORD_PENDING_
 struct PendInfo {
     Username user; int idx;
     int sidx, tidx, num;
@@ -30,10 +30,6 @@ struct PendInfo {
     user(_user), idx(_idx), sidx(_sidx), tidx(_tidx), num(_num), mask(_mask) {}
 
 };
-#endif
-
-#ifndef _RECORD_PENDING_PACK_
-#define _RECORD_PENDING_PACK_
 struct PendPack: public InfoPack {
     Username user; int idx;
     int sidx, tidx, num;
@@ -97,50 +93,6 @@ struct TraxPack: public TraxInfo, public InfoPack {
     friend std::ostream& operator << (std::ostream &os, const TraxPack &pack);
 
 };
-
-#if SPLIT_INTO_VOLUMES
-const int max_rec = 1e4;
-
-struct TraxList {
-    int rnum, id;
-    TraxInfo rec[max_rec];
-};
-
-class TraxManager {
-private:
-    using pui = pair<Username, int>;
-    using iterator = typename bptree<pui, TraxList>::iterator;
-    bptree<pui, TraxList> rec;
-
-public:
-
-    int add_record(
-        const Username &_usr,
-        const Status &_sta,
-        const TrainID &_id,
-        const Station &_st,
-        const Station &_tm,
-        const Time &_lv,
-        const Time &_ar,
-        int _pri,
-        int _num
-    );
-
-    int change_status(
-        const Username &_usr,
-        const Status &new_sta,
-        int _idx
-    );
-
-    int delete_record(const Username &_usr);
-
-    int query_order(
-        const Username &_usr, 
-        vector<TraxInfo> &pack
-    );
-
-};
-#else
 
 const int max_rec = 1e5;
 const int max_pnd = 1e5;
@@ -233,8 +185,6 @@ public:
     );
     
 };
-
-#endif
 
 }
 
