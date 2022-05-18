@@ -159,6 +159,7 @@ private:
     std::string data_name_;
     std::fstream index_;
     std::fstream data_;
+    int root_num_;
     Node_ root_;
     MemoryPool<int> node_memory_pool_;
     MemoryPool<int> data_memory_pool_;
@@ -177,8 +178,9 @@ public:
             height_ = 1;
             Node_ root(node_num_);
             root_ = root;
+            root_num_ = root_.my_num;
             node_num_++;
-            index_.seekp(k_head_preserved);
+            index_.seekp(k_head_preserved + sizeof(Node_) * root_num_);
             index_.write(reinterpret_cast<char *>(&root_), sizeof(Node_));
             index_.close();
             index_.open(index_name_);
@@ -191,7 +193,8 @@ public:
             index_.read(reinterpret_cast<char *>(&data_num_), sizeof(int));
             index_.read(reinterpret_cast<char *>(&record_num_), sizeof(int));
             index_.read(reinterpret_cast<char *>(&height_), sizeof(int));
-            index_.seekp(k_head_preserved);
+            index_.read(reinterpret_cast<char *>(&root_num_), sizeof(int));
+            index_.seekp(k_head_preserved + sizeof(Node_) * root_num_);
             index_.read(reinterpret_cast<char *>(&root_), sizeof(Node_));
             data_.open(data_name_);
         }
@@ -203,7 +206,8 @@ public:
         index_.write(reinterpret_cast<char *>(&data_num_), sizeof(int));
         index_.write(reinterpret_cast<char *>(&record_num_), sizeof(int));
         index_.write(reinterpret_cast<char *>(&height_), sizeof(int));
-        index_.seekp(k_head_preserved);
+        index_.write(reinterpret_cast<char *>(&node_num_), sizeof(int));
+        index_.seekp(k_head_preserved + sizeof(Node_) * node_num_);
         index_.write(reinterpret_cast<char *>(&root_), sizeof(Node_));
         index_.close();
         data_.close();
@@ -228,6 +232,7 @@ public:
         height_ = 1;
         Node_ root(node_num_);
         root_ = root;
+        root_num_=root_.my_num;
         node_num_++;
     }
 
@@ -605,6 +610,7 @@ private:
             new_root.data[new_root.elements_num].address = new_node.my_num;
             new_root.elements_num++;
             root_ = new_root;
+            root_num_=root_.my_num;
             index_.seekp(k_head_preserved + sizeof(Node_) * new_root.my_num);
             index_.write(reinterpret_cast<char *>(&new_root), sizeof(Node_));
             // TODO: Debug 检查用
@@ -740,6 +746,7 @@ private:
                 index_.seekg(k_head_preserved + sizeof(Node_) * node_in.data[0].address);
                 index_.read(reinterpret_cast<char *>(&root_), sizeof(Node_));
                 root_.parent_num = -1;
+                root_num_=root_.my_num;
                 index_.seekp(k_head_preserved + sizeof(Node_) * root_.my_num);
                 index_.write(reinterpret_cast<char *>(&root_), sizeof(Node_));
                 //外存回收
@@ -805,10 +812,10 @@ private:
         index_.write(reinterpret_cast<char *>(&parent_node), sizeof(Node_));
 
         // 若上一级块过小，则也需进行并块
-        if (parent_node.elements_num <= k_min_size){
+        if (parent_node.elements_num <= k_min_size) {
             MergeNode_(parent_node);
-            index_.seekg(k_head_preserved+ sizeof(Node_)*first_node.my_num);
-            index_.read(reinterpret_cast<char*>(&first_node), sizeof(Node_));
+            index_.seekg(k_head_preserved + sizeof(Node_) * first_node.my_num);
+            index_.read(reinterpret_cast<char *>(&first_node), sizeof(Node_));
         }
         // 对并后的块进行检查，看是否需要裂块
         if (first_node.elements_num >= k_max_size)
