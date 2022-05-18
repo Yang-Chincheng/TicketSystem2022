@@ -28,7 +28,7 @@ struct TraxInfo {
     Station termi;
     Time leaving;
     Time arriving;
-    int price, number;
+    int day, price, number;
 
     TraxInfo() = default;
     TraxInfo(const TraxInfo &o) = default;
@@ -126,29 +126,30 @@ public:
     TraxManager(const TraxManager &o) = delete;
 
     int add_record(
-        const Username &_usr,
-        const Status &_sta,
-        const TrainID &_id,
-        const Station &_st,
-        const Station &_tm,
-        const Time &_lv,
-        const Time &_ar,
-        int _pri,
-        int _num,
+        const Username &usr,
+        const Status &sta,
+        const TrainID &id,
+        const Station &st,
+        const Station &tm,
+        const Time &lv,
+        const Time &ar,
+        int pri,
+        int num,
         int &cnt
     );
 
+    int delete_record(const Username &usr);
+
     int change_status(
-        const Username &_usr,
+        const Username &usr,
         const Status &new_sta,
-        int _idx
+        int idx
     );
 
-    int delete_record(const Username &_usr);
-
-    int query_order(
+    int query_record(
         const Username &_usr, 
-        vector<TraxPack> &pack
+        vector<TraxPack> &pack,
+        int idx
     );
 
 };
