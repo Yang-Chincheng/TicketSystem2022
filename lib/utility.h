@@ -66,6 +66,11 @@ struct pair {
 
 };
 
+template <typename T, typename U>
+pair<T, U> make_pair(const T &a, const U &b) {
+    return pair<T, U>(a, b);
+}
+
 /**
  * @brief implementation of mergesort algorithm
  * 
