@@ -302,8 +302,18 @@ public:
 		_arr = _new_arr;
 	}
 
-	void resize(size_type siz) {
-		while(_cap < siz) double_space();
+	/**
+	 * @brief extend the size of vector to at least @param siz
+	 * 
+	 * fill the extended space with @param fill (, if any)
+	 *  
+	 */
+	void resize(size_type siz, const T &fill = T()) {
+		if(_siz < siz) {
+			while(_cap < siz) double_space();
+			for(int i = _siz; i < siz; ++i) construct(_arr + i, fill);
+			_siz = siz;
+		}
 	}
 };
 
