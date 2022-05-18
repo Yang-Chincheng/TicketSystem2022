@@ -62,6 +62,12 @@ int TrainInfo::query_seat(int d, int s, int t) {
     return res;
 }
 
+int TrainInfo::modify_seat(int d, int s, int t, int del) {
+    if(d < 0) d += day_num;
+    for(int i = s; i < t; ++i) seat[d][i] += del;
+    return 0;
+}
+
 int TrainInfo::search_station(const Station &sta, int st = 1, int ed = 0) {
     if(!ed) ed = sta_num;
     for(int i = st; i <= ed; ++i) if(line.sta[i] == sta) return i;
@@ -216,7 +222,7 @@ int TrainManager::query_ticket(const Station &strt, const Station &term, const D
     if(!station.get(strt, ps)) {
         throw train_error("result not found");
     }
-    for(int i = 1; i <= ps.pnum; ++i) {
+    for(int i = 0; i < ps.pnum; ++i) {
         // rough check using abstract
         PassTrain::MetaData *ptr = ps.ptrain + i;
         if(date >= ptr->st_date && date <= ptr->ed_date) {
@@ -259,14 +265,14 @@ int TrainManager::query_transfer(const Station &strt, const Station &term, const
         throw train_error("result not found");
     } 
     // enumerate all the train passing the start station
-    for(int i = 1; i <= ps_s.pnum; ++i) {
+    for(int i = 0; i < ps_s.pnum; ++i) {
         PassTrain::MetaData *ptr_s = ps_s.ptrain + i;
         if(date >= ptr_s->st_date && date <= ptr_s->ed_date) {
             tr_s = *ptr_s->iter;
             
             int day_s = date - ptr_s->st_date;
             // enumerate all the train passin the terminal station
-            for(int j = 1; j <= ps_t.pnum; ++j) {
+            for(int j = 0; j < ps_t.pnum; ++j) {
                 PassTrain::MetaData *ptr_t = ps_t.ptrain + j;
                 // trains shound be different 
                 if(ptr_s->id == ptr_t->id) continue;
@@ -318,7 +324,8 @@ int TrainManager::query_transfer(const Station &strt, const Station &term, const
     return 0;
 }
 
-int TrainManager::check_request(const TrainID &id, const Date &date, const Station &st, const Station &tm, int num, TicketPack &pack) {
+int TrainManager::check_ticket(const TrainID &id, const Date &date, const Station &st, const Station &tm, int num, TicketPack &pack) 
+{
     TrainInfo tr;
     assert(train.get(id, tr));
     pack.sidx = tr.search_station(st);
@@ -330,31 +337,32 @@ int TrainManager::check_request(const TrainID &id, const Date &date, const Stati
     assert(date >= st_date && date <= ed_date);
     pack.day = date - st_date;
     pack.price = tr.total_price(pack.sidx, pack.tidx);
-    if(num <= tr.query_seat(pack.day, pack.sidx, pack.tidx)) {
+    pack.seat = tr.query_seat(pack.day, pack.sidx, pack.tidx);
+    if(num <= pack.seat) {
         tr.modify_seat(pack.day, pack.sidx, pack.tidx, -num);
-        train.insert(id, tr);
-        return 1;
+        train.insert(id, tr);    
     }
     return 0;
 }
 
-int TrainManager::check_pending(const TrainID &id, int day, int refnd_sidx, int refnd_tidx, int refnd_num, vector<PendingReq> &req) {
+int TrainManager::check_refund(const TrainID &id, int day, int sidx, int tidx, int num, vector<PendPack> &pend, vector<int> &pack) 
+{
     TrainInfo tr;
     assert(train.get(id, tr));
     assert(day >= 0 && day < tr.day_num);
-    assert(refnd_sidx > 0 && refnd_sidx <= tr.sta_num);
-    assert(refnd_tidx > 0 && refnd_tidx <= tr.sta_num);
-    tr.modify_seat(day, refnd_sidx, refnd_tidx, refnd_num);
+    assert(0 <= sidx && sidx <= tidx && tidx < tr.sta_num);
+    tr.modify_seat(day, sidx, tidx, num);
+    pack.clear();
     int i = 0;
-    for(auto &rec: req) {
-        if(rec.num <= tr.query_seat(day, refnd_sidx, refnd_tidx)) {
-            tr.modify_seat(day, refnd_sidx, refnd_tidx, -rec.num);
-            train.insert(id, tr);
-            return i;
+    for(PendPack &rec: pend) {
+        if(tr.query_seat(day, rec.sidx, rec.tidx) >= rec.num) {
+            pack.push_back(i);
+            tr.modify_seat(day, rec.sidx, rec.tidx, -rec.num);
         }
         i++;
     }
-    return -1;
+    train.insert(id, tr);
+    return 0;
 }
 
 }
