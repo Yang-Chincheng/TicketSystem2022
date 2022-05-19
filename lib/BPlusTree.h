@@ -232,8 +232,10 @@ public:
         height_ = 1;
         Node_ root(node_num_);
         root_ = root;
-        root_num_=root_.my_num;
+        root_num_ = root_.my_num;
         node_num_++;
+        index_.seekp(k_head_preserved + sizeof(Node_) * root_num_);
+        index_.write(reinterpret_cast<char *>(&root_), sizeof(Node_));
     }
 
     int Size() {
@@ -244,30 +246,104 @@ public:
         return height_;
     }
 
-    bool Search() {
-        return true;
+    bool Search(key_type key_in) {
+        Node_ object_node= FindObjectNode_(key_in);
+//        index_.seekg(k_head_preserved + sizeof(Node_) * root_.my_num);
+//        index_.read(reinterpret_cast<char *>(&object_node), sizeof(Node_));
+//        while (!object_node.if_leaf) {
+//            // 找到叶节点
+//            int l, r, mid;
+//            l = 0;
+//            r = object_node.elements_num - 2;
+//            while (l <= r) {
+//                mid = (l + r) / 2;
+//                if (object_node.data[mid].key > key_in)
+//                    r = mid - 1;
+//                else
+//                    l = mid + 1;
+//            }
+//            int pos = l;
+//            index_.seekg(k_head_preserved + sizeof(Node_) * object_node.data[pos].address);
+//            index_.read(reinterpret_cast<char *>(&object_node), sizeof(Node_));
+//        }
+        // 找到节点内是否有对应的
+        int l, r, mid;
+        l = 0;
+        r = object_node.elements_num - 1;
+        bool find = false;
+        while (!find && l <= r) {
+            mid = (l + r) / 2;
+            if (object_node.data[mid].key == key_in)
+                find = true;
+            if (object_node.data[mid].key > key_in)
+                r = mid - 1;
+            else
+                l = mid + 1;
+        }
+        return find;
+    }
+
+    bool Get(key_type key_in, value_type &value_in) {
+        Node_ object_node= FindObjectNode_(key_in);
+//        index_.seekg(k_head_preserved + sizeof(Node_) * root_.my_num);
+//        index_.read(reinterpret_cast<char *>(&object_node), sizeof(Node_));
+//        while (!object_node.if_leaf) {
+//            // 找到叶节点
+//            int l, r, mid;
+//            l = 0;
+//            r = object_node.elements_num - 2;
+//            while (l <= r) {
+//                mid = (l + r) / 2;
+//                if (object_node.data[mid].key > key_in)
+//                    r = mid - 1;
+//                else
+//                    l = mid + 1;
+//            }
+//            int pos = l;
+//            index_.seekg(k_head_preserved + sizeof(Node_) * object_node.data[pos].address);
+//            index_.read(reinterpret_cast<char *>(&object_node), sizeof(Node_));
+//        }
+        // 找到节点内是否有对应的
+        int l, r, mid, pos;
+        l = 0;
+        r = object_node.elements_num - 1;
+        bool find = false;
+        while (!find && l <= r) {
+            mid = (l + r) / 2;
+            if (object_node.data[mid].key == key_in)
+                find = true, pos = mid;
+            if (object_node.data[mid].key > key_in)
+                r = mid - 1;
+            else
+                l = mid + 1;
+        }
+        if (find) {
+            data_.seekg(sizeof(value_type) * object_node.data[pos].address);
+            data_.read(reinterpret_cast<char *>(&value_in), sizeof(value_type));
+        }
+        return find;
     }
 
     void Insert(key_type key_in, value_type value_in) {
-        Node_ object_node;
-        index_.seekg(k_head_preserved + sizeof(Node_) * root_.my_num);
-        index_.read(reinterpret_cast<char *>(&object_node), sizeof(Node_));
-        while (!object_node.if_leaf) {
-            // 找到叶节点
-            int l, r, mid;
-            l = 0;
-            r = object_node.elements_num - 2;
-            while (l <= r) {
-                mid = (l + r) / 2;
-                if (object_node.data[mid].key > key_in)
-                    r = mid - 1;
-                else
-                    l = mid + 1;
-            }
-            int pos = l;
-            index_.seekg(k_head_preserved + sizeof(Node_) * object_node.data[pos].address);
-            index_.read(reinterpret_cast<char *>(&object_node), sizeof(Node_));
-        }
+        Node_ object_node= FindObjectNode_(key_in);
+//        index_.seekg(k_head_preserved + sizeof(Node_) * root_.my_num);
+//        index_.read(reinterpret_cast<char *>(&object_node), sizeof(Node_));
+//        while (!object_node.if_leaf) {
+//            // 找到叶节点
+//            int l, r, mid;
+//            l = 0;
+//            r = object_node.elements_num - 2;
+//            while (l <= r) {
+//                mid = (l + r) / 2;
+//                if (object_node.data[mid].key > key_in)
+//                    r = mid - 1;
+//                else
+//                    l = mid + 1;
+//            }
+//            int pos = l;
+//            index_.seekg(k_head_preserved + sizeof(Node_) * object_node.data[pos].address);
+//            index_.read(reinterpret_cast<char *>(&object_node), sizeof(Node_));
+//        }
         // 找到节点内的对应位置进行插入
         int l, r, mid, pos;
         l = 0;
@@ -305,39 +381,71 @@ public:
             root_ = object_node;
     }
 
+    void Set(key_type key_in, value_type value_in) {
+        Node_ object_node= FindObjectNode_(key_in);
+//        index_.seekg(k_head_preserved + sizeof(Node_) * root_.my_num);
+//        index_.read(reinterpret_cast<char *>(&object_node), sizeof(Node_));
+//        while (!object_node.if_leaf) {
+//            // 找到叶节点
+//            int l, r, mid;
+//            l = 0;
+//            r = object_node.elements_num - 2;
+//            while (l <= r) {
+//                mid = (l + r) / 2;
+//                if (object_node.data[mid].key > key_in)
+//                    r = mid - 1;
+//                else
+//                    l = mid + 1;
+//            }
+//            int pos = l;
+//            index_.seekg(k_head_preserved + sizeof(Node_) * object_node.data[pos].address);
+//            index_.read(reinterpret_cast<char *>(&object_node), sizeof(Node_));
+//        }
+        int l, r, mid, pos;
+        l = 0;
+        r = object_node.elements_num - 1;
+        bool find = false;
+        while (!find && l <= r) {
+            mid = (l + r) / 2;
+            if (object_node.data[mid].key == key_in)
+                find = true, pos = mid;
+            if (object_node.data[mid].key > key_in)
+                r = mid - 1;
+            else
+                l = mid + 1;
+        }
+        if(!find){
+            Insert(key_in,value_in);
+            return;
+        }
+        data_.seekp(sizeof(value_type) * object_node.data[pos].address);
+        data_.write(reinterpret_cast<char *>(&value_in), sizeof(value_type));
+    }
+
     void Delete(key_type key_in, value_type value_in) {
         Delete(key_in);
     }
 
     void Delete(key_type key_in) {
-        Node_ object_node;
-        index_.seekg(k_head_preserved + sizeof(Node_) * root_.my_num);
-        index_.read(reinterpret_cast<char *>(&object_node), sizeof(Node_));
-        // 找到对应的叶节点
-        while (!object_node.if_leaf) {
-
-//            std::cerr << object_node.my_num << ' ' << object_node.data[0].key << ' ' << object_node.elements_num
-//                      << std::endl;
-
-            int l, r, mid, pos;
-            l = 0;
-            r = object_node.elements_num - 2;
-            while (l <= r) {
-                mid = (l + r) / 2;
-                if (object_node.data[mid].key <= key_in)
-                    l = mid + 1;
-                else
-                    r = mid - 1;
-            }
-            pos = l;
-            index_.seekg(k_head_preserved + sizeof(Node_) * object_node.data[pos].address);
-            index_.read(reinterpret_cast<char *>(&object_node), sizeof(Node_));
-        }
-
-//        std::cerr << object_node.my_num << ' ' << object_node.data[0].key << ' ' << object_node.elements_num
-//                  << std::endl;
-
-
+        Node_ object_node= FindObjectNode_(key_in);
+//        index_.seekg(k_head_preserved + sizeof(Node_) * root_.my_num);
+//        index_.read(reinterpret_cast<char *>(&object_node), sizeof(Node_));
+//        while (!object_node.if_leaf) {
+//            // 找到叶节点
+//            int l, r, mid;
+//            l = 0;
+//            r = object_node.elements_num - 2;
+//            while (l <= r) {
+//                mid = (l + r) / 2;
+//                if (object_node.data[mid].key > key_in)
+//                    r = mid - 1;
+//                else
+//                    l = mid + 1;
+//            }
+//            int pos = l;
+//            index_.seekg(k_head_preserved + sizeof(Node_) * object_node.data[pos].address);
+//            index_.read(reinterpret_cast<char *>(&object_node), sizeof(Node_));
+//        }
         // 找到节点内的对应项进行删除
         int l, r, mid, pos;
         bool if_find = false;
@@ -526,6 +634,30 @@ public:
     }
 
 private:
+    Node_ FindObjectNode_(key_type key_in) {
+        Node_ object_node;
+        index_.seekg(k_head_preserved + sizeof(Node_) * root_.my_num);
+        index_.read(reinterpret_cast<char *>(&object_node), sizeof(Node_));
+        while (!object_node.if_leaf) {
+            // 找到叶节点
+            int l, r, mid;
+            l = 0;
+            r = object_node.elements_num - 2;
+            while (l <= r) {
+                mid = (l + r) / 2;
+                if (object_node.data[mid].key > key_in)
+                    r = mid - 1;
+                else
+                    l = mid + 1;
+            }
+            int pos = l;
+            index_.seekg(k_head_preserved + sizeof(Node_) * object_node.data[pos].address);
+            index_.read(reinterpret_cast<char *>(&object_node), sizeof(Node_));
+        }
+        return object_node;
+    }
+
+
     void NodeCopy_(Node_ &old_node_in, Node_ &new_node_in, int start_pos = 0, bool if_half = false) {
         // 将数据从旧块中拷到新块中
         if (start_pos >= old_node_in.elements_num || start_pos < 0)
@@ -610,7 +742,7 @@ private:
             new_root.data[new_root.elements_num].address = new_node.my_num;
             new_root.elements_num++;
             root_ = new_root;
-            root_num_=root_.my_num;
+            root_num_ = root_.my_num;
             index_.seekp(k_head_preserved + sizeof(Node_) * new_root.my_num);
             index_.write(reinterpret_cast<char *>(&new_root), sizeof(Node_));
             // TODO: Debug 检查用
@@ -746,7 +878,7 @@ private:
                 index_.seekg(k_head_preserved + sizeof(Node_) * node_in.data[0].address);
                 index_.read(reinterpret_cast<char *>(&root_), sizeof(Node_));
                 root_.parent_num = -1;
-                root_num_=root_.my_num;
+                root_num_ = root_.my_num;
                 index_.seekp(k_head_preserved + sizeof(Node_) * root_.my_num);
                 index_.write(reinterpret_cast<char *>(&root_), sizeof(Node_));
                 //外存回收
