@@ -101,8 +101,8 @@ int UserManager::query_profile(
 
 int UserManager::modify_profile(
     const Username &cur_usr, const Username &mod_usr, 
-    const Password &mod_pwd = "", const Name &mod_name = "",
-    const MailAddr &mod_maddr = "", int mod_priv = -1 
+    const Password &mod_pwd, const Name &mod_name,
+    const MailAddr &mod_maddr, int mod_priv 
 ) {
     if(!online[cur_usr]) {
         throw user_error("current user does not exist or hasn't logged in");
@@ -124,7 +124,7 @@ int UserManager::modify_profile(
     }
     UserInfo mod_info;
     user.get(mod_usr, mod_info);
-    if(cur_info.pri <= mod_info.pri) {
+    if(cur_info.pri <= mod_info.pri || cur_info.pri <= mod_priv) {
         throw user_error("privilege not enough");
     }
     UserInfo info(
@@ -135,6 +135,10 @@ int UserManager::modify_profile(
     );
     user.insert(mod_usr, info);
     return 0;
+}
+
+int UserManager::is_online(const Username &user) {
+    return online[user];
 }
 
 int UserManager::clear() {

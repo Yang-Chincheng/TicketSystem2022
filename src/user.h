@@ -82,6 +82,8 @@ public:
         int mod_priv 
     );
 
+    int is_online(const Username &user);
+
     int clear();
 };
 

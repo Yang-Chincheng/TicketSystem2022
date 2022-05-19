@@ -9,8 +9,24 @@
 
 namespace ticket {
 
+// Manager
+class TrainManager;
+
+// Infomation Preserver
+struct LineInfo;
+struct TrainInfo;
+struct MetaData;
+struct PassTrain;
+
+// [New] Infomation Transmitter
+struct LinePack;
+struct TravelPack;
+using TransPack = pair<TravelPack, TravelPack>;
+struct TicketPack;
+
 const int max_stanum = 102;
 const int max_date = 100;
+const int max_pnum = 10000;
 
 struct LineInfo {
     int sta_num;
@@ -107,19 +123,44 @@ struct TravelPack: public InfoPack {
 
 };
 
-using TransPack = pair<TravelPack, TravelPack>;
-
-#ifndef _TICKET_INFO_PACK_
-#define _TICKET_INFO_PACK_
 struct TicketPack: public InfoPack {
+    int day, sidx, tidx;
     int price, seat;
-    TicketPack() = default;
-    TicketPack(int _price, int _seat): price(_price), seat(_seat) {}
-    TicketPack(const TicketPack &o) = default;
+    Time leave, arrive;
+};
+
+#ifndef _RECORD_PENDING_
+#define _RECORD_PENDING_
+struct PendInfo {
+    Username user; int idx;
+    int sidx, tidx, num;
+    bool mask;
+
+    PendInfo() = default;
+    PendInfo(const PendInfo &o) = default;
+    PendInfo(
+        const Username &_user,
+        int _idx,
+        int _sidx,
+        int _tidx,
+        int _num,
+        bool _mask
+    ): 
+    user(_user), idx(_idx), sidx(_sidx), tidx(_tidx), num(_num), mask(_mask) {}
+
+};
+struct PendPack: public InfoPack {
+    Username user; int idx;
+    int sidx, tidx, num;
+
+    PendPack() = default;
+    PendPack(const PendPack &o) = default;
+    PendPack(const PendInfo &info):
+    user(info.user), idx(info.idx), 
+    sidx(info.sidx), tidx(info.tidx), num(info.num) {}
+
 };
 #endif
-
-const int max_pnum = 10000;
 
 struct PassTrain {
     struct MetaData {
@@ -129,7 +170,7 @@ struct PassTrain {
         bptree<TrainID, TrainInfo>::iterator iter;
     };
     int pnum;
-    MetaData ptrain[max_pnum];
+    MetaData ptrain[max_pnum]; // 0-base
 };
 
 class TrainManager {
@@ -182,20 +223,23 @@ public:
         TransPack &pack
     );
 
-    int query_seat(
+    int check_ticket(
         const TrainID &id,
         const Date &date, 
         const Station &strt,
         const Station &term,
+        int num,
         TicketPack &pack
     );
 
-    int modify_seat(
+    int check_refund(
         const TrainID &id,
-        const Date &date, 
-        const Station &strt,
-        const Station &term,
-        int delta
+        int day, 
+        int sidx, 
+        int tidx, 
+        int num,
+        vector<PendPack> &pend, 
+        vector<int> &pack
     );
 
 };
