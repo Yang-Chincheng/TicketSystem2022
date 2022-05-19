@@ -327,15 +327,25 @@ int TrainManager::query_transfer(const Station &strt, const Station &term, const
 int TrainManager::check_ticket(const TrainID &id, const Date &date, const Station &st, const Station &tm, int num, TicketPack &pack) 
 {
     TrainInfo tr;
-    assert(train.get(id, tr));
+    if(!train.get(id, tr)) {
+        throw transaction_error("ticket not found");
+    }
     pack.sidx = tr.search_station(st);
-    assert(pack.sidx);
-    if(pack.sidx) pack.tidx = tr.search_station(tm, pack.sidx);
-    assert(pack.tidx);
+    if(!pack.sidx) {
+        throw transaction_error("ticket not found");
+    }
+    pack.tidx = tr.search_station(tm, pack.sidx);
+    if(!pack.tidx) {
+        throw transaction_error("ticket not found");
+    }
     Date st_date = tr.arrive_time(0, pack.sidx).date;
     Date ed_date = tr.arrive_time(-1, pack.sidx).date;
-    assert(date >= st_date && date <= ed_date);
+    if(date < st_date || date > ed_date) {
+        throw transaction_error("ticket not found");
+    }
     pack.day = date - st_date;
+    pack.leave = tr.leave_time(pack.day, pack.sidx);
+    pack.arrive = tr.arrive_time(pack.day, pack.tidx);
     pack.price = tr.total_price(pack.sidx, pack.tidx);
     pack.seat = tr.query_seat(pack.day, pack.sidx, pack.tidx);
     if(num <= pack.seat) {
