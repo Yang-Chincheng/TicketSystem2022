@@ -126,6 +126,7 @@ struct TravelPack: public InfoPack {
 struct TicketPack: public InfoPack {
     int day, sidx, tidx;
     int price, seat;
+    Time leave, arrive;
 };
 
 #ifndef _RECORD_PENDING_
