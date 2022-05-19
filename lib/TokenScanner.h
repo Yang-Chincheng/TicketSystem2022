@@ -25,11 +25,11 @@ public:
     }
 
     void Set_Spilt(char spilt_in){
-        pos_=0;
+        pos_= 0;
         spilt_=spilt_in;
     }
 
-    template<class T>
+    template<class T = std::string>
     T Next_Token() {
         std::string ans;
         while (buff_[pos_] == spilt_ && pos_ < length_)
@@ -47,7 +47,8 @@ public:
         pos_ = 0;
     }
 
-    bool End_() {
+    bool Is_End() {
+        if(pos_ == length_) return true;
         bool is_end = false;
         while (buff_[pos_] == spilt_) {
             pos_++;
@@ -58,6 +59,7 @@ public:
         }
         return is_end;
     }
+
 };
 template<>
 int TokenScanner::Next_Token<int>() {
@@ -72,8 +74,8 @@ int TokenScanner::Next_Token<int>() {
 }
 
 template<>
-unsigned long TokenScanner::Next_Token<unsigned long >() {
-    unsigned long  ans = 0;
+unsigned long TokenScanner::Next_Token<unsigned long> () {
+    unsigned long ans = 0;
     while (buff_[pos_] == spilt_ && pos_ < length_)
         pos_++;
     while (buff_[pos_] != spilt_ && pos_ < length_) {
