@@ -177,44 +177,7 @@ int TrainManager::query_train(const TrainID &id, const Date &date, LinePack &pac
     return 0;
 }
 
-struct ByTime {
-    // query_ticket: answer sorting
-    bool operator () (const TravelPack &lhs, const TravelPack &rhs) const {
-        int t1 = lhs.arri - lhs.leav;
-        int t2 = rhs.arri - rhs.leav;
-        if(t1 != t2) return t1 < t2;
-        return lhs.id < rhs.id;
-    }
-    // query_transfer: answer comparison
-    bool operator () (const TransPack &lhs, const TransPack &rhs) const {
-        int t1 = lhs.second.arri - lhs.first.leav;
-        int t2 = rhs.second.arri - lhs.first.leav;
-        if(t1 != t2) return t1 < t2;
-        t1 = lhs.first.arri - lhs.first.leav;
-        t2 = rhs.first.arri - rhs.first.leav;
-        if(t1 != t2) return t1 < t2;
-    }
-};
-
-struct ByPrice {
-    // query_ticket: answer sorting
-    bool operator () (const TravelPack &lhs, const TravelPack &rhs) const {
-        if(lhs.price != rhs.price) return lhs.price < rhs.price;
-        return lhs.id < rhs.id;
-    }
-    // query_transfer: answer comparison
-    bool operator () (const TransPack &lhs, const TransPack &rhs) const {
-        int p1 = lhs.first.price + lhs.second.price;
-        int p2 = rhs.first.price + rhs.second.price;
-        if(p1 != p2) return p1 < p2;
-        int t1 = lhs.first.arri - lhs.first.leav;
-        int t2 = rhs.first.arri - rhs.first.leav;
-        if(t1 != t2) return t1 < t2;
-    }    
-};
-
-template <typename Cmp>
-int TrainManager::query_ticket(const Station &strt, const Station &term, const Date &date, vector<TravelPack> &pack) {
+int TrainManager::query_ticket(const Station &strt, const Station &term, const Date &date, bool type, vector<TravelPack> &pack) {
     pack.clear();
     PassTrain ps;
     TrainInfo tr;
@@ -249,13 +212,12 @@ int TrainManager::query_ticket(const Station &strt, const Station &term, const D
         throw train_error("result not found");
     }
     // sort the answer
-    vector<TransPack> tmp; tmp.resize(pack.size());
-    mergesort<vector<TravelPack>, Cmp>(pack, 0, pack.size() - 1, tmp);
+    if(type) sort<TravelPack, ByPrice>(pack, 0, pack.size());
+    else sort<TravelPack, ByTime>(pack, 0, pack.size());
     return 0;
 }
 
-template <typename Cmp>
-int TrainManager::query_transfer(const Station &strt, const Station &term, const Date &date, TransPack &pack) {
+int TrainManager::query_transfer(const Station &strt, const Station &term, const Date &date, bool type, TransPack &pack) {
     bool tag = 0;
     PassTrain ps_s, ps_t;
     TrainInfo tr_s, tr_t;
@@ -287,7 +249,7 @@ int TrainManager::query_transfer(const Station &strt, const Station &term, const
                     if(!ex_idx) continue;
 
                     // check route [tr1: sidx -> ex_idx] -> [tr2: k -> tidx]
-                    Time arri_ex = tr_s.arrive(day_s, ex_idx);
+                    Time arri_ex = tr_s.arrive_time(day_s, ex_idx);
                     if(arri_ex <= tr_t.leave_time(-1, k)) {
                         int day_t = std::max(0, arri_ex.date - tr_t.leave_time(0, k).date);
                         int res_s = tr_s.query_seat(day_s, ptr_s->idx, ex_idx);
@@ -311,7 +273,10 @@ int TrainManager::query_transfer(const Station &strt, const Station &term, const
                                 res_t
                             )
                         );
-                        if(tag) pack = std::min(pack, cur, Cmp);
+                        if(tag) {
+                            if(type) cmin<TransPack, ByPrice>(pack, cur);
+                            else cmin<TransPack, ByTime>(pack, cur);
+                        }
                         else pack = cur, tag = 1;
                     }
                 }

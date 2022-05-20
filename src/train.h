@@ -173,6 +173,42 @@ struct PassTrain {
     MetaData ptrain[max_pnum]; // 0-base
 };
 
+struct ByTime {
+    // query_ticket: answer sorting
+    bool operator () (const TravelPack &lhs, const TravelPack &rhs) const {
+        int t1 = lhs.arri - lhs.leav;
+        int t2 = rhs.arri - rhs.leav;
+        if(t1 != t2) return t1 < t2;
+        return lhs.id < rhs.id;
+    }
+    // query_transfer: answer comparison
+    bool operator () (const TransPack &lhs, const TransPack &rhs) const {
+        int t1 = lhs.second.arri - lhs.first.leav;
+        int t2 = rhs.second.arri - lhs.first.leav;
+        if(t1 != t2) return t1 < t2;
+        t1 = lhs.first.arri - lhs.first.leav;
+        t2 = rhs.first.arri - rhs.first.leav;
+        if(t1 != t2) return t1 < t2;
+    }
+};
+
+struct ByPrice {
+    // query_ticket: answer sorting
+    bool operator () (const TravelPack &lhs, const TravelPack &rhs) const {
+        if(lhs.price != rhs.price) return lhs.price < rhs.price;
+        return lhs.id < rhs.id;
+    }
+    // query_transfer: answer comparison
+    bool operator () (const TransPack &lhs, const TransPack &rhs) const {
+        int p1 = lhs.first.price + lhs.second.price;
+        int p2 = rhs.first.price + rhs.second.price;
+        if(p1 != p2) return p1 < p2;
+        int t1 = lhs.first.arri - lhs.first.leav;
+        int t2 = rhs.first.arri - rhs.first.leav;
+        if(t1 != t2) return t1 < t2;
+    }    
+};
+
 class TrainManager {
 private:
     bptree<TrainID, TrainInfo> train;
@@ -207,19 +243,19 @@ public:
         LinePack &pack
     );
 
-    template <typename _Cmp>
     int query_ticket(
         const Station &strt,
         const Station &term,
         const Date &date,
+        bool type,
         vector<TravelPack> &pack
     );
 
-    template <typename _Cmp>
     int query_transfer(
         const Station &strt,
         const Station &term,
         const Date &date,
+        bool type,
         TransPack &pack
     );
 

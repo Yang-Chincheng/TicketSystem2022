@@ -78,25 +78,12 @@ pair<T, U> make_pair(const T &a, const U &b) {
  * 
  */
 
-template <typename T>
-struct traits {
-    using value_type = typename T::value_type;
-};
-
-template <typename T>
-struct traits <T*> {
-    using value_type = T;
-};
-
-template <
-    typename T, 
-    typename Cmp = std::less<typename traits<T>::value_type>
->
-void mergesort(T arr, int l, int r, T tmp) {
-    if(l >= r) return ;
+template <typename T, typename Cmp>
+void mergesort(T *arr, int l, int r, T *tmp) {
+    if(l == r) return ;
     int mid = (l + r) >> 1;
-    mergesort(arr, l, mid, tmp);
-    mergesort(arr, mid + 1, r, tmp);
+    mergesort<T, Cmp>(arr, l, mid, tmp);
+    mergesort<T, Cmp>(arr, mid + 1, r, tmp);
     int x = l, y = mid + 1, t = 0;
     while(x <= mid && y <= r) {
         tmp[t++] = (Cmp()(arr[x], arr[y])? arr[x++]: arr[y++]);
@@ -104,6 +91,23 @@ void mergesort(T arr, int l, int r, T tmp) {
     while(x <= mid) tmp[t++] = arr[x++];
     while(y <= r) tmp[t++] = arr[y++];
     for(int i = 0; i < t; ++i) arr[i + l] = tmp[i];
+}
+
+template <typename T, typename Cmp>
+void sort(T *arr, int l, int r) {
+    if(l == r) return ;
+    T *tmp = new T[r - l];
+    mergesort<T, Cmp>(arr, l, r - 1, tmp);
+    delete [] tmp;
+}
+
+template <typename T, typename Cmp>
+void cmin(T &a, const T &b) {
+    if(Cmp()(b, a)) a = b;
+}
+template <typename T, typename Cmp>
+void cmax(T &a, const T &b) {
+    if(Cmp()(a, b)) a = b;
 }
 
 // base of information pack classes 

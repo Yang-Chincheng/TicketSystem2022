@@ -317,6 +317,28 @@ public:
 	}
 };
 
+template <typename T, typename Cmp>
+void mergesort(vector<T> &arr, int l, int r, vector<T> &tmp) {
+    if(l == r) return ;
+    int mid = (l + r) >> 1;
+    mergesort<T, Cmp>(arr, l, mid, tmp);
+    mergesort<T, Cmp>(arr, mid + 1, r, tmp);
+    int x = l, y = mid + 1, t = 0;
+    while(x <= mid && y <= r) {
+        tmp[t++] = (Cmp()(arr[x], arr[y])? arr[x++]: arr[y++]);
+    }
+    while(x <= mid) tmp[t++] = arr[x++];
+    while(y <= r) tmp[t++] = arr[y++];
+    for(int i = 0; i < t; ++i) arr[i + l] = tmp[i];
+}
+
+template <typename T, typename Cmp>
+void sort(vector<T> &arr, int l, int r) {
+    if(l == r) return ;
+    vector<T> tmp; tmp.resize(r - l);
+    mergesort<T, Cmp>(arr, l, r - 1, tmp);
+}
+
 }
 
 #endif //SJTU_VECTOR_HPP
