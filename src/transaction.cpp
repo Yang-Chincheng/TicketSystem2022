@@ -17,86 +17,102 @@ std::ostream& operator << (std::ostream &os, const TraxPack &pack) {
     return os;
 }
 
+TraxManager::TraxID TraxManager::getTraxID(const Username &usr, int idx) {
+    return make_pair(usr, idx);
+}
+TraxManager::PendID TraxManager::getPendID(const TrainID &tr, int day, int idx) {
+    return make_pair(make_pair(tr, day), idx);
+}
+
 int TraxManager::append_record(const Username &usr, const Status &sta, const TrainID &id, const Station &st, const Station &tm, const Time &lv, const Time &ar, int num, int price, int day, int sidx, int tidx) 
 {
-    TraxList list;
-    if(!record.get(usr, list)) list.len = 0;
-    assert(list.len < max_rec);
-    list.seq[list.len++] = TraxInfo(sta, id, st, tm, lv, ar, num, day, price, sidx, tidx);
-    record.insert(usr, list);
-    return list.len;
+    int num;
+    if(!recnum.get(usr, num)) num = 0;
+    recnum.insert(usr, ++num);
+    TraxInfo rec(sta, id, st, tm, lv, ar, num, day, price, sidx, tidx);
+    record.insert(getTraxID(usr, num), rec);
+    return num;
 }
 
 int TraxManager::append_pending(const TrainID &id, int day, const Username &usr, int idx, int sidx, int tidx, int num)
 {
-    PendList list;
-    if(!pending.get(make_pair(id, day), list)) list.len = 0;
-    assert(list.len < max_pnd);
-    list.seq[list.len++] = PendInfo(usr, idx, sidx, tidx, num, 0);
-    pending.insert(make_pair(id, day), list);
-    return list.len;
+    int num;
+    if(!pendnum.get(make_pair(id, day), num)) num = 0;
+    pendnum.insert(make_pair(id, day), ++num);
+    PendInfo pend(usr, idx, sidx, tidx, num, 0);
+    pending.insert(getPendID(id, day, num), pend);
+    return num;
 }
 
 int TraxManager::pop_record(const Username &usr) {
-    TraxList list;
-    assert(record.get(usr, list));
-    assert(list.len > 0);
-    int ret = --list.len;
-    record.insert(usr, list);
-    return ret;
+    int num;
+    assert(recnum.get(usr, num));
+    assert(num > 0);
+    recnum.insert(usr, --num);
+    return num;
 }
 
 int TraxManager::pop_pending(const TrainID &id, int day) {
-    PendList list;
-    assert(pending.get(make_pair(id, day), list));
-    assert(list.len > 0);
-    int ret = --list.len;
-    pending.insert(make_pair(id, day), list);
-    return ret;
+    int num;
+    assert(pendnum.get(make_pair(id, day), num));
+    assert(num > 0);
+    pendnum.insert(make_pair(id, day), --num);
+    return num;
 }
 
+// idx: 0-base !!
 int TraxManager::query_record(const Username &usr, int idx, TraxPack &pack) {
-    TraxList list;
-    assert(record.get(usr, list));
-    assert(idx >= 0 && idx < list.len);
-    pack = TraxPack(list.seq[idx]);
+    int num;
+    if(!recnum.get(usr, num) || idx >= num) {
+        throw transaction_error("record not found");
+    }
+    TraxInfo rec;
+    record.get(getTraxID(usr, idx), rec);
+    pack = TraxPack(rec);
     return 0;
 }
 
 int TraxManager::query_record(const Username &usr, vector<TraxPack> &pack) {
-    TraxList list;
-    assert(record.get(usr, list));
+    int num;
+    if(!recnum.get(usr, num)) {
+        throw transaction_error("record not found");
+    }
+    TraxInfo rec;
     pack.clear();
-    for(int i = 0; i < list.len; ++i) pack.push_back(TraxPack(list.seq[i]));
+    for(int i = 0; i < num; ++i) {
+        assert(record.get(getTraxID(usr, i), rec));
+        pack.push_back(TraxPack(rec));
+    }
     return 0;
 }
 
 int TraxManager::query_pending(const TrainID &id, int day, vector<PendPack> &pack) {
-    PendList list;
-    assert(pending.get(make_pair(id, day), list));
+    int num;
+    assert(pendnum.get(make_pair(id, day), num));
+    PendInfo pend;
     pack.clear();
-    for(int i = 0; i < list.len; ++i) {
-        if(!list.seq[i].mask) pack.push_back(PendPack(list.seq[i]));
+    for(int i = 0; i < num; ++i) {
+        assert(pending.get(getPendID(id, day, i), pend));
+        if(!pend.mask) pack.push_back(PendPack(pend));
     }
     return 0;
 }
 
 int TraxManager::update_status(const Username &usr, int idx, const Status &new_sta) {
-    TraxList list;
-    assert(record.get(usr, list));
-    assert(idx >= 0 && idx < list.len);
-    list.seq[idx].status = new_sta;
+    TraxInfo rec;
+    assert(record.get(getTraxID(usr, idx), rec));
+    rec.status = new_sta;
+    record.insert(getTraxID(usr, idx), rec);
     return 0;
 }
 
 int TraxManager::flip_masking(const TrainID &id, int day, vector<int> idx) {
-    PendList list;
-    assert(pending.get(make_pair(id, day), list));
+    PendInfo pend;
     for(auto i: idx) {
-        assert(i >= 0 && i < list.len);
-        list.seq[i].mask ^= 1;
+        assert(pending.get(getPendID(id, day, i), pend));
+        pend.mask ^= 1;
+        pending.insert(getPendID(id, day, i), pend);
     }
-    pending.insert(make_pair(id, day), list);
     return 0;
 }
 
