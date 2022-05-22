@@ -186,9 +186,11 @@ struct ByTime {
         int t1 = lhs.second.arri - lhs.first.leav;
         int t2 = rhs.second.arri - lhs.first.leav;
         if(t1 != t2) return t1 < t2;
-        t1 = lhs.first.arri - lhs.first.leav;
-        t2 = rhs.first.arri - rhs.first.leav;
-        if(t1 != t2) return t1 < t2;
+        int p1 = lhs.first.price + lhs.second.price;
+        int p2 = rhs.first.price + rhs.second.price;
+        if(p1 != p2) return p1 < p2;
+        if(lhs.first.id != rhs.first.id) return lhs.first.id < rhs.first.id;
+        return lhs.second.id < rhs.second.id;
     }
 };
 
@@ -206,6 +208,8 @@ struct ByPrice {
         int t1 = lhs.first.arri - lhs.first.leav;
         int t2 = rhs.first.arri - rhs.first.leav;
         if(t1 != t2) return t1 < t2;
+        if(lhs.first.id != rhs.first.id) return lhs.first.id < rhs.first.id;
+        return lhs.second.id < rhs.second.id;
     }    
 };
 
