@@ -94,25 +94,25 @@ struct TraxPack: public TraxInfo, public InfoPack {
 
 };
 
-const int max_rec = 1e5;
-const int max_pnd = 1e5;
+using TraxID = pair<Username, int>;
+using PendID = pair<pair<TrainID, int>, int>;
 
-struct PendList {
-    int len;
-    PendInfo seq[max_pnd];
-};
-struct TraxList {
-    int len;
-    TraxInfo seq[max_rec];
-};
+inline TraxID getTraxID(const Username &usr, int idx) {
+    return make_pair(usr, idx);
+}
+inline PendID getPendID(const TrainID &id, int day, int idx) {
+    return make_pair(make_pair(id, day), idx);
+}
 
 class TraxManager {
 private:
-    bptree<Username, TraxList> record;
-    bptree<pair<TrainID, int>, PendList> pending;
+    bptree<Username, int> rnum;
+    bptree<pair<TrainID, int>, int> pnum;
+    bptree<TraxID, TraxInfo> record;
+    bptree<PendID, PendInfo> pending;
 
 public:
-    TraxManager(): record("record"), pending("pending") {}
+    TraxManager(): rnum("recordnum"), pnum("pendingnum"), record("record"), pending("pending") {}
     TraxManager(const TraxManager &o) = delete;
 
     int append_record(
@@ -183,6 +183,8 @@ public:
         int day,
         vector<int> idx
     );
+    
+    int clear();
     
 };
 

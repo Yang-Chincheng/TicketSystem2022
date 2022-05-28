@@ -12,6 +12,7 @@
 #include "exception.h"
 #include "time.h"
 #include "str.h"
+#include "TokenScanner.h"
 
 namespace ticket {
 
@@ -72,38 +73,50 @@ pair<T, U> make_pair(const T &a, const U &b) {
 }
 
 /**
- * @brief implementation of mergesort algorithm
+ * @brief implementation of sort function
  * 
  * a default constructor of element type is required
  * 
  */
 
-template <typename T>
-struct traits {
-    using value_type = typename T::value_type;
-};
-
-template <typename T>
-struct traits <T*> {
-    using value_type = T;
-};
-
-template <
-    typename T, 
-    typename Cmp = std::less<typename traits<T>::value_type>
->
-void mergesort(T arr, int l, int r, T tmp) {
-    if(l >= r) return ;
+template <typename T, typename Cmp>
+void mergesort(T *arr, int l, int r, T *tmp, Cmp comp) {
+    if(l == r) return ;
     int mid = (l + r) >> 1;
-    mergesort(arr, l, mid, tmp);
-    mergesort(arr, mid + 1, r, tmp);
+    mergesort(arr, l, mid, tmp, comp);
+    mergesort(arr, mid + 1, r, tmp, comp);
     int x = l, y = mid + 1, t = 0;
     while(x <= mid && y <= r) {
-        tmp[t++] = (Cmp()(arr[x], arr[y])? arr[x++]: arr[y++]);
+        tmp[t++] = comp(arr[x], arr[y])? arr[x++]: arr[y++];
     }
     while(x <= mid) tmp[t++] = arr[x++];
     while(y <= r) tmp[t++] = arr[y++];
     for(int i = 0; i < t; ++i) arr[i + l] = tmp[i];
+}
+
+template <typename T, typename Cmp>
+void sort(T *arr, int l, int r) {
+    if(r >= l) return ;
+    T *tmp = new T [r - l]; Cmp comp;
+    mergesort(arr, l, r - 1, tmp, comp);
+    delete [] tmp;
+}
+
+/**
+ * @brief implementation of cmin & cmax functions
+ * 
+ */
+
+template <typename T, typename Cmp>
+T& cmin(T& lhs, const T &rhs) {
+    if(Cmp()(rhs, lhs)) lhs = rhs;
+    return lhs;  
+}
+
+template <typename T, typename Cmp>
+T& cmax(T& lhs, const T &rhs) {
+    if(Cmp()(lhs, rhs)) lhs = rhs;
+    return lhs;
 }
 
 // base of information pack classes 
