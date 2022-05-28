@@ -12,6 +12,7 @@
 #include "exception.h"
 #include "time.h"
 #include "str.h"
+#include "TokenScanner.h"
 
 namespace ticket {
 
@@ -72,21 +73,21 @@ pair<T, U> make_pair(const T &a, const U &b) {
 }
 
 /**
- * @brief implementation of mergesort algorithm
+ * @brief implementation of sort function
  * 
  * a default constructor of element type is required
  * 
  */
 
 template <typename T, typename Cmp>
-void mergesort(T *arr, int l, int r, T *tmp) {
+void mergesort(T *arr, int l, int r, T *tmp, Cmp comp) {
     if(l == r) return ;
     int mid = (l + r) >> 1;
-    mergesort<T, Cmp>(arr, l, mid, tmp);
-    mergesort<T, Cmp>(arr, mid + 1, r, tmp);
+    mergesort(arr, l, mid, tmp, comp);
+    mergesort(arr, mid + 1, r, tmp, comp);
     int x = l, y = mid + 1, t = 0;
     while(x <= mid && y <= r) {
-        tmp[t++] = (Cmp()(arr[x], arr[y])? arr[x++]: arr[y++]);
+        tmp[t++] = comp(arr[x], arr[y])? arr[x++]: arr[y++];
     }
     while(x <= mid) tmp[t++] = arr[x++];
     while(y <= r) tmp[t++] = arr[y++];
@@ -95,19 +96,27 @@ void mergesort(T *arr, int l, int r, T *tmp) {
 
 template <typename T, typename Cmp>
 void sort(T *arr, int l, int r) {
-    if(l == r) return ;
-    T *tmp = new T[r - l];
-    mergesort<T, Cmp>(arr, l, r - 1, tmp);
+    if(r >= l) return ;
+    T *tmp = new T [r - l]; Cmp comp;
+    mergesort(arr, l, r - 1, tmp, comp);
     delete [] tmp;
 }
 
+/**
+ * @brief implementation of cmin & cmax functions
+ * 
+ */
+
 template <typename T, typename Cmp>
-void cmin(T &a, const T &b) {
-    if(Cmp()(b, a)) a = b;
+T& cmin(T& lhs, const T &rhs) {
+    if(Cmp()(rhs, lhs)) lhs = rhs;
+    return lhs;  
 }
+
 template <typename T, typename Cmp>
-void cmax(T &a, const T &b) {
-    if(Cmp()(a, b)) a = b;
+T& cmax(T& lhs, const T &rhs) {
+    if(Cmp()(lhs, rhs)) lhs = rhs;
+    return lhs;
 }
 
 // base of information pack classes 
