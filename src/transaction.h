@@ -94,6 +94,7 @@ struct TraxPack: public TraxInfo, public InfoPack {
 
 };
 
+<<<<<<< HEAD
 using TraxID = pair<Username, int>;
 using PendID = pair<pair<TrainID, int>, int>;
 
@@ -113,6 +114,35 @@ private:
 
 public:
     TraxManager(): rnum("recordnum"), pnum("pendingnum"), record("record"), pending("pending") {}
+=======
+// const int max_rec = 1e5;
+// const int max_pnd = 1e5;
+
+// struct PendList {
+//     int len;
+//     PendInfo seq[max_pnd];
+// };
+// struct TraxList {
+//     int len;
+//     TraxInfo seq[max_rec];
+// };
+
+class TraxManager {
+private:
+    using TraxID = pair<Username, int>;
+    using PendID = pair<pair<TrainID, int>, int>;
+    bptree<TraxID, TraxInfo> record;
+    bptree<PendID, PendInfo> pending;
+    bptree<Username, int> recnum;
+    bptree<pair<TrainID, int>, int> pendnum;
+
+private:
+    TraxID getTraxID(const Username &usr, int idx);
+    PendID getPendID(const TrainID &tr, int day, int idx);
+
+public:
+    TraxManager(): record("record"), pending("pending"), recnum("recnum"), pendnum("pendnum") {}
+>>>>>>> feat-trax
     TraxManager(const TraxManager &o) = delete;
 
     int append_record(

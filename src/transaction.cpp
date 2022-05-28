@@ -17,6 +17,13 @@ std::ostream& operator << (std::ostream &os, const TraxPack &pack) {
     return os;
 }
 
+TraxManager::TraxID TraxManager::getTraxID(const Username &usr, int idx) {
+    return make_pair(usr, idx);
+}
+TraxManager::PendID TraxManager::getPendID(const TrainID &tr, int day, int idx) {
+    return make_pair(make_pair(tr, day), idx);
+}
+
 int TraxManager::append_record(const Username &usr, const Status &sta, const TrainID &id, const Station &st, const Station &tm, const Time &lv, const Time &ar, int num, int price, int day, int sidx, int tidx) 
 {
     int num;
@@ -59,8 +66,15 @@ int TraxManager::pop_pending(const TrainID &id, int day) {
     return num;
 }
 
+// idx: 0-base !!
 int TraxManager::query_record(const Username &usr, int idx, TraxPack &pack) {
-    assert(record.get(getTraxID(usr, idx), pack));
+    int num;
+    if(!recnum.get(usr, num) || idx >= num) {
+        throw transaction_error("record not found");
+    }
+    TraxInfo rec;
+    record.get(getTraxID(usr, idx), rec);
+    pack = TraxPack(rec);
     return 0;
 }
 
