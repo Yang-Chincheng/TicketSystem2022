@@ -213,46 +213,6 @@ struct PassTrain {
     MetaData ptrain[max_pnum]; // 0-base
 };
 
-struct ByTime {
-    // query_ticket: answer sorting
-    bool operator () (const TravelPack &lhs, const TravelPack &rhs) const {
-        int t1 = lhs.arri - lhs.leav;
-        int t2 = rhs.arri - rhs.leav;
-        if(t1 != t2) return t1 < t2;
-        return lhs.id < rhs.id;
-    }
-    // query_transfer: answer comparison
-    bool operator () (const TransPack &lhs, const TransPack &rhs) const {
-        int t1 = lhs.second.arri - lhs.first.leav;
-        int t2 = rhs.second.arri - lhs.first.leav;
-        if(t1 != t2) return t1 < t2;
-        int p1 = lhs.first.price + lhs.second.price;
-        int p2 = rhs.first.price + rhs.second.price;
-        if(p1 != p2) return p1 < p2;
-        if(lhs.first.id != rhs.first.id) return lhs.first.id < rhs.first.id;
-        return lhs.second.id < rhs.second.id;
-    }
-};
-
-struct ByPrice {
-    // query_ticket: answer sorting
-    bool operator () (const TravelPack &lhs, const TravelPack &rhs) const {
-        if(lhs.price != rhs.price) return lhs.price < rhs.price;
-        return lhs.id < rhs.id;
-    }
-    // query_transfer: answer comparison
-    bool operator () (const TransPack &lhs, const TransPack &rhs) const {
-        int p1 = lhs.first.price + lhs.second.price;
-        int p2 = rhs.first.price + rhs.second.price;
-        if(p1 != p2) return p1 < p2;
-        int t1 = lhs.first.arri - lhs.first.leav;
-        int t2 = rhs.first.arri - rhs.first.leav;
-        if(t1 != t2) return t1 < t2;
-        if(lhs.first.id != rhs.first.id) return lhs.first.id < rhs.first.id;
-        return lhs.second.id < rhs.second.id;
-    }    
-};
-
 class TrainManager {
 private:
     bptree<TrainID, TrainInfo> train;
