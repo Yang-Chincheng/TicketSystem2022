@@ -88,53 +88,6 @@ private:
         ~Node_() {
         }
 
-//        void Add(key_address_pair data_in) {
-//            // 本层不考虑裂块
-//            int left = 0;
-//            int right = elements_num - 1;
-//            int mid, pos;
-//            while (left <= right) {
-//                mid = (left + right) / 2;
-//                if (data[mid] == data_in)
-//                    throw std::string("Error: Already in this tree.");
-//                if (data[mid] > data_in)
-//                    right = mid - 1;
-//                else
-//                    left = mid + 1;
-//            }
-//            pos = left;
-//            for (int i = elements_num; i > pos; i--) {
-//                data[i] = data[i - 1];
-//            }
-//            data[pos] = data_in;
-//            elements_num++;
-//        }
-
-
-//        void Delete(key_type key_in) {
-//            // 本层不考虑并块
-//            int left = 0;
-//            int right = elements_num - 1;
-//            int mid, pos;
-//            bool if_find = false;
-//            while (left <= right && !if_find) {
-//                mid = (left + right) / 2;
-//                if (data[mid].key == key_in)
-//                    if_find = true;
-//                else if (data[mid].key > key_in)
-//                    right = mid - 1;
-//                else
-//                    left = mid + 1;
-//            }
-//            if (!if_find)
-//                throw std::string("Error: Don't contain in this tree.");
-//            pos = mid;
-//            for (int i = pos; i < elements_num - 1; i++) {
-//                data[i] = data[i + 1];
-//            }
-//            elements_num--;
-//        }
-
         key_address_pair &operator[](int num_in) {
             if (num_in < 0 && num_in >= elements_num)
                 throw std::string("Error: Out of range.");
@@ -246,249 +199,6 @@ public:
         return height_;
     }
 
-    bool Search(key_type key_in) {
-        Node_ object_node= FindObjectNode_(key_in);
-//        index_.seekg(k_head_preserved + sizeof(Node_) * root_.my_num);
-//        index_.read(reinterpret_cast<char *>(&object_node), sizeof(Node_));
-//        while (!object_node.if_leaf) {
-//            // 找到叶节点
-//            int l, r, mid;
-//            l = 0;
-//            r = object_node.elements_num - 2;
-//            while (l <= r) {
-//                mid = (l + r) / 2;
-//                if (object_node.data[mid].key > key_in)
-//                    r = mid - 1;
-//                else
-//                    l = mid + 1;
-//            }
-//            int pos = l;
-//            index_.seekg(k_head_preserved + sizeof(Node_) * object_node.data[pos].address);
-//            index_.read(reinterpret_cast<char *>(&object_node), sizeof(Node_));
-//        }
-        // 找到节点内是否有对应的
-        int l, r, mid;
-        l = 0;
-        r = object_node.elements_num - 1;
-        bool find = false;
-        while (!find && l <= r) {
-            mid = (l + r) / 2;
-            if (object_node.data[mid].key == key_in)
-                find = true;
-            if (object_node.data[mid].key > key_in)
-                r = mid - 1;
-            else
-                l = mid + 1;
-        }
-        return find;
-    }
-
-    bool Get(key_type key_in, value_type &value_in) {
-        Node_ object_node= FindObjectNode_(key_in);
-//        index_.seekg(k_head_preserved + sizeof(Node_) * root_.my_num);
-//        index_.read(reinterpret_cast<char *>(&object_node), sizeof(Node_));
-//        while (!object_node.if_leaf) {
-//            // 找到叶节点
-//            int l, r, mid;
-//            l = 0;
-//            r = object_node.elements_num - 2;
-//            while (l <= r) {
-//                mid = (l + r) / 2;
-//                if (object_node.data[mid].key > key_in)
-//                    r = mid - 1;
-//                else
-//                    l = mid + 1;
-//            }
-//            int pos = l;
-//            index_.seekg(k_head_preserved + sizeof(Node_) * object_node.data[pos].address);
-//            index_.read(reinterpret_cast<char *>(&object_node), sizeof(Node_));
-//        }
-        // 找到节点内是否有对应的
-        int l, r, mid, pos;
-        l = 0;
-        r = object_node.elements_num - 1;
-        bool find = false;
-        while (!find && l <= r) {
-            mid = (l + r) / 2;
-            if (object_node.data[mid].key == key_in)
-                find = true, pos = mid;
-            if (object_node.data[mid].key > key_in)
-                r = mid - 1;
-            else
-                l = mid + 1;
-        }
-        if (find) {
-            data_.seekg(sizeof(value_type) * object_node.data[pos].address);
-            data_.read(reinterpret_cast<char *>(&value_in), sizeof(value_type));
-        }
-        return find;
-    }
-
-    void Insert(key_type key_in, value_type value_in) {
-        Node_ object_node= FindObjectNode_(key_in);
-//        index_.seekg(k_head_preserved + sizeof(Node_) * root_.my_num);
-//        index_.read(reinterpret_cast<char *>(&object_node), sizeof(Node_));
-//        while (!object_node.if_leaf) {
-//            // 找到叶节点
-//            int l, r, mid;
-//            l = 0;
-//            r = object_node.elements_num - 2;
-//            while (l <= r) {
-//                mid = (l + r) / 2;
-//                if (object_node.data[mid].key > key_in)
-//                    r = mid - 1;
-//                else
-//                    l = mid + 1;
-//            }
-//            int pos = l;
-//            index_.seekg(k_head_preserved + sizeof(Node_) * object_node.data[pos].address);
-//            index_.read(reinterpret_cast<char *>(&object_node), sizeof(Node_));
-//        }
-        // 找到节点内的对应位置进行插入
-        int l, r, mid, pos;
-        l = 0;
-        r = object_node.elements_num - 1;
-        while (l <= r) {
-            mid = (l + r) / 2;
-            if (object_node.data[mid].key == key_in)
-                throw std::string("Error: Element already in this tree.");
-            if (object_node.data[mid].key > key_in)
-                r = mid - 1;
-            else
-                l = mid + 1;
-        }
-        pos = l;
-        for (int i = object_node.elements_num; i > pos; i--)
-            object_node.data[i] = object_node.data[i - 1];
-        object_node.data[pos].key = key_in;
-        if (data_memory_pool_.Empty()) {
-            object_node.data[pos].address = data_num_;
-            data_num_++;
-        } else {
-            object_node.data[pos].address = data_memory_pool_.GetBack();
-        }
-        object_node.elements_num++;
-        record_num_++;
-        // 向外存进行记入
-        data_.seekp(sizeof(value_type) * object_node.data[pos].address);
-        data_.write(reinterpret_cast<char *>(&value_in), sizeof(value_type));
-        index_.seekp(k_head_preserved + sizeof(Node_) * object_node.my_num);
-        index_.write(reinterpret_cast<char *>(&object_node), sizeof(Node_));
-        // 检查是否需要裂块
-        if (object_node.elements_num >= k_max_size)
-            BreakNode_(object_node);
-        if (object_node == root_)
-            root_ = object_node;
-    }
-
-    void Set(key_type key_in, value_type value_in) {
-        Node_ object_node= FindObjectNode_(key_in);
-//        index_.seekg(k_head_preserved + sizeof(Node_) * root_.my_num);
-//        index_.read(reinterpret_cast<char *>(&object_node), sizeof(Node_));
-//        while (!object_node.if_leaf) {
-//            // 找到叶节点
-//            int l, r, mid;
-//            l = 0;
-//            r = object_node.elements_num - 2;
-//            while (l <= r) {
-//                mid = (l + r) / 2;
-//                if (object_node.data[mid].key > key_in)
-//                    r = mid - 1;
-//                else
-//                    l = mid + 1;
-//            }
-//            int pos = l;
-//            index_.seekg(k_head_preserved + sizeof(Node_) * object_node.data[pos].address);
-//            index_.read(reinterpret_cast<char *>(&object_node), sizeof(Node_));
-//        }
-        int l, r, mid, pos;
-        l = 0;
-        r = object_node.elements_num - 1;
-        bool find = false;
-        while (!find && l <= r) {
-            mid = (l + r) / 2;
-            if (object_node.data[mid].key == key_in)
-                find = true, pos = mid;
-            if (object_node.data[mid].key > key_in)
-                r = mid - 1;
-            else
-                l = mid + 1;
-        }
-        if(!find){
-            Insert(key_in,value_in);
-            return;
-        }
-        data_.seekp(sizeof(value_type) * object_node.data[pos].address);
-        data_.write(reinterpret_cast<char *>(&value_in), sizeof(value_type));
-    }
-
-    void Delete(key_type key_in, value_type value_in) {
-        Delete(key_in);
-    }
-
-    void Delete(key_type key_in) {
-        Node_ object_node= FindObjectNode_(key_in);
-//        index_.seekg(k_head_preserved + sizeof(Node_) * root_.my_num);
-//        index_.read(reinterpret_cast<char *>(&object_node), sizeof(Node_));
-//        while (!object_node.if_leaf) {
-//            // 找到叶节点
-//            int l, r, mid;
-//            l = 0;
-//            r = object_node.elements_num - 2;
-//            while (l <= r) {
-//                mid = (l + r) / 2;
-//                if (object_node.data[mid].key > key_in)
-//                    r = mid - 1;
-//                else
-//                    l = mid + 1;
-//            }
-//            int pos = l;
-//            index_.seekg(k_head_preserved + sizeof(Node_) * object_node.data[pos].address);
-//            index_.read(reinterpret_cast<char *>(&object_node), sizeof(Node_));
-//        }
-        // 找到节点内的对应项进行删除
-        int l, r, mid, pos;
-        bool if_find = false;
-        l = 0;
-        r = object_node.elements_num - 1;
-        while (l <= r && !if_find) {
-            mid = (l + r) / 2;
-            if (object_node.data[mid].key == key_in) {
-                pos = mid;
-                if_find = true;
-            } else if (object_node.data[mid].key > key_in)
-                r = mid - 1;
-            else
-                l = mid + 1;
-        }
-        if (!if_find)
-            throw std::string("Error: Deleted a non-existent object.");
-        int deleted_pos = object_node.data[pos].address;// 删除的内容在data_中的位置
-        for (int i = pos; i < object_node.elements_num - 1; i++)
-            object_node.data[i] = object_node.data[i + 1];
-        object_node.elements_num--;
-        record_num_--;
-        if (pos == 0 && object_node.parent_num != -1)
-            DeleteFix_(object_node.parent_num, key_in, object_node.data[0].key);
-        // 实现外存回收
-        data_memory_pool_.Add(deleted_pos);
-        // 向外存进行记入
-        index_.seekp(k_head_preserved + sizeof(Node_) * object_node.my_num);
-        index_.write(reinterpret_cast<char *>(&object_node), sizeof(Node_));
-        // 检查是否需要并块
-        if (object_node.elements_num <= k_min_size) {
-            MergeNode_(object_node);
-        }
-        if (object_node == root_)
-            root_ = object_node;
-    }
-
-    void InputInArray(key_type *key_array_in, value_type *value_array_in, int length) {
-        for (int i = 0; i < length; i++) {
-            Insert(key_array_in[i], value_array_in[i]);
-        }
-    }
-
     class Iterator {
     private:
         BPTree<key_type, value_type> *tree_;
@@ -506,7 +216,14 @@ public:
             position_ = rhs.position_;
         }
 
+        Iterator(BPTree<key_type, value_type> *tree_in, const Node_ &node_in, int pos_in) {
+            tree_ = tree_in;
+            object_node_ = node_in;
+            position_ = pos_in;
+        }
+
         Iterator(BPTree<key_type, value_type> *tree_in, bool if_begin) {
+            tree_ = tree_in;
             if (tree_in->record_num_ != 0) {
                 if (if_begin) {
                     object_node_ = tree_in->GetFirstNode_();
@@ -555,7 +272,17 @@ public:
             return object_node_.data[position_].key >= rhs.object_node_.data[rhs.position_].key;
         }
 
-        const value_type &operator*() {
+        const value_type operator*() {
+            // 无法引用
+            if (position_ < 0 || position_ >= object_node_.elements_num)
+                throw std::string("Error: Invalid Iterator operation.");
+            value_type ans;
+            tree_->data_.seekg(sizeof(value_type) * object_node_.data[position_].address);
+            tree_->data_.read(reinterpret_cast<char *>(&ans), sizeof(value_type));
+            return ans;
+        }
+
+        const value_type Value() {
             // 无法引用
             if (position_ < 0 || position_ >= object_node_.elements_num)
                 throw std::string("Error: Invalid Iterator operation.");
@@ -625,6 +352,163 @@ public:
         Iterator ans(this, false);
         return ans;
     }
+
+    std::pair<Iterator, bool> Search(key_type key_in) {
+        Node_ object_node = FindObjectNode_(key_in);
+        // 找到节点内是否有对应的
+        int l, r, mid, pos;
+        l = 0;
+        r = object_node.elements_num - 1;
+        bool find = false;
+        while (!find && l <= r) {
+            mid = (l + r) / 2;
+            if (object_node.data[mid].key == key_in)
+                find = true, pos = mid;
+            if (object_node.data[mid].key > key_in)
+                r = mid - 1;
+            else
+                l = mid + 1;
+        }
+        if (find) {
+            return std::pair<Iterator, bool>(Iterator(this, object_node, pos), find);
+        } else
+            return std::pair<Iterator, bool>(this->End(), find);
+    }
+
+    bool Get(key_type key_in, value_type &value_in) {
+        Node_ object_node = FindObjectNode_(key_in);
+        // 找到节点内是否有对应的
+        int l, r, mid, pos;
+        l = 0;
+        r = object_node.elements_num - 1;
+        bool find = false;
+        while (!find && l <= r) {
+            mid = (l + r) / 2;
+            if (object_node.data[mid].key == key_in)
+                find = true, pos = mid;
+            if (object_node.data[mid].key > key_in)
+                r = mid - 1;
+            else
+                l = mid + 1;
+        }
+        if (find) {
+            data_.seekg(sizeof(value_type) * object_node.data[pos].address);
+            data_.read(reinterpret_cast<char *>(&value_in), sizeof(value_type));
+        }
+        return find;
+    }
+
+    void Insert(key_type key_in, value_type value_in) {
+        Node_ object_node = FindObjectNode_(key_in);
+        // 找到节点内的对应位置进行插入
+        int l, r, mid, pos;
+        l = 0;
+        r = object_node.elements_num - 1;
+        while (l <= r) {
+            mid = (l + r) / 2;
+            if (object_node.data[mid].key == key_in)
+                throw std::string("Error: Element already in this tree.");
+            if (object_node.data[mid].key > key_in)
+                r = mid - 1;
+            else
+                l = mid + 1;
+        }
+        pos = l;
+        for (int i = object_node.elements_num; i > pos; i--)
+            object_node.data[i] = object_node.data[i - 1];
+        object_node.data[pos].key = key_in;
+        if (data_memory_pool_.Empty()) {
+            object_node.data[pos].address = data_num_;
+            data_num_++;
+        } else {
+            object_node.data[pos].address = data_memory_pool_.GetBack();
+        }
+        object_node.elements_num++;
+        record_num_++;
+        // 向外存进行记入
+        data_.seekp(sizeof(value_type) * object_node.data[pos].address);
+        data_.write(reinterpret_cast<char *>(&value_in), sizeof(value_type));
+        index_.seekp(k_head_preserved + sizeof(Node_) * object_node.my_num);
+        index_.write(reinterpret_cast<char *>(&object_node), sizeof(Node_));
+        // 检查是否需要裂块
+        if (object_node.elements_num >= k_max_size)
+            BreakNode_(object_node);
+        if (object_node == root_)
+            root_ = object_node;
+    }
+
+    void Set(key_type key_in, value_type value_in) {
+        Node_ object_node = FindObjectNode_(key_in);
+        int l, r, mid, pos;
+        l = 0;
+        r = object_node.elements_num - 1;
+        bool find = false;
+        while (!find && l <= r) {
+            mid = (l + r) / 2;
+            if (object_node.data[mid].key == key_in)
+                find = true, pos = mid;
+            if (object_node.data[mid].key > key_in)
+                r = mid - 1;
+            else
+                l = mid + 1;
+        }
+        if (!find) {
+            Insert(key_in, value_in);
+            return;
+        }
+        data_.seekp(sizeof(value_type) * object_node.data[pos].address);
+        data_.write(reinterpret_cast<char *>(&value_in), sizeof(value_type));
+    }
+
+    void Delete(key_type key_in, value_type value_in) {
+        Delete(key_in);
+    }
+
+    void Delete(key_type key_in) {
+        Node_ object_node = FindObjectNode_(key_in);
+        // 找到节点内的对应项进行删除
+        int l, r, mid, pos;
+        bool if_find = false;
+        l = 0;
+        r = object_node.elements_num - 1;
+        while (l <= r && !if_find) {
+            mid = (l + r) / 2;
+            if (object_node.data[mid].key == key_in) {
+                pos = mid;
+                if_find = true;
+            } else if (object_node.data[mid].key > key_in)
+                r = mid - 1;
+            else
+                l = mid + 1;
+        }
+        if (!if_find)
+            throw std::string("Error: Deleted a non-existent object.");
+        int deleted_pos = object_node.data[pos].address;// 删除的内容在data_中的位置
+        for (int i = pos; i < object_node.elements_num - 1; i++)
+            object_node.data[i] = object_node.data[i + 1];
+        object_node.elements_num--;
+        record_num_--;
+        if (pos == 0 && object_node.parent_num != -1)
+            DeleteFix_(object_node.parent_num, key_in, object_node.data[0].key);
+        // 实现外存回收
+        data_memory_pool_.Add(deleted_pos);
+        // 向外存进行记入
+        index_.seekp(k_head_preserved + sizeof(Node_) * object_node.my_num);
+        index_.write(reinterpret_cast<char *>(&object_node), sizeof(Node_));
+        // 检查是否需要并块
+        if (object_node.elements_num <= k_min_size) {
+            MergeNode_(object_node);
+        }
+        if (object_node == root_)
+            root_ = object_node;
+    }
+
+    void InputInArray(key_type *key_array_in, value_type *value_array_in, int length) {
+        for (int i = 0; i < length; i++) {
+            Insert(key_array_in[i], value_array_in[i]);
+        }
+    }
+
 
     void PrintInArray() {
         Iterator object = Begin();
@@ -956,7 +840,7 @@ private:
 
     Node_ GetFirstNode_() {
         Node_ object_node;
-        index_.seekg(k_head_preserved);
+        index_.seekg(k_head_preserved + sizeof(Node_) * root_num_);
         index_.read(reinterpret_cast<char *>(&object_node), sizeof(Node_));
         while (!object_node.if_leaf) {
             index_.seekg(k_head_preserved + sizeof(Node_) * object_node.data[0].address);
@@ -967,7 +851,7 @@ private:
 
     Node_ GetLastNode_() {
         Node_ object_node;
-        index_.seekg(k_head_preserved);
+        index_.seekg(k_head_preserved + sizeof(Node_) * root_num_);
         index_.read(reinterpret_cast<char *>(&object_node), sizeof(Node_));
         while (!object_node.if_leaf) {
             index_.seekg(k_head_preserved + sizeof(Node_) * object_node.data[object_node.elements_num - 1].address);
