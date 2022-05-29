@@ -38,8 +38,8 @@ public:
     }
     template <size_t maxl>
     Str(const Str<maxl> &_str) {
-        assert(_str.len <= maxlen);
-        len = _str.len;
+        assert(_str.length() <= maxlen);
+        len = _str.length();
         memcpy(str, _str.c_str(), len * sizeof(char));
         str[len] = '\0';
     }

@@ -71,8 +71,8 @@ private:
 		__iter& operator += (const difference_type &_n) {_cur += _n; return *this; }
 		__iter& operator -= (const difference_type &_n) {_cur -= _n; return *this; }
 	
-		__iter  operator ++ (int) {return _iter(_cur++, _con); }
-		__iter  operator -- (int) {return _iter(_cur--, _con); }
+		__iter  operator ++ (int) {return __iter(_cur++, _con); }
+		__iter  operator -- (int) {return __iter(_cur--, _con); }
 		__iter& operator ++ () {++_cur; return *this; }
 		__iter& operator -- () {--_cur; return *this; }
 		

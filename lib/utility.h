@@ -31,41 +31,40 @@ struct pair {
     pair(const pair<_U1, _U2> &o): first(o.first), second(o.second) {}
     ~pair() = default;
 
-    template <typename _u1, typename _u2, typename _v1, typename _v2>
-    friend bool operator < (const pair<_u1, _u2> &lhs, const pair<_v1, _v2> &rhs) {
-        if(lhs.first < rhs.first) return 1;
-        if(rhs.first < lhs.first) return 0;
-        return lhs.second < rhs.second;
-    }
-    template <typename _u1, typename _u2, typename _v1, typename _v2>
-    friend bool operator > (const pair<_u1, _u2> &lhs, const pair<_v1, _v2> &rhs) {
-        if(lhs.first < rhs.first) return 0;
-        if(rhs.first < lhs.first) return 1;
-        return rhs.second < lhs.second;
-    }
-    template <typename _u1, typename _u2, typename _v1, typename _v2>
-    friend bool operator <= (const pair<_u1, _u2> &lhs, const pair<_v1, _v2> &rhs) {
-        if(lhs.first < rhs.first) return 1;
-        if(rhs.first < lhs.first) return 0;
-        return !(rhs.second < lhs.second);
-    }
-    template <typename _u1, typename _u2, typename _v1, typename _v2>
-    friend bool operator >= (const pair<_u1, _u2> &lhs, const pair<_v1, _v2> &rhs) {
-        if(lhs.first < rhs.first) return 0;
-        if(rhs.first < lhs.first) return 1;
-        return !(lhs.second < rhs.second);
-    }
-    template <typename _u1, typename _u2, typename _v1, typename _v2>
-    friend bool operator == (const pair<_u1, _u2> &lhs, const pair<_v1, _v2> &rhs) {
-        return lhs.first == rhs.first && lhs.second == rhs.second;
-    }
-    template <typename _u1, typename _u2, typename _v1, typename _v2>
-    friend bool operator != (const pair<_u1, _u2> &lhs, const pair<_v1, _v2> &rhs) {
-        return !(lhs.first == rhs.first && lhs.second == rhs.second);
-    }
-
-
 };
+
+template <typename _u1, typename _u2, typename _v1, typename _v2>
+bool operator < (const pair<_u1, _u2> &lhs, const pair<_v1, _v2> &rhs) {
+    if(lhs.first < rhs.first) return 1;
+    if(rhs.first < lhs.first) return 0;
+    return lhs.second < rhs.second;
+}
+template <typename _u1, typename _u2, typename _v1, typename _v2>
+bool operator > (const pair<_u1, _u2> &lhs, const pair<_v1, _v2> &rhs) {
+    if(lhs.first < rhs.first) return 0;
+    if(rhs.first < lhs.first) return 1;
+    return rhs.second < lhs.second;
+}
+template <typename _u1, typename _u2, typename _v1, typename _v2>
+bool operator <= (const pair<_u1, _u2> &lhs, const pair<_v1, _v2> &rhs) {
+    if(lhs.first < rhs.first) return 1;
+    if(rhs.first < lhs.first) return 0;
+    return !(rhs.second < lhs.second);
+}
+template <typename _u1, typename _u2, typename _v1, typename _v2>
+bool operator >= (const pair<_u1, _u2> &lhs, const pair<_v1, _v2> &rhs) {
+    if(lhs.first < rhs.first) return 0;
+    if(rhs.first < lhs.first) return 1;
+    return !(lhs.second < rhs.second);
+}
+template <typename _u1, typename _u2, typename _v1, typename _v2>
+bool operator == (const pair<_u1, _u2> &lhs, const pair<_v1, _v2> &rhs) {
+    return lhs.first == rhs.first && lhs.second == rhs.second;
+}
+template <typename _u1, typename _u2, typename _v1, typename _v2>
+bool operator != (const pair<_u1, _u2> &lhs, const pair<_v1, _v2> &rhs) {
+    return !(lhs.first == rhs.first && lhs.second == rhs.second);
+}
 
 template <typename T, typename U>
 pair<T, U> make_pair(const T &a, const U &b) {

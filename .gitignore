@@ -1,8 +1,13 @@
 # Folders
 test/
 .vscode/
+CMakeFiles/
 
 # Files
+*.cmake
+CMakeCache.txt
+code
+MakeFile
 
 # Prerequisites
 *.d

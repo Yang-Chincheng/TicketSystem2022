@@ -62,7 +62,7 @@ public:
 
 };
 template<>
-int TokenScanner::Next_Token<int>() {
+inline int TokenScanner::Next_Token<int>() {
     int ans = 0;
     while (buff_[pos_] == spilt_ && pos_ < length_)
         pos_++;
@@ -74,7 +74,7 @@ int TokenScanner::Next_Token<int>() {
 }
 
 template<>
-unsigned long TokenScanner::Next_Token<unsigned long> () {
+inline unsigned long TokenScanner::Next_Token<unsigned long> () {
     unsigned long ans = 0;
     while (buff_[pos_] == spilt_ && pos_ < length_)
         pos_++;

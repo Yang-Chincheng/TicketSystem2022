@@ -19,26 +19,26 @@ std::ostream& operator << (std::ostream &os, const TraxPack &pack) {
 
 int TraxManager::append_record(const Username &usr, const Status &sta, const TrainID &id, const Station &st, const Station &tm, const Time &lv, const Time &ar, int num, int price, int day, int sidx, int tidx) 
 {
-    int num;
-    if(!rnum.get(usr, num)) num = 0;
+    int len;
+    if(!rnum.get(usr, len)) len = 0;
     record.insert(
-        getTraxID(usr, num++), 
+        getTraxID(usr, len++), 
         TraxInfo(sta, id, st, tm, lv, ar, num, day, price, sidx, tidx)
     );
-    rnum.insert(usr, num);
-    return num;
+    rnum.insert(usr, len);
+    return len;
 }
 
 int TraxManager::append_pending(const TrainID &id, int day, const Username &usr, int idx, int sidx, int tidx, int num)
 {
-    int num;
-    if(!pnum.get(make_pair(id, day), num)) num = 0;
+    int len;
+    if(!pnum.get(make_pair(id, day), len)) len = 0;
     pending.insert(
-        getPendID(id, day, num++),
+        getPendID(id, day, len++),
         PendInfo(usr, idx, sidx, tidx, num, 0)
     );
-    pnum.insert(make_pair(id, day), num);
-    return num;
+    pnum.insert(make_pair(id, day), len);
+    return len;
 }
 
 int TraxManager::pop_record(const Username &usr) {

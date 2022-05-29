@@ -221,7 +221,7 @@ int TrainManager::query_transfer(const Station &strt, const Station &term, const
     bool tag = 0;
     PassTrain ps_s, ps_t;
     TrainInfo tr_s, tr_t;
-    hashmap<Station, int> mp;
+    hashmap<Station, int, StrHasher> mp;
     
     if(!station.get(strt, ps_s) || !station.get(term, ps_t)) {
         throw train_error("result not found");
@@ -340,6 +340,7 @@ int TrainManager::check_refund(const TrainID &id, int day, int sidx, int tidx, i
 int TrainManager::clear() {
     train.clear();
     station.clear();
+    return 0;
 }
 
 }

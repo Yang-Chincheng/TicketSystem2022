@@ -1,0 +1,17 @@
+CMAKE_MINIMUM_REQUIRED(VERSION 3.16)
+PROJECT(TicketSystem)
+
+SET(CMAKE_CXX_STANDARD 14)
+SET(CMAKE_CXX_FLAGS "-Ofast")
+# for local test
+SET(CMAKE_CXX_FLAGS_DEBUG "-g -DDEBUG -Wall -fsanitize=undefined -fsanitize=address")
+
+# INCLUDE_DIRECTORIES(./src)
+# INCLUDE_DIRECTORIES(./lib)
+# for local test
+INCLUDE_DIRECTORIES(./test)
+
+AUX_SOURCE_DIRECTORY(./lib LIB)
+AUX_SOURCE_DIRECTORY(./src SRC)
+
+ADD_EXECUTABLE(code ${LIB} ${SRC})
