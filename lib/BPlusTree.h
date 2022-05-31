@@ -680,7 +680,7 @@ private:
                 r = parent_node.elements_num - 2;
                 while (l <= r) {
                     mid = (l + r) / 2;
-                    if (parent_node.data[mid].key > new_node.data[new_node.elements_num - 1].key)
+                    if (parent_node.data[mid].key > new_node.data[new_node.elements_num - 2].key)
                         r = mid - 1;
                     else
                         l = mid + 1;
@@ -690,10 +690,10 @@ private:
                 if (parent_node.data[pos].address != node_in.my_num)
                     throw std::string("Error: Programing bug. Function: BreakNode_.");
 
-                parent_node.data[pos].address = new_node.my_num;
-                for (int i = parent_node.elements_num; i > pos + 1; i--)
+//                parent_node.data[pos].address = new_node.my_num;
+                for (int i = parent_node.elements_num; i > pos; i--)
                     parent_node.data[i] = parent_node.data[i - 1];
-                parent_node.data[pos + 1].key = parent_node.data[pos].key;
+//                parent_node.data[pos + 1].key = parent_node.data[pos].key;
                 parent_node.data[pos + 1].address = new_node.my_num;
                 parent_node.data[pos].key =
                         node_in.if_leaf ? new_node.data[0].key : node_in.data[node_in.elements_num - 1].key;
