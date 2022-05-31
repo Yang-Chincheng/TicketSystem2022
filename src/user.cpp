@@ -6,7 +6,7 @@
 namespace ticket {
 
 std::ostream& operator << (std::ostream& os, const UserPack &pack) {
-    os << pack.uid << " " << pack.name << " " << pack.pwd << " " << pack.maddr << " " << pack.pri;
+    os << pack.uid << " " << pack.name << " " << pack.maddr << " " << pack.pri;
     return os;
 }
 
@@ -102,7 +102,7 @@ int UserManager::query_profile(
 int UserManager::modify_profile(
     const Username &cur_usr, const Username &mod_usr, 
     const Password &mod_pwd, const Name &mod_name,
-    const MailAddr &mod_maddr, int mod_priv 
+    const MailAddr &mod_maddr, int mod_priv, UserPack &pack 
 ) {
     if(!online[cur_usr]) {
         throw user_error("current user does not exist or hasn't logged in");
@@ -134,6 +134,7 @@ int UserManager::modify_profile(
         ~mod_priv? mod_priv: mod_info.pri
     );
     user.insert(mod_usr, info);
+    pack = UserPack(mod_usr, info);
     return 0;
 }
 

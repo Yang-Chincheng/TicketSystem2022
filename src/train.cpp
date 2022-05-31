@@ -7,7 +7,7 @@ namespace ticket {
 LineInfo::LineInfo(int _stanum, Station *_sta, int *_price, const Time &_st_time, int *_tra_time, int *_stp_time) 
 {
     sta_num = _stanum;
-    for(int i = 1; i <= sta_num; ++i) sta[i] = _sta[i - 1];
+    for(int i = 1; i <= sta_num; ++i) sta[i] = _sta[i];
     price[0] = price[1] = 0;
     for(int i = 2; i <= sta_num; ++i) price[i] = price[i - 1] + _price[i];
     _stp_time[1] = 0;
@@ -25,7 +25,7 @@ TrainInfo::TrainInfo(int _stanum, int _seatnum, Station *_sta, int *_price, cons
     released = 0;
     type = _type;
     sta_num = _stanum;
-    day_num = ed_date - st_date + 1;
+    day_num = (_ed_date - _st_date) + 1;
     st_time = _st_time;
     st_date = _st_date, ed_date = _ed_date;
     for(int i = 0; i < day_num; ++i) {
@@ -35,7 +35,8 @@ TrainInfo::TrainInfo(int _stanum, int _seatnum, Station *_sta, int *_price, cons
 
 Time TrainInfo::arrive_time(int day, int idx) {
     if(day < 0) day += day_num;
-    if(idx < 0) idx += sta_num;
+    assert(idx >= 1);
+    // if(idx < 0) idx += sta_num;
     Time time = st_time;
     time.date = st_date + day;
     time += line.arri_time[idx];
@@ -43,8 +44,11 @@ Time TrainInfo::arrive_time(int day, int idx) {
 }
 
 Time TrainInfo::leave_time(int day, int idx) {
+    assert(day_num > 0);
     if(day < 0) day += day_num;
-    if(idx < 0) idx += sta_num;
+    assert(day >= 0 && day < day_num);
+    assert(idx >= 1);
+    // if(idx < 0) idx += sta_num;
     Time time = st_time;
     time.date = st_date + day;
     time += line.leav_time[idx];
@@ -75,7 +79,7 @@ int TrainInfo::search_station(const Station &sta, int st = 1, int ed = 0) {
 }
 
 std::ostream& operator << (std::ostream &os, const LinePack &pack) {
-    os << pack.type << std::endl;
+    os << pack.id << " " << pack.type << std::endl;
     Time cur;
     for(int i = 1; i <= pack.sta_num; ++i) {
         // station name
@@ -99,9 +103,9 @@ std::ostream& operator << (std::ostream &os, const LinePack &pack) {
 }
 
 std::ostream& operator << (std::ostream &os, const TravelPack &pack) {
-    os << pack.id << " " << pack.strt << " " << pack.leav << " -> ";
-    os << pack.term << " " << pack.arri << " ";
-    os << pack.price << " " << pack.seat << std::endl;
+    os << pack.id << " " << pack.strt << " " << pack.leav.date << " " << pack.leav << " -> ";
+    os << pack.term << " " << pack.arri.date << " " << pack.arri << " ";
+    os << pack.price << " " << pack.seat;
     return os;
 }
 
@@ -113,6 +117,14 @@ int TrainManager::add_train(const TrainID &id, int _stanum, int _seatnum, Statio
     TrainInfo new_train(
         _stanum, _seatnum, _sta, _price, _st_time, _tra_time, _stp_time, _st_date, _ed_date, _type
     );
+// if(id == "LeavesofGrass") {
+//     std::cout << "<TRAIN>\n";
+//     for(int i = 1; i <= new_train.sta_num; ++i) {
+//         std::cout << new_train.line.sta[i] << " ";
+//         std::cout << new_train.arrive_time(0, i).date << " " << new_train.arrive_time(0, i) << " ";
+//         std::cout << new_train.leave_time(0, i).date << " " << new_train.leave_time(0, i) << std::endl;
+//     }
+// }
     train.insert(id, new_train);
     return 0;
 }
@@ -173,7 +185,7 @@ int TrainManager::query_train(const TrainID &id, const Date &date, LinePack &pac
     }
     Time time(tr.st_time);
     time.date = date;
-    pack = LinePack(tr.line, time, tr.type, tr.seat[date - tr.st_date]);
+    pack = LinePack(id, tr.line, time, tr.type, tr.seat[date - tr.st_date]);
     return 0;
 }
 
@@ -182,9 +194,7 @@ int TrainManager::query_ticket(const Station &strt, const Station &term, const D
     PassTrain ps;
     TrainInfo tr;
     // enumerate each train passing the start station
-    if(!station.get(strt, ps)) {
-        throw train_error("result not found");
-    }
+    if(!station.get(strt, ps)) return 0;
     for(int i = 0; i < ps.pnum; ++i) {
         // rough check using abstract
         PassTrain::MetaData *ptr = ps.ptrain + i;
@@ -198,6 +208,12 @@ int TrainManager::query_ticket(const Station &strt, const Station &term, const D
                 int day = date - ptr->st_date;
                 int res_seat = tr.query_seat(day, sidx, tidx);
                 if(res_seat == 0) continue;
+// if(ptr->id == "LeavesofGrass" && day == 22) {
+// std::cerr << "QUERY_TICKET " << ptr->id << " " << day << " " << sidx << " " << tidx << std::endl;
+// std::cout << "<TEST>\n";
+// for(int i = 1; i < tr.sta_num; ++i) std::cout << tr.seat[day][i] << " "; 
+// std::cout << std::endl;
+// }
                 pack.push_back(TravelPack(
                     ptr->id, strt, term,
                     tr.leave_time(day, sidx), tr.arrive_time(day, tidx),
@@ -206,10 +222,6 @@ int TrainManager::query_ticket(const Station &strt, const Station &term, const D
                 ));
             }
         }
-    }
-    // no train satisfies all the conditions
-    if(pack.empty()) {
-        throw train_error("result not found");
     }
     // sort the answer
     if(cmp_type) sort<TravelPack, ByCost>(pack, 0, pack.size());
@@ -223,9 +235,7 @@ int TrainManager::query_transfer(const Station &strt, const Station &term, const
     TrainInfo tr_s, tr_t;
     hashmap<Station, int, StrHasher> mp;
     
-    if(!station.get(strt, ps_s) || !station.get(term, ps_t)) {
-        throw train_error("result not found");
-    } 
+    if(!station.get(strt, ps_s) || !station.get(term, ps_t)) return -1;
     // enumerate all the train passing the start station
     for(int i = 0; i < ps_s.pnum; ++i) {
         PassTrain::MetaData *ptr_s = ps_s.ptrain + i;
@@ -300,39 +310,54 @@ int TrainManager::check_ticket(const TrainID &id, const Date &date, const Statio
     if(!pack.tidx) {
         throw transaction_error("ticket not found");
     }
-    Date st_date = tr.arrive_time(0, pack.sidx).date;
-    Date ed_date = tr.arrive_time(-1, pack.sidx).date;
+    Date st_date = tr.leave_time( 0, pack.sidx).date;
+    Date ed_date = tr.leave_time(-1, pack.sidx).date;
     if(date < st_date || date > ed_date) {
         throw transaction_error("ticket not found");
     }
+
     pack.day = date - st_date;
-    pack.leave = tr.leave_time(pack.day, pack.sidx);
-    pack.arrive = tr.arrive_time(pack.day, pack.tidx);
-    pack.price = tr.total_price(pack.sidx, pack.tidx);
-    pack.seat = tr.query_seat(pack.day, pack.sidx, pack.tidx);
+// assert(pack.day >= 0 && pack.day < tr.day_num);
+    pack.leave  = tr.leave_time  (pack.day, pack.sidx);
+    pack.arrive = tr.arrive_time (pack.day, pack.tidx);
+    pack.price  = tr.total_price (pack.sidx, pack.tidx);
+    pack.seat   = tr.query_seat  (pack.day, pack.sidx, pack.tidx);
+// if(num == 23767) std::cout << "CHECKNUM " << num << " " << pack.seat << std::endl;
     if(num <= pack.seat) {
         tr.modify_seat(pack.day, pack.sidx, pack.tidx, -num);
-        train.insert(id, tr);    
+        train.insert(id, tr);
     }
+// if(id == "LeavesofGrass" && date - st_date == 22) {
+// std::cout << "<TEST>\n";
+// for(int i = 1; i < tr.sta_num; ++i) std::cout << tr.seat[date - st_date][i] << " "; 
+// std::cout << std::endl;
+// }
     return 0;
 }
 
-int TrainManager::check_refund(const TrainID &id, int day, int sidx, int tidx, int num, vector<PendPack> &pend, vector<int> &pack) 
+int TrainManager::check_refund(const TrainID &id, int day, int sidx, int tidx, int num, vector<PendInfo> &pend, vector<int> &pack) 
 {
+// std::cerr << "CHECK_REFUND " << id << " " << day << " " << sidx << " " << tidx << " " << num  << std::endl;
     TrainInfo tr;
     assert(train.get(id, tr));
     assert(day >= 0 && day < tr.day_num);
-    assert(0 <= sidx && sidx <= tidx && tidx < tr.sta_num);
+    assert(0 < sidx && sidx < tidx && tidx <= tr.sta_num);
     tr.modify_seat(day, sidx, tidx, num);
     pack.clear();
     int i = 0;
-    for(PendPack &rec: pend) {
-        if(tr.query_seat(day, rec.sidx, rec.tidx) >= rec.num) {
+    for(PendInfo &rec: pend) {
+// std::cerr << "PENDING_RECORD " << rec.user << " " << rec.idx << " " << rec.sidx << " " << rec.tidx << " " << rec.num << " " << rec.mask << std::endl;
+        if(!rec.mask && tr.query_seat(day, rec.sidx, rec.tidx) >= rec.num) {
             pack.push_back(i);
             tr.modify_seat(day, rec.sidx, rec.tidx, -rec.num);
         }
         i++;
     }
+// if(id == "LeavesofGrass" && day == 22) {
+// std::cout << "<TEST>\n";
+// for(int i = 1; i < tr.sta_num; ++i) std::cout << tr.seat[day][i] << " "; 
+// std::cout << std::endl;
+// }
     train.insert(id, tr);
     return 0;
 }

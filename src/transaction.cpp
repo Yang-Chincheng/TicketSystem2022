@@ -31,6 +31,7 @@ int TraxManager::append_record(const Username &usr, const Status &sta, const Tra
 
 int TraxManager::append_pending(const TrainID &id, int day, const Username &usr, int idx, int sidx, int tidx, int num)
 {
+std::cerr << "APPEND_PENDING " << id << " " << day << std::endl;
     int len;
     if(!pnum.get(make_pair(id, day), len)) len = 0;
     pending.insert(
@@ -60,14 +61,12 @@ int TraxManager::pop_pending(const TrainID &id, int day) {
 }
 
 // idx: 0-base !!
-int TraxManager::query_record(const Username &usr, int idx, TraxPack &pack) {
+int TraxManager::query_record(const Username &usr, int idx, bool rev, TraxInfo &pack) {
     int num;
-    if(!rnum.get(usr, num) || idx >= num) {
+    if(!rnum.get(usr, num) || idx < 1 || idx > num) {
         throw transaction_error("record not found");
     }
-    TraxInfo rec;
-    record.get(getTraxID(usr, idx), rec);
-    pack = TraxPack(rec);
+    record.get(getTraxID(usr, rev? num - idx: idx - 1), pack);
     return 0;
 }
 
@@ -79,19 +78,26 @@ int TraxManager::query_record(const Username &usr, vector<TraxPack> &pack) {
     return 0;
 }
 
-int TraxManager::query_pending(const TrainID &id, int day, vector<PendPack> &pack) {
+int TraxManager::query_pending(const TrainID &id, int day, vector<PendInfo> &pack) {
     pack.clear(); int num; 
-    if(!pnum.get(make_pair(id, day), num) || !num) return 0;
+if(id == "LeavesofGrass" && day == 6) std::cerr << "Here!" << std::endl;
+    if(!pnum.get(make_pair(id, day), num)) return 0;
+std::cerr << "PENDING " << num << std::endl;
+    if(!num) return 0;
     bptree<PendID, PendInfo>::iterator iter = pending.find(getPendID(id, day, 0));
     for(int i = 0; i < num; ++i) pack.push_back(*iter), ++iter;
     return 0;
 }
 
-int TraxManager::update_status(const Username &usr, int idx, const Status &new_sta) {
+int TraxManager::update_status(const Username &usr, int idx, bool rev, const Status &new_sta) {
+    int num;
+    if(!rnum.get(usr, num) || idx > num) {
+        throw transaction_error("record not found");
+    }
     TraxInfo rec;
-    assert(record.get(getTraxID(usr, idx), rec));
+    assert(record.get(getTraxID(usr, rev? num - idx: idx - 1), rec));
     rec.status = new_sta;
-    record.insert(getTraxID(usr, idx), rec);
+    record.insert(getTraxID(usr, rev? num - idx: idx - 1), rec);
     return 0;
 }
 

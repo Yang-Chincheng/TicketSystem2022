@@ -79,7 +79,8 @@ public:
         const Password &mod_pwd, 
         const Name &mod_name,
         const MailAddr &mod_maddr,
-        int mod_priv 
+        int mod_priv,
+        UserPack &pack
     );
 
     int is_online(const Username &user);

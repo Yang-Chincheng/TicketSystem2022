@@ -64,10 +64,10 @@ public:
 template<>
 inline int TokenScanner::Next_Token<int>() {
     int ans = 0;
-    while (buff_[pos_] == spilt_ && pos_ < length_)
+    while (pos_ < length_ && buff_[pos_] == spilt_)
         pos_++;
-    while (buff_[pos_] != spilt_ && pos_ < length_) {
-        ans = ans * 10 + int(buff_[pos_]);
+    while (pos_ < length_ && buff_[pos_] != spilt_) {
+        ans = ans * 10 + buff_[pos_] - '0';
         pos_++;
     }
     return ans;
@@ -76,10 +76,10 @@ inline int TokenScanner::Next_Token<int>() {
 template<>
 inline unsigned long TokenScanner::Next_Token<unsigned long> () {
     unsigned long ans = 0;
-    while (buff_[pos_] == spilt_ && pos_ < length_)
+    while (pos_ < length_ && buff_[pos_] == spilt_)
         pos_++;
-    while (buff_[pos_] != spilt_ && pos_ < length_) {
-        ans = ans * 10 + int(buff_[pos_]);
+    while (pos_ < length_ && buff_[pos_] != spilt_) {
+        ans = ans * 10 + buff_[pos_] - '0';
         pos_++;
     }
     return ans;

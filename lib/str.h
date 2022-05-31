@@ -36,13 +36,20 @@ public:
         memcpy(str, _str.c_str(), len * sizeof(char));
         str[len] = '\0';
     }
-    template <size_t maxl>
-    Str(const Str<maxl> &_str) {
-        assert(_str.length() <= maxlen);
+    Str(const Str<maxlen> &_str) {
+// std::cerr << "error: " << _str << std::endl;
         len = _str.length();
         memcpy(str, _str.c_str(), len * sizeof(char));
         str[len] = '\0';
     }
+//     template <size_t maxl>
+//     Str(const Str<maxl> &_str) {
+// std::cerr << "error: " << _str << std::endl;
+//         assert(_str.length() <= maxlen);
+//         len = _str.length();
+//         memcpy(str, _str.c_str(), len * sizeof(char));
+//         str[len] = '\0';
+//     }
     ~Str() = default;
 
     size_t length() const {return len; }
@@ -162,11 +169,10 @@ struct StrHasher {
 
 const size_t usr_len = 20;
 const size_t psw_len = 30;
-const size_t name_len = 20;
-const size_t maddr_len = 30;
-const size_t trID_len = 20;
+const size_t name_len = 21;
+const size_t maddr_len = 31;
+const size_t trID_len = 22;
 const size_t sta_len = 40;
-const size_t cmd_len = 20;
 
 using Username = Str<usr_len>;
 using Password = Str<psw_len>;
@@ -174,7 +180,6 @@ using Name = Str<name_len>;
 using MailAddr = Str<maddr_len>;
 using TrainID = Str<trID_len>;
 using Station = Str<sta_len>;
-using Command = Str<cmd_len>;
 
 }
 

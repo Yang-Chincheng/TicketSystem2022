@@ -41,16 +41,22 @@ int SysManager::query_profile(const std::string &opt_idx, const Username &cur_us
 int SysManager::modify_profile(const std::string &opt_idx, const Username &cur_usr, const Username &mod_usr, const Password &pwd, const Name &name, const MailAddr &maddr, int priv) 
 {
     try {
-        user.modify_profile(cur_usr, mod_usr, pwd, name, maddr, priv);
+        UserPack pack;
+        user.modify_profile(cur_usr, mod_usr, pwd, name, maddr, priv, pack);
+        std::cout << opt_idx << " " << pack << std::endl;
     }
     catch(exception e) {throw e; }
-    std::cout << opt_idx << " 0" << std::endl;
     return 0;
 }
 
 int SysManager::add_train(const std::string &opt_idx, const TrainID &id, int station_num, int seat_num, Station *stations, int *prices, const Time &start_time, int *traveltimes, int *stoptimes, const Date &start_date, const Date &end_date, char type) 
 {
     try {
+std::cerr << id << " " << station_num << " " << seat_num << " " << start_time << " " << start_date << " " << end_date << std::endl;
+for(int i = 1; i <= station_num; ++i) std::cerr << stations[i] << "|"; std::cerr << std::endl;
+for(int i = 2; i <= station_num; ++i) std::cerr << prices[i] << "|"; std::cerr << std::endl;
+for(int i = 1; i <  station_num; ++i) std::cerr << traveltimes[i] << "|"; std::cerr << std::endl;
+for(int i = 2; i <  station_num; ++i) std::cerr << stoptimes[i] << "|"; std::cerr << std::endl;
         train.add_train(
             id, station_num, seat_num, 
             stations, prices, start_time, traveltimes, stoptimes, 
@@ -87,7 +93,7 @@ int SysManager::query_train(const std::string &opt_idx, const TrainID &id, const
     try {
         LinePack pack;
         train.query_train(id, date, pack);
-        std::cout << opt_idx << " " << pack << std::endl;
+        std::cout << opt_idx << " " << pack;
     }
     catch(exception e) {throw e; }
     return 0;
@@ -127,7 +133,10 @@ int SysManager::buy_ticket(const std::string &opt_idx, const Username &usr, cons
                 usr, SUCCESS, id, start, term, 
                 tick.leave, tick.arrive, num, tick.price, 
                 tick.day, tick.sidx, tick.tidx
-            );    
+            );
+if(id == "LeavesofGrass" && tick.day == 6) std::cerr << "SUCESSTICKINFO " << tick.sidx << " " << tick.tidx << " " << tick.seat << " " << num << std::endl;
+// std::cerr << opt_idx << " " << tick.price << " " << num << std::endl;
+            std::cout << opt_idx << " " << 1ll * tick.price * num << std::endl;    
         }
         else if(pending_tag) {
             int len = trax.append_record(
@@ -135,13 +144,16 @@ int SysManager::buy_ticket(const std::string &opt_idx, const Username &usr, cons
                 tick.leave, tick.arrive, num, tick.price, 
                 tick.day, tick.sidx, tick.tidx
             );
+if(id == "LeavesofGrass" && tick.day == 6) std::cerr << "PENDTICKINFO " << tick.sidx << " " << tick.tidx << " " << tick.seat << " " << num << std::endl;
+// std::cout << "PENDING " << id << " " << tick.day << " " << tick.sidx << " " << tick.tidx << " " << num << std::endl;
             trax.append_pending(
-                id, tick.day, usr, len - 1, tick.sidx, tick.tidx, num
+                id, tick.day, usr, len, tick.sidx, tick.tidx, num
             );
+            std::cout << opt_idx << " queue" << std::endl;
         }
+        else throw transaction_error("insufficient remaining tickets");
     }
     catch(exception e) {throw e; }
-    std::cout << opt_idx << " 0" << std::endl;
     return 0;
 }
 
@@ -152,8 +164,8 @@ int SysManager::query_order(const std::string &opt_idx, const Username &usr)
         vector<TraxPack> pack;
         trax.query_record(usr, pack);
         std::cout << opt_idx << " " << pack.size() << std::endl;
-        for(TraxPack &ord: pack) {
-            std::cout << "[" << opt_idx << "] " << ord << std::endl;
+        for(int i = pack.size() - 1; i >= 0; --i) {
+            std::cout << pack[i] << std::endl;
         }
     }
     catch(exception e) {throw e; }
@@ -164,16 +176,18 @@ int SysManager::refund_ticket(const std::string &opt_idx, const Username &usr, i
 {
     try {
         if(!user.is_online(usr)) throw transaction_error("user need to log in first");
-        TraxPack refnd;
-        trax.query_record(usr, idx, refnd);
-        trax.update_status(usr, idx, REFUNDED);
-        vector<PendPack> pend;
+        TraxInfo refnd;
+        trax.query_record(usr, idx, 1, refnd);
+        if(refnd.status != SUCCESS) throw transaction_error("record cannot be refunded");
+        trax.update_status(usr, idx, 1, REFUNDED);
+        vector<PendInfo> pend;
         trax.query_pending(refnd.id, refnd.day, pend);
         vector<int> index;
+// std::cerr << refnd.sidx << " " << refnd.tidx << std::endl;
         train.check_refund(refnd.id, refnd.day, refnd.sidx, refnd.tidx, refnd.number, pend, index);
         trax.flip_masking(refnd.id, refnd.day, index);
         for(int i: index) {
-            trax.update_status(pend[i].user, pend[i].idx, SUCCESS);
+            trax.update_status(pend[i].user, pend[i].idx, 0, SUCCESS);
         }
     }
     catch(exception e) {throw e; }

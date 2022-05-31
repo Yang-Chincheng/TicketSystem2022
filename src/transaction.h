@@ -30,17 +30,6 @@ struct PendInfo {
     user(_user), idx(_idx), sidx(_sidx), tidx(_tidx), num(_num), mask(_mask) {}
 
 };
-struct PendPack: public InfoPack {
-    Username user; int idx;
-    int sidx, tidx, num;
-
-    PendPack() = default;
-    PendPack(const PendPack &o) = default;
-    PendPack(const PendInfo &info):
-    user(info.user), idx(info.idx), 
-    sidx(info.sidx), tidx(info.tidx), num(info.num) {}
-
-};
 #endif
 
 enum Status {SUCCESS, PENDING, REFUNDED};
@@ -152,7 +141,8 @@ public:
     int query_record(
         const Username &usr,
         int idx,
-        TraxPack &pack
+        bool rev, 
+        TraxInfo &pack
     );
 
     int query_record(
@@ -163,18 +153,19 @@ public:
     int query_pending(
         const TrainID &id,
         int day, int idx,
-        PendPack &pack
+        PendInfo &pack
     );
 
     int query_pending(
         const TrainID &id,
         int day,
-        vector<PendPack> &pack
+        vector<PendInfo> &pack
     );
 
     int update_status(
         const Username &usr,
         int idx, 
+        bool rev,
         const Status &new_sta 
     );
 

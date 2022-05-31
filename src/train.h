@@ -50,16 +50,18 @@ struct LineInfo {
 };
 
 struct LinePack: public LineInfo, public InfoPack {
+    TrainID id;
     Time st_time;
     char type;
     int seat[max_stanum];
     LinePack() = default;
     LinePack(
+        const TrainID &_id,
         const LineInfo &info, 
         const Time &_st_time, 
         char _type, 
         int *_seat
-    ): LineInfo(info), st_time(_st_time) {
+    ): id(_id), LineInfo(info), st_time(_st_time) {
         type = _type;
         for(int i = 1; i < info.sta_num; ++i) seat[i] = _seat[i];
     }
@@ -149,17 +151,6 @@ struct PendInfo {
     user(_user), idx(_idx), sidx(_sidx), tidx(_tidx), num(_num), mask(_mask) {}
 
 };
-struct PendPack: public InfoPack {
-    Username user; int idx;
-    int sidx, tidx, num;
-
-    PendPack() = default;
-    PendPack(const PendPack &o) = default;
-    PendPack(const PendInfo &info):
-    user(info.user), idx(info.idx), 
-    sidx(info.sidx), tidx(info.tidx), num(info.num) {}
-
-};
 #endif
 
 struct ByTime {
@@ -216,7 +207,7 @@ struct PassTrain {
 class TrainManager {
 private:
     bptree<TrainID, TrainInfo> train;
-    bptree<TrainID, PassTrain> station;
+    bptree<Station, PassTrain> station;
 
 public:
     TrainManager(): train("train"), station("station") {}
@@ -278,7 +269,7 @@ public:
         int sidx, 
         int tidx, 
         int num,
-        vector<PendPack> &pend, 
+        vector<PendInfo> &pend, 
         vector<int> &pack
     );
 
