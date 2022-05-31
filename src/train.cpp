@@ -251,8 +251,8 @@ int TrainManager::query_transfer(const Station &strt, const Station &term, const
                 
                 tr_t = *ptr_t->iter;
                 mp.clear();
-                for(int k = ptr_s->idx; k <= tr_s.sta_num; ++k) mp[tr_s.line.sta[k]] = k;
-                for(int k = ptr_t->idx; k >= 1; --k) {
+                for(int k = ptr_s->idx + 1; k <= tr_s.sta_num; ++k) mp[tr_s.line.sta[k]] = k;
+                for(int k = ptr_t->idx - 1; k >= 1; --k) {
                     // the exchange station
                     Station ex_sta = tr_t.line.sta[k];
                     int ex_idx = mp[ex_sta];
@@ -262,6 +262,7 @@ int TrainManager::query_transfer(const Station &strt, const Station &term, const
                     Time arri_ex = tr_s.arrive_time(day_s, ex_idx);
                     if(arri_ex <= tr_t.leave_time(-1, k)) {
                         int day_t = std::max(0, arri_ex.date - tr_t.leave_time(0, k).date);
+                        if(arri_ex > tr_t.leave_time(day_t, k)) day_t++;
                         int res_s = tr_s.query_seat(day_s, ptr_s->idx, ex_idx);
                         int res_t = tr_t.query_seat(day_t, k, ptr_t->idx);
                         if(!res_s || !res_t) continue;
@@ -288,6 +289,10 @@ int TrainManager::query_transfer(const Station &strt, const Station &term, const
                             else cmin<TransPack, ByTime>(pack, cur);
                         }
                         else pack = cur, tag = 1;
+// if(strt == "广东省梅州市" && term == "河南省禹州市" && date == Date(7, 30) && cmp_type == 0) {
+//     std::cerr << ">> " << cur.first << "\n" << cur.second << std::endl;
+//     std::cerr << "note: " << pack.first << "\n" << pack.second << "\n" << std::endl;
+// }
                     }
                 }
             }
@@ -335,14 +340,14 @@ int TrainManager::check_ticket(const TrainID &id, const Date &date, const Statio
     return 0;
 }
 
-int TrainManager::check_refund(const TrainID &id, int day, int sidx, int tidx, int num, vector<PendInfo> &pend, vector<int> &pack) 
+int TrainManager::check_refund(bool suc, const TrainID &id, int day, int sidx, int tidx, int num, vector<PendInfo> &pend, vector<int> &pack) 
 {
 // std::cerr << "CHECK_REFUND " << id << " " << day << " " << sidx << " " << tidx << " " << num  << std::endl;
     TrainInfo tr;
     assert(train.get(id, tr));
     assert(day >= 0 && day < tr.day_num);
     assert(0 < sidx && sidx < tidx && tidx <= tr.sta_num);
-    tr.modify_seat(day, sidx, tidx, num);
+    if(suc) tr.modify_seat(day, sidx, tidx, num);
     pack.clear();
     int i = 0;
     for(PendInfo &rec: pend) {

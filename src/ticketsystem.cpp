@@ -52,11 +52,11 @@ int SysManager::modify_profile(const std::string &opt_idx, const Username &cur_u
 int SysManager::add_train(const std::string &opt_idx, const TrainID &id, int station_num, int seat_num, Station *stations, int *prices, const Time &start_time, int *traveltimes, int *stoptimes, const Date &start_date, const Date &end_date, char type) 
 {
     try {
-std::cerr << id << " " << station_num << " " << seat_num << " " << start_time << " " << start_date << " " << end_date << std::endl;
-for(int i = 1; i <= station_num; ++i) std::cerr << stations[i] << "|"; std::cerr << std::endl;
-for(int i = 2; i <= station_num; ++i) std::cerr << prices[i] << "|"; std::cerr << std::endl;
-for(int i = 1; i <  station_num; ++i) std::cerr << traveltimes[i] << "|"; std::cerr << std::endl;
-for(int i = 2; i <  station_num; ++i) std::cerr << stoptimes[i] << "|"; std::cerr << std::endl;
+// std::cerr << id << " " << station_num << " " << seat_num << " " << start_time << " " << start_date << " " << end_date << std::endl;
+// for(int i = 1; i <= station_num; ++i) std::cerr << stations[i] << "|"; std::cerr << std::endl;
+// for(int i = 2; i <= station_num; ++i) std::cerr << prices[i] << "|"; std::cerr << std::endl;
+// for(int i = 1; i <  station_num; ++i) std::cerr << traveltimes[i] << "|"; std::cerr << std::endl;
+// for(int i = 2; i <  station_num; ++i) std::cerr << stoptimes[i] << "|"; std::cerr << std::endl;
         train.add_train(
             id, station_num, seat_num, 
             stations, prices, start_time, traveltimes, stoptimes, 
@@ -134,7 +134,7 @@ int SysManager::buy_ticket(const std::string &opt_idx, const Username &usr, cons
                 tick.leave, tick.arrive, num, tick.price, 
                 tick.day, tick.sidx, tick.tidx
             );
-if(id == "LeavesofGrass" && tick.day == 6) std::cerr << "SUCESSTICKINFO " << tick.sidx << " " << tick.tidx << " " << tick.seat << " " << num << std::endl;
+// if(id == "LeavesofGrass" && tick.day == 6) std::cerr << "SUCESSTICKINFO " << tick.sidx << " " << tick.tidx << " " << tick.seat << " " << num << std::endl;
 // std::cerr << opt_idx << " " << tick.price << " " << num << std::endl;
             std::cout << opt_idx << " " << 1ll * tick.price * num << std::endl;    
         }
@@ -144,7 +144,7 @@ if(id == "LeavesofGrass" && tick.day == 6) std::cerr << "SUCESSTICKINFO " << tic
                 tick.leave, tick.arrive, num, tick.price, 
                 tick.day, tick.sidx, tick.tidx
             );
-if(id == "LeavesofGrass" && tick.day == 6) std::cerr << "PENDTICKINFO " << tick.sidx << " " << tick.tidx << " " << tick.seat << " " << num << std::endl;
+// if(id == "LeavesofGrass" && tick.day == 6) std::cerr << "PENDTICKINFO " << tick.sidx << " " << tick.tidx << " " << tick.seat << " " << num << std::endl;
 // std::cout << "PENDING " << id << " " << tick.day << " " << tick.sidx << " " << tick.tidx << " " << num << std::endl;
             trax.append_pending(
                 id, tick.day, usr, len, tick.sidx, tick.tidx, num
@@ -178,13 +178,19 @@ int SysManager::refund_ticket(const std::string &opt_idx, const Username &usr, i
         if(!user.is_online(usr)) throw transaction_error("user need to log in first");
         TraxInfo refnd;
         trax.query_record(usr, idx, 1, refnd);
-        if(refnd.status != SUCCESS) throw transaction_error("record cannot be refunded");
+        if(refnd.status == REFUNDED) {
+            throw transaction_error("record cannot be refunded");
+        }
         trax.update_status(usr, idx, 1, REFUNDED);
         vector<PendInfo> pend;
         trax.query_pending(refnd.id, refnd.day, pend);
         vector<int> index;
 // std::cerr << refnd.sidx << " " << refnd.tidx << std::endl;
-        train.check_refund(refnd.id, refnd.day, refnd.sidx, refnd.tidx, refnd.number, pend, index);
+        train.check_refund(
+            refnd.status == SUCCESS,
+            refnd.id, refnd.day, refnd.sidx, refnd.tidx, refnd.number, 
+            pend, index
+        );
         trax.flip_masking(refnd.id, refnd.day, index);
         for(int i: index) {
             trax.update_status(pend[i].user, pend[i].idx, 0, SUCCESS);

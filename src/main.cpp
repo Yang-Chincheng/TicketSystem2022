@@ -22,7 +22,42 @@ inline ticket::Time getTime(const std::string &str) {
     return ticket::Time(hh, mm);
 }
 
+// void test() {
+//     ticket::TransPack lhs(
+//         ticket::TravelPack(
+//             ticket::TrainID(),
+//             ticket::Station(), ticket::Station(),
+//             ticket::Time(13, 13), ticket::Time(15, 39),
+//             0, 0
+//         ),
+//         ticket::TravelPack(
+//             ticket::TrainID(),
+//             ticket::Station(), ticket::Station(),
+//             ticket::Time(18, 44), ticket::Time(22, 25),
+//             0, 0
+//         )
+//     );
+//     ticket::TransPack rhs(
+//         ticket::TravelPack(
+//             ticket::TrainID(),
+//             ticket::Station(), ticket::Station(),
+//             ticket::Time(04, 27), ticket::Time(05, 52),
+//             0, 0
+//         ),
+//         ticket::TravelPack(
+//             ticket::TrainID(),
+//             ticket::Station(), ticket::Station(),
+//             ticket::Time(15, 55), ticket::Time(18, 34),
+//             0, 0
+//         )
+//     );
+//     int t1 = lhs.second.arri - lhs.first.leav;
+//     int t2 = rhs.second.arri - rhs.first.leav;
+//     std::cerr << (ticket::ByTime()(lhs, rhs)? "lhs": "rhs") << std::endl;
+// }
+
 int main() {
+    // test();
     ticket::SysManager ticksys;
     std::string cmd;
     while(1) {
@@ -326,7 +361,7 @@ int main() {
         }
         catch(ticket::exception e) {
             std::cout << opt_idx << " -1" << std::endl;
-            if(opt_idx == "[883]") std::cerr << "note: " << e.what() << std::endl;
+            if(opt_idx == "[13074]") std::cerr << "note: " << e.what() << std::endl;
             // std::cout << "note: " << e.what() << std::endl;
         }
 

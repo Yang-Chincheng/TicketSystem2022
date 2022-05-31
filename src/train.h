@@ -164,7 +164,7 @@ struct ByTime {
     // query_transfer: answer comparison
     bool operator () (const TransPack &lhs, const TransPack &rhs) const {
         int t1 = lhs.second.arri - lhs.first.leav;
-        int t2 = rhs.second.arri - lhs.first.leav;
+        int t2 = rhs.second.arri - rhs.first.leav;
         if(t1 != t2) return t1 < t2;
         int p1 = lhs.first.price + lhs.second.price;
         int p2 = rhs.first.price + rhs.second.price;
@@ -186,7 +186,7 @@ struct ByCost {
         int p2 = rhs.first.price + rhs.second.price;
         if(p1 != p2) return p1 < p2;
         int t1 = lhs.second.arri - lhs.first.leav;
-        int t2 = rhs.second.arri - lhs.first.leav;
+        int t2 = rhs.second.arri - rhs.first.leav;
         if(t1 != t2) return t1 < t2;
         if(lhs.first.id != rhs.first.id) return lhs.first.id < rhs.first.id;
         return lhs.second.id < rhs.second.id;
@@ -264,6 +264,7 @@ public:
     );
 
     int check_refund(
+        bool suc,
         const TrainID &id,
         int day, 
         int sidx, 
