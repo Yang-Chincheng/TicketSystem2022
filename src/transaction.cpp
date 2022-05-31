@@ -31,7 +31,7 @@ int TraxManager::append_record(const Username &usr, const Status &sta, const Tra
 
 int TraxManager::append_pending(const TrainID &id, int day, const Username &usr, int idx, int sidx, int tidx, int num)
 {
-std::cerr << "APPEND_PENDING " << id << " " << day << std::endl;
+// std::cerr << "APPEND_PENDING " << id << " " << day << std::endl;
     int len;
     if(!pnum.Get(make_pair(id, day), len)) len = 0;
     pending.Set(
@@ -80,9 +80,9 @@ int TraxManager::query_record(const Username &usr, vector<TraxPack> &pack) {
 
 int TraxManager::query_pending(const TrainID &id, int day, vector<PendInfo> &pack) {
     pack.clear(); int num; 
-if(id == "LeavesofGrass" && day == 6) std::cerr << "Here!" << std::endl;
+// if(id == "LeavesofGrass" && day == 6) std::cerr << "Here!" << std::endl;
     if(!pnum.Get(make_pair(id, day), num)) return 0;
-std::cerr << "PENDING " << num << std::endl;
+// std::cerr << "PENDING " << num << std::endl;
     if(!num) return 0;
     auto iter = pending.Search(getPendID(id, day, 0)).first;
     for(int i = 0; i < num; ++i) pack.push_back(*iter), ++iter;

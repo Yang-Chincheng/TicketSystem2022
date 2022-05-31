@@ -204,13 +204,19 @@ int SysManager::refund_ticket(const std::string &opt_idx, const Username &usr, i
         if(!user.is_online(usr)) throw transaction_error("user need to log in first");
         TraxInfo refnd;
         trax.query_record(usr, idx, 1, refnd);
-        if(refnd.status != SUCCESS) throw transaction_error("record cannot be refunded");
+        if(refnd.status == REFUNDED) {
+            throw transaction_error("record cannot be refunded");
+        }
         trax.update_status(usr, idx, 1, REFUNDED);
         vector<PendInfo> pend;
         trax.query_pending(refnd.id, refnd.day, pend);
         vector<int> index;
 // std::cerr << refnd.sidx << " " << refnd.tidx << std::endl;
-        train.check_refund(refnd.id, refnd.day, refnd.sidx, refnd.tidx, refnd.number, pend, index);
+        train.check_refund(
+            refnd.status == SUCCESS,
+            refnd.id, refnd.day, refnd.sidx, refnd.tidx, refnd.number, 
+            pend, index
+        );
         trax.flip_masking(refnd.id, refnd.day, index);
         for(int i: index) {
             trax.update_status(pend[i].user, pend[i].idx, 0, SUCCESS);
