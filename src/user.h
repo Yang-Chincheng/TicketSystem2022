@@ -2,7 +2,7 @@
 #define _TICKET_SYSTEM_USR_H_
 
 #include "../lib/utility.h"
-#include "../test/bptree.h"
+#include "../lib/BPlusTree.h"
 #include "../lib/hashmap.h"
 
 namespace ticket {
@@ -42,7 +42,7 @@ struct UserPack: public UserInfo, public InfoPack {
 
 class UserManager {
 private:
-    bptree<Username, UserInfo> user;
+    BPTree<Username, UserInfo> user;
     hashmap<Username, bool, StrHasher> online;
 public:
     UserManager(): user("user"), online() {}

@@ -2,7 +2,7 @@
 #define _TICKET_SYSTEM_TRAIN_H_
 
 #include "../lib/utility.h"
-#include "../test/bptree.h"
+#include "../lib/BPlusTree.h"
 #include "../lib/hashmap.h"
 #include "../lib/vector.h"
 #include <iostream>
@@ -198,7 +198,7 @@ struct PassTrain {
         Date st_date, ed_date;
         TrainID id;
         int idx;
-        bptree<TrainID, TrainInfo>::iterator iter;
+        BPTree<TrainID, TrainInfo>::Iterator iter;
     };
     int pnum;
     MetaData ptrain[max_pnum]; // 0-base
@@ -206,8 +206,8 @@ struct PassTrain {
 
 class TrainManager {
 private:
-    bptree<TrainID, TrainInfo> train;
-    bptree<Station, PassTrain> station;
+    BPTree<TrainID, TrainInfo> train;
+    BPTree<Station, PassTrain> station;
 
 public:
     TrainManager(): train("train"), station("station") {}

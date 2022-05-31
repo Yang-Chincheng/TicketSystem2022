@@ -326,8 +326,13 @@ int main() {
         }
         catch(ticket::exception e) {
             std::cout << opt_idx << " -1" << std::endl;
-            if(opt_idx == "[883]") std::cerr << "note: " << e.what() << std::endl;
-            // std::cout << "note: " << e.what() << std::endl;
+            std::cerr << ">> " << opt_idx << " note: " << e.what() << std::endl;
+        }
+        catch(std::string msg) {
+            std::cerr << "[error] " << msg << std::endl;
+        }
+        catch(...) {
+            std::cerr << "[error] catch something else." << std::endl;
         }
 
     }

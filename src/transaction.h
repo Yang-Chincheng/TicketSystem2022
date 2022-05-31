@@ -3,7 +3,7 @@
 
 #include "../lib/utility.h"
 #include "../lib/vector.h"
-#include "../test/bptree.h"
+#include "../lib/BPlusTree.h"
 #include <iostream>
 
 #define SPLIT_INTO_VOLUMES 0
@@ -95,10 +95,10 @@ inline PendID getPendID(const TrainID &id, int day, int idx) {
 
 class TraxManager {
 private:
-    bptree<Username, int> rnum;
-    bptree<pair<TrainID, int>, int> pnum;
-    bptree<TraxID, TraxInfo> record;
-    bptree<PendID, PendInfo> pending;
+    BPTree<Username, int> rnum;
+    BPTree<pair<TrainID, int>, int> pnum;
+    BPTree<TraxID, TraxInfo> record;
+    BPTree<PendID, PendInfo> pending;
 
 public:
     TraxManager(): rnum("recordnum"), pnum("pendingnum"), record("record"), pending("pending") {}

@@ -206,6 +206,10 @@ public:
         int position_;
 
     public:
+        Iterator() {
+            tree_ = nullptr;
+        }
+
         explicit Iterator(BPTree<key_type, value_type> *tree_in) {
             tree_ = tree_in;
         }

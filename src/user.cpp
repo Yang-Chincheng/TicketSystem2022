@@ -15,9 +15,9 @@ int UserManager::add_user(
     const Password &pwd, const Name &name, const MailAddr &maddr, int priv 
 ) {
     // when creating the first user
-    if(user.empty()) {
+    if(user.Empty()) {
         priv = 10;
-        user.insert(new_usr, UserInfo(pwd, name, maddr, priv));
+        user.Set(new_usr, UserInfo(pwd, name, maddr, priv));
         return 0;
     }
     // user dosen't exist or hasn't logged in
@@ -25,24 +25,24 @@ int UserManager::add_user(
         throw user_error("current user doesn't exist or hasn't logged in, failed to create the new user");
     }
     UserInfo cur_info;
-    user.get(cur_usr, cur_info);
+    user.Get(cur_usr, cur_info);
     // privledge not high enough
     if(priv >= cur_info.pri) {
        throw user_error("current user doesn't have enough privledge, failed to create new account"); 
     }
     // new user already exists
-    if(user.search(new_usr)) {
+    if(user.Search(new_usr).second) {
         throw user_error("username already exists, failed to create new account");
     }
     // success
-    user.insert(new_usr, UserInfo(pwd, name, maddr, priv));
+    user.Set(new_usr, UserInfo(pwd, name, maddr, priv));
     return 0;
 }
 
 int UserManager::login(const Username &usr, const Password &pwd)
 {
     // user does not exist
-    if(!user.search(usr)) {
+    if(!user.Search(usr).second) {
         throw user_error("user not found");
     }
     // user have logged in
@@ -50,7 +50,7 @@ int UserManager::login(const Username &usr, const Password &pwd)
         throw user_error("user have logged in");
     }
     UserInfo info;
-    user.get(usr, info);
+    user.Get(usr, info);
     // wrong password
     if(info.pwd != pwd) {
         throw user_error("wrong password, please try again");
@@ -80,17 +80,17 @@ int UserManager::query_profile(
     }
     if(cur_usr == qry_usr) {
         UserInfo info;
-        user.get(cur_usr, info);
+        user.Get(cur_usr, info);
         pack = UserPack(cur_usr, info);
         return 0;
     }
     // query user does not exist
-    if(!user.search(qry_usr)) {
+    if(!user.Search(qry_usr).second) {
         throw user_error("user not found");
     }
     UserInfo cur_info, qry_info;
-    user.get(cur_usr, cur_info);
-    user.get(qry_usr, qry_info);
+    user.Get(cur_usr, cur_info);
+    user.Get(qry_usr, qry_info);
     // privilege not enough
     if(cur_info.pri <= qry_info.pri) {
         throw user_error("privilege not enough");
@@ -108,7 +108,7 @@ int UserManager::modify_profile(
         throw user_error("current user does not exist or hasn't logged in");
     }
     UserInfo cur_info;
-    user.get(cur_usr, cur_info);
+    user.Get(cur_usr, cur_info);
     if(cur_usr == mod_usr) {
         UserInfo info(
             mod_pwd? mod_pwd: cur_info.pwd,
@@ -116,14 +116,14 @@ int UserManager::modify_profile(
             mod_maddr? mod_maddr: cur_info.maddr,
             ~mod_priv? mod_priv: cur_info.pri
         );
-        user.insert(cur_usr, info);
+        user.Set(cur_usr, info);
         return 0;
     }
-    if(!user.search(mod_usr)) {
+    if(!user.Search(mod_usr).second) {
         throw user_error("user not found");
     }
     UserInfo mod_info;
-    user.get(mod_usr, mod_info);
+    user.Get(mod_usr, mod_info);
     if(cur_info.pri <= mod_info.pri || cur_info.pri <= mod_priv) {
         throw user_error("privilege not enough");
     }
@@ -133,7 +133,7 @@ int UserManager::modify_profile(
         mod_maddr? mod_maddr: mod_info.maddr,
         ~mod_priv? mod_priv: mod_info.pri
     );
-    user.insert(mod_usr, info);
+    user.Set(mod_usr, info);
     pack = UserPack(mod_usr, info);
     return 0;
 }
@@ -143,7 +143,7 @@ int UserManager::is_online(const Username &user) {
 }
 
 int UserManager::clear() {
-    online.clear(), user.clear();
+    online.clear(), user.Clear();
     return 0;
 }
 

@@ -2,7 +2,7 @@
 #define _TICKET_SYSTEM_H_
 
 #include "../lib/utility.h"
-#include "../test/bptree.h"
+#include "../lib/BPlusTree.h"
 #include "user.h"
 #include "train.h"
 #include "transaction.h"

@@ -7,6 +7,8 @@ int SysManager::add_user(const std::string &opt_idx, const Username &cur_usr, co
 {
     try {user.add_user(cur_usr, new_usr, pwd, name, maddr, priv); }
     catch(exception e) {throw e; }
+    catch(std::string msg) {throw msg; }
+    catch(...) {throw; }
     std::cout << opt_idx << " 0" << std::endl;
     return 0;
 }
@@ -15,6 +17,8 @@ int SysManager::login(const std::string &opt_idx, const Username &usr, const Pas
 {
     try {user.login(usr, pwd); }
     catch(exception e) {throw e; }
+    catch(std::string msg) {throw msg; }
+    catch(...) {throw; }
     std::cout << opt_idx << " 0" << std::endl;
     return 0;
 }
@@ -23,6 +27,8 @@ int SysManager::logout(const std::string &opt_idx, const Username &usr)
 {
     try {user.logout(usr); }
     catch(exception e) {throw e; }
+    catch(std::string msg) {throw msg; }
+    catch(...) {throw; }
     std::cout << opt_idx << " 0" << std::endl;
     return 0;
 }
@@ -35,6 +41,8 @@ int SysManager::query_profile(const std::string &opt_idx, const Username &cur_us
         std::cout << opt_idx << " " << pack << std::endl;
     }
     catch(exception e) {throw e; }
+    catch(std::string msg) {throw msg; }
+    catch(...) {throw; }
     return 0;
 }
 
@@ -46,17 +54,19 @@ int SysManager::modify_profile(const std::string &opt_idx, const Username &cur_u
         std::cout << opt_idx << " " << pack << std::endl;
     }
     catch(exception e) {throw e; }
+    catch(std::string msg) {throw msg; }
+    catch(...) {throw; }
     return 0;
 }
 
 int SysManager::add_train(const std::string &opt_idx, const TrainID &id, int station_num, int seat_num, Station *stations, int *prices, const Time &start_time, int *traveltimes, int *stoptimes, const Date &start_date, const Date &end_date, char type) 
 {
     try {
-std::cerr << id << " " << station_num << " " << seat_num << " " << start_time << " " << start_date << " " << end_date << std::endl;
-for(int i = 1; i <= station_num; ++i) std::cerr << stations[i] << "|"; std::cerr << std::endl;
-for(int i = 2; i <= station_num; ++i) std::cerr << prices[i] << "|"; std::cerr << std::endl;
-for(int i = 1; i <  station_num; ++i) std::cerr << traveltimes[i] << "|"; std::cerr << std::endl;
-for(int i = 2; i <  station_num; ++i) std::cerr << stoptimes[i] << "|"; std::cerr << std::endl;
+// std::cerr << id << " " << station_num << " " << seat_num << " " << start_time << " " << start_date << " " << end_date << std::endl;
+// for(int i = 1; i <= station_num; ++i) std::cerr << stations[i] << "|"; std::cerr << std::endl;
+// for(int i = 2; i <= station_num; ++i) std::cerr << prices[i] << "|"; std::cerr << std::endl;
+// for(int i = 1; i <  station_num; ++i) std::cerr << traveltimes[i] << "|"; std::cerr << std::endl;
+// for(int i = 2; i <  station_num; ++i) std::cerr << stoptimes[i] << "|"; std::cerr << std::endl;
         train.add_train(
             id, station_num, seat_num, 
             stations, prices, start_time, traveltimes, stoptimes, 
@@ -64,6 +74,8 @@ for(int i = 2; i <  station_num; ++i) std::cerr << stoptimes[i] << "|"; std::cer
         );
     }
     catch(exception e) {throw e; }
+    catch(std::string msg) {throw msg; }
+    catch(...) {throw; }
     std::cout << opt_idx << " 0" << std::endl;
     return 0;
 }
@@ -74,6 +86,8 @@ int SysManager::delete_train(const std::string &opt_idx, const TrainID &id)
         train.delete_train(id);
     }
     catch(exception e) {throw e; }
+    catch(std::string msg) {throw msg; }
+    catch(...) {throw; }
     std::cout << opt_idx << " 0" << std::endl;
     return 0;
 }
@@ -84,6 +98,8 @@ int SysManager::release_train(const std::string &opt_idx, const TrainID &id)
         train.release_train(id);
     }
     catch(exception e) {throw e; }
+    catch(std::string msg) {throw msg; }
+    catch(...) {throw; }
     std::cout << opt_idx << " 0" << std::endl;
     return 0;
 }
@@ -96,6 +112,8 @@ int SysManager::query_train(const std::string &opt_idx, const TrainID &id, const
         std::cout << opt_idx << " " << pack;
     }
     catch(exception e) {throw e; }
+    catch(std::string msg) {throw msg; }
+    catch(...) {throw; }
     return 0;
 }
 
@@ -108,6 +126,8 @@ int SysManager::query_ticket(const std::string &opt_idx, const Date &date, const
         for(TravelPack &tick: pack) std::cout << tick << std::endl;
     }
     catch(exception e) {throw e; }
+    catch(std::string msg) {throw msg; }
+    catch(...) {throw; }
     return 0;
 }
 
@@ -119,6 +139,8 @@ int SysManager::query_transfer(const std::string &opt_idx, const Date &date, con
         else std::cout << opt_idx << " " << pack.first << std::endl << pack.second << std::endl;
     }
     catch(exception e) {throw e; }
+    catch(std::string msg) {throw msg; }
+    catch(...) {throw; }
     return 0;
 }
 
@@ -134,7 +156,7 @@ int SysManager::buy_ticket(const std::string &opt_idx, const Username &usr, cons
                 tick.leave, tick.arrive, num, tick.price, 
                 tick.day, tick.sidx, tick.tidx
             );
-if(id == "LeavesofGrass" && tick.day == 6) std::cerr << "SUCESSTICKINFO " << tick.sidx << " " << tick.tidx << " " << tick.seat << " " << num << std::endl;
+// if(id == "LeavesofGrass" && tick.day == 6) std::cerr << "SUCESSTICKINFO " << tick.sidx << " " << tick.tidx << " " << tick.seat << " " << num << std::endl;
 // std::cerr << opt_idx << " " << tick.price << " " << num << std::endl;
             std::cout << opt_idx << " " << 1ll * tick.price * num << std::endl;    
         }
@@ -144,7 +166,7 @@ if(id == "LeavesofGrass" && tick.day == 6) std::cerr << "SUCESSTICKINFO " << tic
                 tick.leave, tick.arrive, num, tick.price, 
                 tick.day, tick.sidx, tick.tidx
             );
-if(id == "LeavesofGrass" && tick.day == 6) std::cerr << "PENDTICKINFO " << tick.sidx << " " << tick.tidx << " " << tick.seat << " " << num << std::endl;
+// if(id == "LeavesofGrass" && tick.day == 6) std::cerr << "PENDTICKINFO " << tick.sidx << " " << tick.tidx << " " << tick.seat << " " << num << std::endl;
 // std::cout << "PENDING " << id << " " << tick.day << " " << tick.sidx << " " << tick.tidx << " " << num << std::endl;
             trax.append_pending(
                 id, tick.day, usr, len, tick.sidx, tick.tidx, num
@@ -154,6 +176,8 @@ if(id == "LeavesofGrass" && tick.day == 6) std::cerr << "PENDTICKINFO " << tick.
         else throw transaction_error("insufficient remaining tickets");
     }
     catch(exception e) {throw e; }
+    catch(std::string msg) {throw msg; }
+    catch(...) {throw; }
     return 0;
 }
 
@@ -169,6 +193,8 @@ int SysManager::query_order(const std::string &opt_idx, const Username &usr)
         }
     }
     catch(exception e) {throw e; }
+    catch(std::string msg) {throw msg; }
+    catch(...) {throw; }
     return 0;
 }
 
@@ -191,6 +217,8 @@ int SysManager::refund_ticket(const std::string &opt_idx, const Username &usr, i
         }
     }
     catch(exception e) {throw e; }
+    catch(std::string msg) {throw msg; }
+    catch(...) {throw; }
     std::cout << opt_idx << " 0" << std::endl;
     return 0;
 }
@@ -202,6 +230,8 @@ int SysManager::rollback(const std::string &opt_idx, int time_idx)
 
     }
     catch(exception e) {throw e; }
+    catch(std::string msg) {throw msg; }
+    catch(...) {throw; }
     return 0;
 }
 
@@ -213,6 +243,8 @@ int SysManager::clean(const std::string &opt_idx)
         trax.clear();
     }
     catch(exception e) {throw e; }
+    catch(std::string msg) {throw msg; }
+    catch(...) {throw; }
     return 0;
 }
 

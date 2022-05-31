@@ -2,12 +2,19 @@
 test/
 .vscode/
 CMakeFiles/
+data/
+bin/*
 
 # Files
+!.gitkeep
 *.cmake
 CMakeCache.txt
 code
 MakeFile
+run_judge.py
+*.sh
+*.in
+*.dat
 
 # Prerequisites
 *.d
