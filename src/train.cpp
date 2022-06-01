@@ -117,15 +117,18 @@ int TrainManager::add_train(const TrainID &id, int _stanum, int _seatnum, Statio
     TrainInfo new_train(
         _stanum, _seatnum, _sta, _price, _st_time, _tra_time, _stp_time, _st_date, _ed_date, _type
     );
-// if(id == "LeavesofGrass") {
-//     std::cout << "<TRAIN>\n";
-//     for(int i = 1; i <= new_train.sta_num; ++i) {
-//         std::cout << new_train.line.sta[i] << " ";
-//         std::cout << new_train.arrive_time(0, i).date << " " << new_train.arrive_time(0, i) << " ";
-//         std::cout << new_train.leave_time(0, i).date << " " << new_train.leave_time(0, i) << std::endl;
-//     }
-// }
+if(id == "LeavesofGrass") {
+    std::cerr << "<TRAIN>\n";
+    for(int i = 1; i <= new_train.sta_num; ++i) {
+        std::cerr << new_train.line.sta[i] << " ";
+        std::cerr << new_train.arrive_time(0, i).date << " " << new_train.arrive_time(0, i) << " ";
+        std::cerr << new_train.leave_time(0, i).date << " " << new_train.leave_time(0, i) << std::endl;
+    }
+}
     train.Set(id, new_train);
+if(id == "LeavesofGrass") {
+    assert(train.Search(id).second);
+}
     return 0;
 }
 
@@ -142,23 +145,44 @@ int TrainManager::delete_train(const TrainID &id) {
 }
 
 int TrainManager::release_train(const TrainID &id) {
+std::cerr << "Has entered!" << std::endl;
     TrainInfo tr;
+if(id == "LeavesofGrass") {
+    std::cerr << "Here in RELEASH_TRAIN 0" << std::endl;
+}
     if(!train.Get(id, tr)) {
         throw train_error("train not found");
     }
     if(tr.released) {
         throw train_error("the train has released");
     }
+
+if(id == "LeavesofGrass") {
+    std::cerr << "Here in RELEASH_TRAIN 0.2" << std::endl;
+}
     // set release tag as 1
     tr.released = 1;
     train.Set(id, tr);
 
+if(id == "LeavesofGrass") {
+    std::cerr << "Here in RELEASH_TRAIN 0.5" << std::endl;
+}
     // update by-pass train list
     Station sta;
     PassTrain ptra;
+if(id == "LeavesofGrass") {
+    std::cerr << "Here in RELEASH_TRAIN 1" << std::endl;
+}
+    auto iter = train.Search(id).first;
+if(id == "LeavesofGrass") {
+    std::cerr << "Here in RELEASH_TRAIN 2" << std::endl;
+}
+
     for(int i = 1; i <= tr.sta_num; ++i) {
         sta = tr.line.sta[i];
-        auto iter = train.Search(id).first;
+if(id == "LeavesofGrass") {
+    std::cerr << "Here in RELEASH_TRAIN 3" << std::endl;
+}
         if(station.Get(sta, ptra)) {
             assert(ptra.pnum < max_pnum);
             ptra.ptrain[ptra.pnum++] = (PassTrain::MetaData) {
@@ -171,7 +195,13 @@ int TrainManager::release_train(const TrainID &id) {
                 tr.leave_time(0, i).date, tr.leave_time(-1, i).date, id, i, iter
             };
         }
+if(id == "LeavesofGrass") {
+    std::cerr << "Here in RELEASH_TRAIN 4" << std::endl;
+}
         station.Set(sta, ptra);
+if(id == "LeavesofGrass") {
+    std::cerr << "Here in RELEASH_TRAIN 5" << std::endl;
+}
     }
     return 0;
 }

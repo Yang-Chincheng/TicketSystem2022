@@ -5,8 +5,6 @@
 #include "../lib/utility.h"
 #include "ticketsystem.h"
 #include <string>
-    
-    #include <cstdlib>
 
 inline ticket::Date getDate(const std::string &str) {
     TokenScanner scan(str, '-');
@@ -57,6 +55,8 @@ inline ticket::Time getTime(const std::string &str) {
 // }
 
 int main() {
+freopen("/mnt/d/Code/Project/TicketSystem2022/data/normal/basic_2/1.in", "r", stdin);
+freopen("/mnt/d/Code/Project/TicketSystem2022/tmp.out", "w", stdout);
     // test();
     ticket::SysManager ticksys;
     std::string cmd;
@@ -67,7 +67,8 @@ int main() {
         std::string opt_idx = scan.Next_Token();
         std::string opt = scan.Next_Token();
         std::string tag;
-// std::cerr << opt_idx << std::endl;
+
+std::cerr << opt_idx << std::endl;
 
         try {
             if(opt == "add_user") {

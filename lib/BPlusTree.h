@@ -122,9 +122,9 @@ public:
                                                   data_memory_pool_(name_in + std::string("_data")) {
         index_name_ = name_in + std::string("_index_storage");
         data_name_ = name_in + std::string("_data_storage");
-        index_.open(index_name_);
+        index_.open("./bin/" + index_name_);
         if (!index_) {
-            index_.open(index_name_, std::ostream::out);
+            index_.open("./bin/" + index_name_, std::ostream::out);
             node_num_ = 0;
             data_num_ = 0;
             record_num_ = 0;
@@ -136,10 +136,10 @@ public:
             index_.seekp(k_head_preserved + sizeof(Node_) * root_num_);
             index_.write(reinterpret_cast<char *>(&root_), sizeof(Node_));
             index_.close();
-            index_.open(index_name_);
-            data_.open(data_name_, std::ostream::out);
+            index_.open("./bin/" + index_name_);
+            data_.open("./bin/" + data_name_, std::ostream::out);
             data_.close();
-            data_.open(data_name_);
+            data_.open("./bin/" + data_name_);
         } else {
             index_.seekg(0);
             index_.read(reinterpret_cast<char *>(&node_num_), sizeof(int));
@@ -149,7 +149,7 @@ public:
             index_.read(reinterpret_cast<char *>(&root_num_), sizeof(int));
             index_.seekp(k_head_preserved + sizeof(Node_) * root_num_);
             index_.read(reinterpret_cast<char *>(&root_), sizeof(Node_));
-            data_.open(data_name_);
+            data_.open("./bin/" + data_name_);
         }
     }
 
@@ -171,12 +171,12 @@ public:
     }
 
     void Clear() {
-        index_.open(index_name_, std::ostream::out);
+        index_.open("./bin/" + index_name_, std::ostream::out);
         index_.close();
-        index_.open(index_name_);
-        data_.open(data_name_, std::ostream::out);
+        index_.open("./bin/" + index_name_);
+        data_.open("./bin/" + data_name_, std::ostream::out);
         data_.close();
-        data_.open(data_name_);
+        data_.open("./bin/" + data_name_);
         node_memory_pool_.Clear();
         data_memory_pool_.Clear();
         node_num_ = 0;
@@ -206,11 +206,13 @@ public:
         int position_;
 
     public:
+
         Iterator() {
             tree_ = nullptr;
+            position_ = -1;
         }
 
-        explicit Iterator(BPTree<key_type, value_type> *tree_in) {
+        Iterator(BPTree<key_type, value_type> *tree_in) {
             tree_ = tree_in;
         }
 
@@ -218,6 +220,15 @@ public:
             tree_ = rhs.tree_;
             object_node_ = rhs.object_node_;
             position_ = rhs.position_;
+        }
+
+        Iterator &operator=(const Iterator &rhs) {
+            if (&rhs == this)
+                return *this;
+            tree_ = rhs.tree_;
+            object_node_ = rhs.object_node_;
+            position_ = rhs.position_;
+            return *this;
         }
 
         Iterator(BPTree<key_type, value_type> *tree_in, const Node_ &node_in, int pos_in) {
@@ -236,8 +247,10 @@ public:
                     object_node_ = tree_in->GetLastNode_();
                     position_ = object_node_.elements_num;
                 }
-            } else
-                throw std::string("Error: Empty BPlusTree.");
+            } else {
+                object_node_ = tree_in->GetLastNode_();
+                position_ = object_node_.elements_num;
+            }
         }
 
         ~Iterator() {
@@ -684,7 +697,7 @@ private:
                 r = parent_node.elements_num - 2;
                 while (l <= r) {
                     mid = (l + r) / 2;
-                    if (parent_node.data[mid].key > new_node.data[new_node.elements_num - 1].key)
+                    if (parent_node.data[mid].key > new_node.data[new_node.elements_num - 2].key)
                         r = mid - 1;
                     else
                         l = mid + 1;
@@ -694,10 +707,10 @@ private:
                 if (parent_node.data[pos].address != node_in.my_num)
                     throw std::string("Error: Programing bug. Function: BreakNode_.");
 
-                parent_node.data[pos].address = new_node.my_num;
-                for (int i = parent_node.elements_num; i > pos + 1; i--)
+//                parent_node.data[pos].address = new_node.my_num;
+                for (int i = parent_node.elements_num; i > pos; i--)
                     parent_node.data[i] = parent_node.data[i - 1];
-                parent_node.data[pos + 1].key = parent_node.data[pos].key;
+//                parent_node.data[pos + 1].key = parent_node.data[pos].key;
                 parent_node.data[pos + 1].address = new_node.my_num;
                 parent_node.data[pos].key =
                         node_in.if_leaf ? new_node.data[0].key : node_in.data[node_in.elements_num - 1].key;

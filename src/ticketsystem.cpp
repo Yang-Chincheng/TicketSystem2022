@@ -95,7 +95,14 @@ int SysManager::delete_train(const std::string &opt_idx, const TrainID &id)
 int SysManager::release_train(const std::string &opt_idx, const TrainID &id) 
 {
     try {
+if(opt_idx == "[3407]") {
+    std::cerr << "HERE in RELEASE_TRAIN!!" << std::endl;
+}
         train.release_train(id);
+
+if(opt_idx == "[3407]") {
+    std::cerr << "HERE in RELEASE_TRAIN AGAIN!!" << std::endl;
+}
     }
     catch(exception e) {throw e; }
     catch(std::string msg) {throw msg; }
