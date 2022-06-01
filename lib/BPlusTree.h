@@ -122,9 +122,9 @@ public:
                                                   data_memory_pool_(name_in + std::string("_data")) {
         index_name_ = name_in + std::string("_index_storage");
         data_name_ = name_in + std::string("_data_storage");
-        index_.open(index_name_);
+        index_.open("./bin/"+index_name_);
         if (!index_) {
-            index_.open(index_name_, std::ostream::out);
+            index_.open("./bin/"+index_name_, std::ostream::out);
             node_num_ = 0;
             data_num_ = 0;
             record_num_ = 0;
@@ -136,10 +136,10 @@ public:
             index_.seekp(k_head_preserved + sizeof(Node_) * root_num_);
             index_.write(reinterpret_cast<char *>(&root_), sizeof(Node_));
             index_.close();
-            index_.open(index_name_);
-            data_.open(data_name_, std::ostream::out);
+            index_.open("./bin/"+index_name_);
+            data_.open("./bin/"+data_name_, std::ostream::out);
             data_.close();
-            data_.open(data_name_);
+            data_.open("./bin/"+data_name_);
         } else {
             index_.seekg(0);
             index_.read(reinterpret_cast<char *>(&node_num_), sizeof(int));
@@ -149,7 +149,7 @@ public:
             index_.read(reinterpret_cast<char *>(&root_num_), sizeof(int));
             index_.seekp(k_head_preserved + sizeof(Node_) * root_num_);
             index_.read(reinterpret_cast<char *>(&root_), sizeof(Node_));
-            data_.open(data_name_);
+            data_.open("./bin/"+data_name_);
         }
     }
 
@@ -171,12 +171,12 @@ public:
     }
 
     void Clear() {
-        index_.open(index_name_, std::ostream::out);
+        index_.open("./bin/"+index_name_, std::ostream::out);
         index_.close();
-        index_.open(index_name_);
-        data_.open(data_name_, std::ostream::out);
+        index_.open("./bin/"+index_name_);
+        data_.open("./bin/"+data_name_, std::ostream::out);
         data_.close();
-        data_.open(data_name_);
+        data_.open("./bin/"+data_name_);
         node_memory_pool_.Clear();
         data_memory_pool_.Clear();
         node_num_ = 0;
@@ -206,7 +206,13 @@ public:
         int position_;
 
     public:
-        explicit Iterator(BPTree<key_type, value_type> *tree_in) {
+
+        Iterator(){
+            tree_= nullptr;
+            position_=-1;
+        }
+
+        Iterator(BPTree<key_type, value_type> *tree_in) {
             tree_ = tree_in;
         }
 
@@ -239,7 +245,6 @@ public:
         ~Iterator() {
 
         }
-
         bool operator==(const Iterator &rhs) const {
             return tree_ == rhs.tree_ && object_node_.data[position_].key == rhs.object_node_.data[rhs.position_].key;
         }
