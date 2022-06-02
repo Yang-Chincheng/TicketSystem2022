@@ -2,6 +2,7 @@ import os
 import json
 import subprocess
 from filecmp import cmp as fcmp
+import time
 
 data_dir = 'data/normal'
 compile_script = 'build.sh'
@@ -46,21 +47,32 @@ def main():
 
     compile_project()
 
-    skip = {}
-    # skip = {
-    #     'basic_1', 'basic_2', 'basic_3', 'basic_4', 'basic_5', 'basic_6',
-    #     'pressure_1_easy', 'pressure_1_hard', 'pressure_2_easy'
-    # }
+    test_point = {
+        'basic_1',
+        'basic_2', 
+        'basic_3', 
+        # 'basic_4', 
+        # 'basic_5', 
+        # 'basic_6',
+        # 'pressure_1_easy', 
+        # 'pressure_1_hard', 
+        # 'pressure_2_easy',
+        # 'pressure_2_hard'
+    }
 
     errorCase=[]
     for (name, test) in testInfo.items():
-        if name in skip: continue
+        if name not in test_point: continue
         fail_point=None
         print('test for {}'.format(name))
+        begintime = time.time()
         for point in test:
             file_path='{}/{}/{}'.format(data_dir,name,point)
             if os.path.exists(file_path+'.in') and os.path.exists(file_path+'.out'):
+                starttime = time.time()
                 run(file_path+'.in')
+                curtime = time.time()
+                print(f"point {point} takes {round(curtime - starttime, 2)} secs")
                 try:
                     result=fcmp(file_path+'.out','tmp.out')
                 except:
@@ -72,6 +84,8 @@ def main():
             else:
                 print("\033[31m{}\033[0m".format('data set is broken at {}!'.format(file_path)))
                 exit(127)
+        endtime = time.time()
+        print(f"{name} total time {round(endtime - begintime, 2)}")
         clean()
         if fail_point==None:
             print("\033[36m{}\033[0m".format('success in {}'.format(name)))
