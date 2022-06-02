@@ -28,6 +28,7 @@ TrainInfo::TrainInfo(int _stanum, int _seatnum, Station *_sta, int *_price, cons
     day_num = (_ed_date - _st_date) + 1;
     st_time = _st_time;
     st_date = _st_date, ed_date = _ed_date;
+    tot_seat = _seatnum;
     for(int i = 0; i < day_num; ++i) {
         for(int j = 1; j < sta_num; ++j) seat[i][j] = _seatnum;
     }
@@ -78,6 +79,11 @@ int TrainInfo::search_station(const Station &sta, int st = 1, int ed = 0) {
     return 0;
 }
 
+// void PassTrain::append(const Date &_st, const Date &_ed, const TrainID &_id, int _idx, BPTree<TrainID, TrainInfo>::Iterator &_iter) {
+//     assert(pnum < max_pnum);
+//     ptrain[pnum++] = MetaData(_st, _ed, _id, _idx, _iter);
+// }
+
 std::ostream& operator << (std::ostream &os, const LinePack &pack) {
     os << pack.id << " " << pack.type << std::endl;
     Time cur;
@@ -117,18 +123,16 @@ int TrainManager::add_train(const TrainID &id, int _stanum, int _seatnum, Statio
     TrainInfo new_train(
         _stanum, _seatnum, _sta, _price, _st_time, _tra_time, _stp_time, _st_date, _ed_date, _type
     );
-if(id == "LeavesofGrass") {
-    std::cerr << "<TRAIN>\n";
-    for(int i = 1; i <= new_train.sta_num; ++i) {
-        std::cerr << new_train.line.sta[i] << " ";
-        std::cerr << new_train.arrive_time(0, i).date << " " << new_train.arrive_time(0, i) << " ";
-        std::cerr << new_train.leave_time(0, i).date << " " << new_train.leave_time(0, i) << std::endl;
-    }
-}
+// if(id == "whatyouwanted") {
+//     std::cerr << "<TRAIN>\n";
+//     for(int i = 1; i <= new_train.sta_num; ++i) {
+//         std::cerr << new_train.line.sta[i] << " ";
+//         std::cerr << new_train.arrive_time(0, i).date << " " << new_train.arrive_time(0, i) << " ";
+//         std::cerr << new_train.leave_time(0, i).date << " " << new_train.leave_time(0, i) << std::endl;
+//     }
+//     assert(0);
+// }
     train.Set(id, new_train);
-if(id == "LeavesofGrass") {
-    assert(train.Search(id).second);
-}
     return 0;
 }
 
@@ -145,63 +149,30 @@ int TrainManager::delete_train(const TrainID &id) {
 }
 
 int TrainManager::release_train(const TrainID &id) {
-std::cerr << "Has entered!" << std::endl;
     TrainInfo tr;
-if(id == "LeavesofGrass") {
-    std::cerr << "Here in RELEASH_TRAIN 0" << std::endl;
-}
     if(!train.Get(id, tr)) {
         throw train_error("train not found");
     }
     if(tr.released) {
         throw train_error("the train has released");
     }
-
-if(id == "LeavesofGrass") {
-    std::cerr << "Here in RELEASH_TRAIN 0.2" << std::endl;
-}
     // set release tag as 1
     tr.released = 1;
     train.Set(id, tr);
-
-if(id == "LeavesofGrass") {
-    std::cerr << "Here in RELEASH_TRAIN 0.5" << std::endl;
-}
     // update by-pass train list
     Station sta;
-    PassTrain ptra;
-if(id == "LeavesofGrass") {
-    std::cerr << "Here in RELEASH_TRAIN 1" << std::endl;
-}
-    auto iter = train.Search(id).first;
-if(id == "LeavesofGrass") {
-    std::cerr << "Here in RELEASH_TRAIN 2" << std::endl;
-}
-
+    int cur = 1;
     for(int i = 1; i <= tr.sta_num; ++i) {
         sta = tr.line.sta[i];
-if(id == "LeavesofGrass") {
-    std::cerr << "Here in RELEASH_TRAIN 3" << std::endl;
-}
-        if(station.Get(sta, ptra)) {
-            assert(ptra.pnum < max_pnum);
-            ptra.ptrain[ptra.pnum++] = (PassTrain::MetaData) {
-                tr.leave_time(0, i).date, tr.leave_time(-1, i).date, id, i, iter
-            };
-        }
-        else {
-            ptra.pnum = 1;
-            ptra.ptrain[0] = (PassTrain::MetaData) {
-                tr.leave_time(0, i).date, tr.leave_time(-1, i).date, id, i, iter
-            };
-        }
-if(id == "LeavesofGrass") {
-    std::cerr << "Here in RELEASH_TRAIN 4" << std::endl;
-}
-        station.Set(sta, ptra);
-if(id == "LeavesofGrass") {
-    std::cerr << "Here in RELEASH_TRAIN 5" << std::endl;
-}
+        int num;
+        if(!pnum.Get(sta, num)) num = 0;
+        pass.Set(
+            make_pair(sta, num++),
+            PassInfo(
+                tr.leave_time(0, i).date, tr.leave_time(-1, i).date, id, i, cur
+            )
+        );
+        pnum.Set(sta, num);
     }
     return 0;
 }
@@ -222,23 +193,29 @@ int TrainManager::query_train(const TrainID &id, const Date &date, LinePack &pac
 
 int TrainManager::query_ticket(const Station &strt, const Station &term, const Date &date, bool cmp_type, vector<TravelPack> &pack) {
     pack.clear();
-    PassTrain ps;
+    PassInfo ps;
     TrainInfo tr;
     // enumerate each train passing the start station
-    if(!station.Get(strt, ps)) return 0;
-    for(int i = 0; i < ps.pnum; ++i) {
+    int num;
+    if(!pnum.Get(strt, num) || !num) return 0;
+    auto iter = pass.Search(make_pair(strt, 0)).first;
+    for(int i = 0; i < num; ++i, ++iter) {
+        ps = *iter;
         // rough check using abstract
-        PassTrain::MetaData *ptr = ps.ptrain + i;
-        if(date >= ptr->st_date && date <= ptr->ed_date) {
+        if(date >= ps.st_date && date <= ps.ed_date) {
             // get detail train info
-            tr = *ptr->iter;
+// std::cerr << "when accessing train: " << ptr->id << std::endl;
+// std::cerr << "[hint] " << (size_t) (&station) << " " << (size_t) (&train) << std::endl;
+// assert(ptr->iter == train.Search(ptr->id).first);
+            bool fb = train.Get(ps.id, tr);
+            assert(fb);
             // detail check and get ans
-            int sidx = ptr->idx;
+            int sidx = ps.idx;
             int tidx = tr.search_station(term, sidx);
             if(tidx) {
-                int day = date - ptr->st_date;
+                int day = date - ps.st_date;
                 int res_seat = tr.query_seat(day, sidx, tidx);
-                if(res_seat == 0) continue;
+                // if(res_seat == 0) continue;
 // if(ptr->id == "LeavesofGrass" && day == 22) {
 // std::cerr << "QUERY_TICKET " << ptr->id << " " << day << " " << sidx << " " << tidx << std::endl;
 // std::cout << "<TEST>\n";
@@ -246,7 +223,7 @@ int TrainManager::query_ticket(const Station &strt, const Station &term, const D
 // std::cout << std::endl;
 // }
                 pack.push_back(TravelPack(
-                    ptr->id, strt, term,
+                    ps.id, strt, term,
                     tr.leave_time(day, sidx), tr.arrive_time(day, tidx),
                     tr.total_price(sidx, tidx),
                     res_seat
@@ -262,28 +239,39 @@ int TrainManager::query_ticket(const Station &strt, const Station &term, const D
 
 int TrainManager::query_transfer(const Station &strt, const Station &term, const Date &date, bool cmp_type, TransPack &pack) {
     bool tag = 0;
-    PassTrain ps_s, ps_t;
+    PassInfo ps_s, ps_t;
     TrainInfo tr_s, tr_t;
     hashmap<Station, int, StrHasher> mp;
     
-    if(!station.Get(strt, ps_s) || !station.Get(term, ps_t)) return -1;
+    int num_s, num_t;
+    if(!pnum.Get(strt, num_s) || !pnum.Get(term, num_t)) return -1;
+    if(!num_s || !num_t) return -1;
+// if(strt == "河北省安国市" && term == "河南省信阳市" && date == Date(7, 13)) { 
+// std::cerr << "reached here " << num_s << " " << num_t << std::endl;
+// }
+    auto iter_s = pass.Search(make_pair(strt, 0)).first;
     // enumerate all the train passing the start station
-    for(int i = 0; i < ps_s.pnum; ++i) {
-        PassTrain::MetaData *ptr_s = ps_s.ptrain + i;
-        if(date >= ptr_s->st_date && date <= ptr_s->ed_date) {
-            tr_s = *ptr_s->iter;
-            
-            int day_s = date - ptr_s->st_date;
+    for(int i = 0; i < num_s; ++i, ++iter_s) {
+        ps_s = *iter_s;
+//  assert(iter_s == pass.Search(make_pair(strt, i)).first);
+        if(date >= ps_s.st_date && date <= ps_s.ed_date) {
+            bool fb = train.Get(ps_s.id, tr_s);
+            assert(fb);
+            int day_s = date - ps_s.st_date;
             // enumerate all the train passin the terminal station
-            for(int j = 0; j < ps_t.pnum; ++j) {
-                PassTrain::MetaData *ptr_t = ps_t.ptrain + j;
+            auto iter_t = pass.Search(make_pair(term, 0)).first;
+            for(int j = 0; j < num_t; ++j, ++iter_t) {
+                ps_t = *iter_t;
+// assert(iter_t == pass.Search(make_pair(term, j)).first);
                 // trains shound be different 
-                if(ptr_s->id == ptr_t->id) continue;
-                
-                tr_t = *ptr_t->iter;
+                if(ps_t.id == ps_s.id) continue;
+                fb = train.Get(ps_t.id, tr_t);
+                assert(fb);
+// assert(tr_s.search_station(strt) == ps_s.idx);
+// assert(tr_t.search_station(term) == ps_t.idx);
                 mp.clear();
-                for(int k = ptr_s->idx + 1; k <= tr_s.sta_num; ++k) mp[tr_s.line.sta[k]] = k;
-                for(int k = ptr_t->idx - 1; k >= 1; --k) {
+                for(int k = ps_s.idx + 1; k <= tr_s.sta_num; ++k) mp[tr_s.line.sta[k]] = k;
+                for(int k = ps_t.idx - 1; k >= 1; --k) {
                     // the exchange station
                     Station ex_sta = tr_t.line.sta[k];
                     int ex_idx = mp[ex_sta];
@@ -294,24 +282,24 @@ int TrainManager::query_transfer(const Station &strt, const Station &term, const
                     if(arri_ex <= tr_t.leave_time(-1, k)) {
                         int day_t = std::max(0, arri_ex.date - tr_t.leave_time(0, k).date);
                         if(arri_ex > tr_t.leave_time(day_t, k)) day_t++;
-                        int res_s = tr_s.query_seat(day_s, ptr_s->idx, ex_idx);
-                        int res_t = tr_t.query_seat(day_t, k, ptr_t->idx);
-                        if(!res_s || !res_t) continue;
+                        int res_s = tr_s.query_seat(day_s, ps_s.idx, ex_idx);
+                        int res_t = tr_t.query_seat(day_t, k, ps_t.idx);
+                        // if(!res_s || !res_t) continue;
                         TransPack cur(
                             TravelPack(
-                                ptr_s->id,
+                                ps_s.id,
                                 strt, ex_sta,
-                                tr_s.leave_time(day_s, ptr_s->idx),
+                                tr_s.leave_time(day_s, ps_s.idx),
                                 arri_ex,
-                                tr_s.total_price(ptr_s->idx, ex_idx),
+                                tr_s.total_price(ps_s.idx, ex_idx),
                                 res_s
                             ),
                             TravelPack(
-                                ptr_t->id,
+                                ps_t.id,
                                 ex_sta, term,
                                 tr_t.leave_time(day_t, k),
-                                tr_t.arrive_time(day_t, ptr_t->idx),
-                                tr_t.total_price(k, ptr_t->idx),
+                                tr_t.arrive_time(day_t, ps_t.idx),
+                                tr_t.total_price(k, ps_t.idx),
                                 res_t
                             )
                         );
@@ -335,22 +323,29 @@ int TrainManager::query_transfer(const Station &strt, const Station &term, const
 int TrainManager::check_ticket(const TrainID &id, const Date &date, const Station &st, const Station &tm, int num, TicketPack &pack) 
 {
     TrainInfo tr;
-    if(!train.Get(id, tr)) {
+    if(!train.Get(id, tr) || !tr.released) {
         throw transaction_error("ticket not found");
+    }
+    if(num > tr.tot_seat) {
+        throw transaction_error("exceed the total number of tickets");
     }
     pack.sidx = tr.search_station(st);
     if(!pack.sidx) {
         throw transaction_error("ticket not found");
     }
     pack.tidx = tr.search_station(tm, pack.sidx);
+// if(id == "")
+// std::cerr << "STATION_IDX " << pack.sidx << " " << pack.tidx << std::endl;
     if(!pack.tidx) {
         throw transaction_error("ticket not found");
     }
+
     Date st_date = tr.leave_time( 0, pack.sidx).date;
     Date ed_date = tr.leave_time(-1, pack.sidx).date;
     if(date < st_date || date > ed_date) {
         throw transaction_error("ticket not found");
     }
+
 
     pack.day = date - st_date;
 // assert(pack.day >= 0 && pack.day < tr.day_num);
@@ -375,7 +370,8 @@ int TrainManager::check_refund(bool suc, const TrainID &id, int day, int sidx, i
 {
 // std::cerr << "CHECK_REFUND " << id << " " << day << " " << sidx << " " << tidx << " " << num  << std::endl;
     TrainInfo tr;
-    assert(train.Get(id, tr));
+    bool fb = train.Get(id, tr);
+    assert(fb);
     assert(day >= 0 && day < tr.day_num);
     assert(0 < sidx && sidx < tidx && tidx <= tr.sta_num);
     if(suc) tr.modify_seat(day, sidx, tidx, num);
@@ -400,7 +396,8 @@ int TrainManager::check_refund(bool suc, const TrainID &id, int day, int sidx, i
 
 int TrainManager::clear() {
     train.Clear();
-    station.Clear();
+    pnum.Clear();
+    pass.Clear();
     return 0;
 }
 

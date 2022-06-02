@@ -258,7 +258,7 @@ public:
         }
 
         bool operator==(const Iterator &rhs) const {
-            return tree_ == rhs.tree_ && object_node_.data[position_].key == rhs.object_node_.data[rhs.position_].key;
+            return object_node_.data[position_].key == rhs.object_node_.data[rhs.position_].key;
         }
 
         bool operator!=(const Iterator &rhs) const {
@@ -266,26 +266,26 @@ public:
         }
 
         bool operator<(const Iterator &rhs) const {
-            if (tree_ != rhs.tree_)
-                throw std::string("Error: Iterators of different BPTree.");
+            // if (tree_ != rhs.tree_)
+            //     throw std::string("Error: Iterators of different BPTree.");
             return object_node_.data[position_].key < rhs.object_node_.data[rhs.position_].key;
         }
 
         bool operator>(const Iterator &rhs) const {
-            if (tree_ != rhs.tree_)
-                throw std::string("Error: Iterators of different BPTree.");
+            // if (tree_ != rhs.tree_)
+            //     throw std::string("Error: Iterators of different BPTree.");
             return object_node_.data[position_].key > rhs.object_node_.data[rhs.position_].key;
         }
 
         bool operator<=(const Iterator &rhs) const {
-            if (tree_ != rhs.tree_)
-                throw std::string("Error: Iterators of different BPTree.");
+            // if (tree_ != rhs.tree_)
+            //     throw std::string("Error: Iterators of different BPTree.");
             return object_node_.data[position_].key <= rhs.object_node_.data[rhs.position_].key;
         }
 
         bool operator>=(const Iterator &rhs) const {
-            if (tree_ != rhs.tree_)
-                throw std::string("Error: Iterators of different BPTree.");
+            // if (tree_ != rhs.tree_)
+            //     throw std::string("Error: Iterators of different BPTree.");
             return object_node_.data[position_].key >= rhs.object_node_.data[rhs.position_].key;
         }
 
@@ -294,8 +294,10 @@ public:
             if (position_ < 0 || position_ >= object_node_.elements_num)
                 throw std::string("Error: Invalid Iterator operation.");
             value_type ans;
+// std::cerr << sizeof(value_type) * object_node_.data[position_].address << std::endl;
             tree_->data_.seekg(sizeof(value_type) * object_node_.data[position_].address);
-            tree_->data_.read(reinterpret_cast<char *>(&ans), sizeof(value_type));
+            tree_->data_.read
+            (reinterpret_cast<char *>(&ans), sizeof(value_type));
             return ans;
         }
 

@@ -4,12 +4,14 @@ PROJECT(TicketSystem)
 SET(CMAKE_CXX_STANDARD 14)
 SET(CMAKE_CXX_FLAGS "-Ofast")
 # for local test
-SET(CMAKE_CXX_FLAGS_DEBUG "-g -DDEBUG -Wall -fsanitize=undefined -fsanitize=address")
+SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-z,stack-size=419430400")
+SET(CMAKE_CXX_FLAGS "-fsanitize=address -Wall")
+# SET(CMAKE_CXX_STACK_SIZE "419430400")
 
 # INCLUDE_DIRECTORIES(./src)
 # INCLUDE_DIRECTORIES(./lib)
 # for local test
-INCLUDE_DIRECTORIES(./test)
+# INCLUDE_DIRECTORIES(./test)
 
 AUX_SOURCE_DIRECTORY(./lib LIB)
 AUX_SOURCE_DIRECTORY(./src SRC)

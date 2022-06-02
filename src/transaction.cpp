@@ -1,7 +1,7 @@
 #include "transaction.h"
 #include <iostream>
 
-#define SPLIT_INTO_VOLUMES 0
+// #define SPLIT_INTO_VOLUMES 0
 
 namespace ticket {
 
@@ -44,7 +44,8 @@ int TraxManager::append_pending(const TrainID &id, int day, const Username &usr,
 
 int TraxManager::pop_record(const Username &usr) {
     int num;
-    assert(rnum.Get(usr, num));
+    bool fb = rnum.Get(usr, num);
+    assert(fb);
     assert(num > 0);
     record.Delete(getTraxID(usr, --num));
     rnum.Set(usr, num);
@@ -53,7 +54,8 @@ int TraxManager::pop_record(const Username &usr) {
 
 int TraxManager::pop_pending(const TrainID &id, int day) {
     int num;
-    assert(pnum.Get(make_pair(id, day), num));
+    bool fb = pnum.Get(make_pair(id, day), num);
+    assert(fb);
     assert(num > 0);
     pending.Delete(getPendID(id, day, --num));
     pnum.Set(make_pair(id, day), num);
@@ -95,7 +97,8 @@ int TraxManager::update_status(const Username &usr, int idx, bool rev, const Sta
         throw transaction_error("record not found");
     }
     TraxInfo rec;
-    assert(record.Get(getTraxID(usr, rev? num - idx: idx - 1), rec));
+    bool fb = record.Get(getTraxID(usr, rev? num - idx: idx - 1), rec);
+    assert(fb);
     rec.status = new_sta;
     record.Set(getTraxID(usr, rev? num - idx: idx - 1), rec);
     return 0;
@@ -104,7 +107,8 @@ int TraxManager::update_status(const Username &usr, int idx, bool rev, const Sta
 int TraxManager::flip_masking(const TrainID &id, int day, vector<int> idx) {
     PendInfo pend;
     for(int i: idx) {
-        assert(pending.Get(getPendID(id, day, i), pend));
+        bool fb = pending.Get(getPendID(id, day, i), pend);
+        assert(fb);
         pend.mask ^= 1;
         pending.Set(getPendID(id, day, i), pend);
     }

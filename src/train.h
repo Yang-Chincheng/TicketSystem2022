@@ -26,7 +26,7 @@ struct TicketPack;
 
 const int max_stanum = 102;
 const int max_date = 100;
-const int max_pnum = 10000;
+const int max_pnum = 3000;
 
 struct LineInfo {
     int sta_num;
@@ -61,7 +61,7 @@ struct LinePack: public LineInfo, public InfoPack {
         const Time &_st_time, 
         char _type, 
         int *_seat
-    ): id(_id), LineInfo(info), st_time(_st_time) {
+    ): LineInfo(info), id(_id), st_time(_st_time) {
         type = _type;
         for(int i = 1; i < info.sta_num; ++i) seat[i] = _seat[i];
     }
@@ -77,6 +77,7 @@ struct TrainInfo {
     Time st_time;
     Date st_date, ed_date;
     LineInfo line;
+    int tot_seat;
     int seat[max_date][max_stanum];
 
     TrainInfo() = default;
@@ -193,24 +194,68 @@ struct ByCost {
     }    
 };
 
-struct PassTrain {
-    struct MetaData {
-        Date st_date, ed_date;
-        TrainID id;
-        int idx;
-        BPTree<TrainID, TrainInfo>::Iterator iter;
-    };
-    int pnum;
-    MetaData ptrain[max_pnum]; // 0-base
+struct PassInfo {
+    Date st_date;
+    Date ed_date;
+    TrainID id;
+    int idx;
+    int hint;
+
+    PassInfo() = default;
+    PassInfo(const PassInfo &o):
+    st_date(o.st_date), ed_date(o.ed_date), id(o.id), idx(o.idx), hint(o.hint) {}
+    PassInfo(
+        const Date &_st,
+        const Date &_ed,
+        const TrainID &_id,
+        int _idx,
+        int _hint
+    ):
+    st_date(_st), ed_date(_ed), id(_id), idx(_idx), hint(_hint) {}
+
 };
+
+// struct PassTrain {
+    
+//     struct MetaData {
+//         Date st_date, ed_date;
+//         TrainID id;
+//         int idx;
+//         BPTree<TrainID, TrainInfo>::Iterator iter;
+//         MetaData() = default;
+//         MetaData(const MetaData &o): 
+//         st_date(o.st_date), ed_date(o.ed_date), id(o.id), idx(o.idx), iter(o.iter) {}
+//         MetaData(
+//             const Date &_st, 
+//             const Date &_ed,
+//             const TrainID &_id,
+//             int _idx,
+//             BPTree<TrainID, TrainInfo>::Iterator &_iter 
+//         ): st_date(_st), ed_date(_ed), id(_id), idx(_idx), iter(_iter) {}  
+//     };
+//     int pnum;
+//     MetaData ptrain[max_pnum]; // 0-base
+//     PassTrain() = default;
+//     PassTrain(const PassTrain &o): pnum(o.pnum) {
+//         for(int i = 0; i < pnum; ++i) ptrain[i] = o.ptrain[i];
+//     }
+//     void append(
+//         const Date &_st,
+//         const Date &_ed,
+//         const TrainID &_id,
+//         int _idx,
+//         BPTree<TrainID, TrainInfo>::Iterator &_iter
+//     );
+// };
 
 class TrainManager {
 private:
     BPTree<TrainID, TrainInfo> train;
-    BPTree<Station, PassTrain> station;
+    BPTree<Station, int> pnum;
+    BPTree<pair<Station, int>, PassInfo> pass;
 
 public:
-    TrainManager(): train("train"), station("station") {}
+    TrainManager(): train("train"), pnum("passnum"), pass("pass") {}
     TrainManager(const TrainManager &o) = delete;
     ~TrainManager() = default;
 

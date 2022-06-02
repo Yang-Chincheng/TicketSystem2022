@@ -63,7 +63,7 @@ struct TraxInfo {
 
 };
 
-struct TraxPack: public TraxInfo, public InfoPack {
+struct TraxPack: public InfoPack {
     Status status;
     TrainID id;
     Station start;
@@ -77,7 +77,7 @@ struct TraxPack: public TraxInfo, public InfoPack {
     TraxPack(const TraxPack &o) = default;
     TraxPack(const TraxInfo &info):
     status(info.status), id(info.id), start(info.start), termi(info.termi),
-    leaving(info.leaving), arriving(info.arriving), number(info.number), price(info.price) {}
+    leaving(info.leaving), arriving(info.arriving), price(info.price), number(info.number) {}
 
     friend std::ostream& operator << (std::ostream &os, const TraxPack &pack);
 

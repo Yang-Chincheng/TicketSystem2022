@@ -40,7 +40,7 @@ struct _List_node {
 	_Hashmap_node<_Val> *node;
 
 	_List_node(_Hashmap_node<_Val> *_node = nullptr)
-		: node(_node), prev(nullptr), next(nullptr) {}
+		: prev(nullptr), next(nullptr), node(_node) {}
 };
 
 template <typename _Tp>

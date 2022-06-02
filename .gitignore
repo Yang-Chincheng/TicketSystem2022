@@ -11,9 +11,9 @@ bin/*
 CMakeCache.txt
 code
 MakeFile
-run_judge.py
 *.in
 *.dat
+log.txt
 
 # Prerequisites
 *.d

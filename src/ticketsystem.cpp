@@ -6,8 +6,8 @@ namespace ticket {
 int SysManager::add_user(const std::string &opt_idx, const Username &cur_usr, const Username &new_usr, const Password &pwd, const Name &name, const MailAddr &maddr, int priv) 
 {
     try {user.add_user(cur_usr, new_usr, pwd, name, maddr, priv); }
-    catch(exception e) {throw e; }
-    catch(std::string msg) {throw msg; }
+    catch(exception &e) {throw e; }
+    catch(std::string &msg) {throw msg; }
     catch(...) {throw; }
     std::cout << opt_idx << " 0" << std::endl;
     return 0;
@@ -16,8 +16,8 @@ int SysManager::add_user(const std::string &opt_idx, const Username &cur_usr, co
 int SysManager::login(const std::string &opt_idx, const Username &usr, const Password &pwd) 
 {
     try {user.login(usr, pwd); }
-    catch(exception e) {throw e; }
-    catch(std::string msg) {throw msg; }
+    catch(exception &e) {throw e; }
+    catch(std::string &msg) {throw msg; }
     catch(...) {throw; }
     std::cout << opt_idx << " 0" << std::endl;
     return 0;
@@ -26,8 +26,8 @@ int SysManager::login(const std::string &opt_idx, const Username &usr, const Pas
 int SysManager::logout(const std::string &opt_idx, const Username &usr) 
 {
     try {user.logout(usr); }
-    catch(exception e) {throw e; }
-    catch(std::string msg) {throw msg; }
+    catch(exception &e) {throw e; }
+    catch(std::string &msg) {throw msg; }
     catch(...) {throw; }
     std::cout << opt_idx << " 0" << std::endl;
     return 0;
@@ -40,8 +40,8 @@ int SysManager::query_profile(const std::string &opt_idx, const Username &cur_us
         user.query_profile(cur_usr, qry_usr, pack);
         std::cout << opt_idx << " " << pack << std::endl;
     }
-    catch(exception e) {throw e; }
-    catch(std::string msg) {throw msg; }
+    catch(exception &e) {throw e; }
+    catch(std::string &msg) {throw msg; }
     catch(...) {throw; }
     return 0;
 }
@@ -53,8 +53,8 @@ int SysManager::modify_profile(const std::string &opt_idx, const Username &cur_u
         user.modify_profile(cur_usr, mod_usr, pwd, name, maddr, priv, pack);
         std::cout << opt_idx << " " << pack << std::endl;
     }
-    catch(exception e) {throw e; }
-    catch(std::string msg) {throw msg; }
+    catch(exception &e) {throw e; }
+    catch(std::string &msg) {throw msg; }
     catch(...) {throw; }
     return 0;
 }
@@ -73,8 +73,8 @@ int SysManager::add_train(const std::string &opt_idx, const TrainID &id, int sta
             start_date, end_date, type
         );
     }
-    catch(exception e) {throw e; }
-    catch(std::string msg) {throw msg; }
+    catch(exception &e) {throw e; }
+    catch(std::string &msg) {throw msg; }
     catch(...) {throw; }
     std::cout << opt_idx << " 0" << std::endl;
     return 0;
@@ -85,8 +85,8 @@ int SysManager::delete_train(const std::string &opt_idx, const TrainID &id)
     try {
         train.delete_train(id);
     }
-    catch(exception e) {throw e; }
-    catch(std::string msg) {throw msg; }
+    catch(exception &e) {throw e; }
+    catch(std::string &msg) {throw msg; }
     catch(...) {throw; }
     std::cout << opt_idx << " 0" << std::endl;
     return 0;
@@ -95,17 +95,10 @@ int SysManager::delete_train(const std::string &opt_idx, const TrainID &id)
 int SysManager::release_train(const std::string &opt_idx, const TrainID &id) 
 {
     try {
-if(opt_idx == "[3407]") {
-    std::cerr << "HERE in RELEASE_TRAIN!!" << std::endl;
-}
         train.release_train(id);
-
-if(opt_idx == "[3407]") {
-    std::cerr << "HERE in RELEASE_TRAIN AGAIN!!" << std::endl;
-}
     }
-    catch(exception e) {throw e; }
-    catch(std::string msg) {throw msg; }
+    catch(exception &e) {throw e; }
+    catch(std::string &msg) {throw msg; }
     catch(...) {throw; }
     std::cout << opt_idx << " 0" << std::endl;
     return 0;
@@ -118,8 +111,8 @@ int SysManager::query_train(const std::string &opt_idx, const TrainID &id, const
         train.query_train(id, date, pack);
         std::cout << opt_idx << " " << pack;
     }
-    catch(exception e) {throw e; }
-    catch(std::string msg) {throw msg; }
+    catch(exception &e) {throw e; }
+    catch(std::string &msg) {throw msg; }
     catch(...) {throw; }
     return 0;
 }
@@ -132,8 +125,8 @@ int SysManager::query_ticket(const std::string &opt_idx, const Date &date, const
         std::cout << opt_idx << " " << pack.size() << std::endl;
         for(TravelPack &tick: pack) std::cout << tick << std::endl;
     }
-    catch(exception e) {throw e; }
-    catch(std::string msg) {throw msg; }
+    catch(exception &e) {throw e; }
+    catch(std::string &msg) {throw msg; }
     catch(...) {throw; }
     return 0;
 }
@@ -145,8 +138,8 @@ int SysManager::query_transfer(const std::string &opt_idx, const Date &date, con
         if(!~train.query_transfer(start, term, date, cmp_type, pack)) std::cout << opt_idx << " 0" << std::endl;
         else std::cout << opt_idx << " " << pack.first << std::endl << pack.second << std::endl;
     }
-    catch(exception e) {throw e; }
-    catch(std::string msg) {throw msg; }
+    catch(exception &e) {throw e; }
+    catch(std::string &msg) {throw msg; }
     catch(...) {throw; }
     return 0;
 }
@@ -182,8 +175,8 @@ int SysManager::buy_ticket(const std::string &opt_idx, const Username &usr, cons
         }
         else throw transaction_error("insufficient remaining tickets");
     }
-    catch(exception e) {throw e; }
-    catch(std::string msg) {throw msg; }
+    catch(exception &e) {throw e; }
+    catch(std::string &msg) {throw msg; }
     catch(...) {throw; }
     return 0;
 }
@@ -199,8 +192,8 @@ int SysManager::query_order(const std::string &opt_idx, const Username &usr)
             std::cout << pack[i] << std::endl;
         }
     }
-    catch(exception e) {throw e; }
-    catch(std::string msg) {throw msg; }
+    catch(exception &e) {throw e; }
+    catch(std::string &msg) {throw msg; }
     catch(...) {throw; }
     return 0;
 }
@@ -211,10 +204,16 @@ int SysManager::refund_ticket(const std::string &opt_idx, const Username &usr, i
         if(!user.is_online(usr)) throw transaction_error("user need to log in first");
         TraxInfo refnd;
         trax.query_record(usr, idx, 1, refnd);
+// if(usr == "GreyThroat" && refnd.id == "IHEARDthatyouask" && refnd.start == "江西省宜春市" && refnd.termi == "黑龙江省安达市") {
+//     std::cerr << "[DEBUG] " << opt_idx << " " << idx << std::endl;
+// }
         if(refnd.status == REFUNDED) {
-            throw transaction_error("record cannot be refunded");
+            throw transaction_error("tickets have been refunded");
         }
         trax.update_status(usr, idx, 1, REFUNDED);
+        // if(refnd.status == PENDING) {
+        //     trax.flip_masking(refnd.id, refnd.day, )
+        // }
         vector<PendInfo> pend;
         trax.query_pending(refnd.id, refnd.day, pend);
         vector<int> index;
@@ -229,8 +228,8 @@ int SysManager::refund_ticket(const std::string &opt_idx, const Username &usr, i
             trax.update_status(pend[i].user, pend[i].idx, 0, SUCCESS);
         }
     }
-    catch(exception e) {throw e; }
-    catch(std::string msg) {throw msg; }
+    catch(exception &e) {throw e; }
+    catch(std::string &msg) {throw msg; }
     catch(...) {throw; }
     std::cout << opt_idx << " 0" << std::endl;
     return 0;
@@ -242,8 +241,8 @@ int SysManager::rollback(const std::string &opt_idx, int time_idx)
     try {
 
     }
-    catch(exception e) {throw e; }
-    catch(std::string msg) {throw msg; }
+    catch(exception &e) {throw e; }
+    catch(std::string &msg) {throw msg; }
     catch(...) {throw; }
     return 0;
 }
@@ -255,8 +254,8 @@ int SysManager::clean(const std::string &opt_idx)
         train.clear();
         trax.clear();
     }
-    catch(exception e) {throw e; }
-    catch(std::string msg) {throw msg; }
+    catch(exception &e) {throw e; }
+    catch(std::string &msg) {throw msg; }
     catch(...) {throw; }
     return 0;
 }
