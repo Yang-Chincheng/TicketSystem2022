@@ -122,9 +122,9 @@ public:
                                                   data_memory_pool_(name_in + std::string("_data")) {
         index_name_ = name_in + std::string("_index_storage");
         data_name_ = name_in + std::string("_data_storage");
-        index_.open("./bin/"+index_name_);
+        index_.open("./bin/" + index_name_);
         if (!index_) {
-            index_.open("./bin/"+index_name_, std::ostream::out);
+            index_.open("./bin/" + index_name_, std::ostream::out);
             node_num_ = 0;
             data_num_ = 0;
             record_num_ = 0;
@@ -136,10 +136,10 @@ public:
             index_.seekp(k_head_preserved + sizeof(Node_) * root_num_);
             index_.write(reinterpret_cast<char *>(&root_), sizeof(Node_));
             index_.close();
-            index_.open("./bin/"+index_name_);
-            data_.open("./bin/"+data_name_, std::ostream::out);
+            index_.open("./bin/" + index_name_);
+            data_.open("./bin/" + data_name_, std::ostream::out);
             data_.close();
-            data_.open("./bin/"+data_name_);
+            data_.open("./bin/" + data_name_);
         } else {
             index_.seekg(0);
             index_.read(reinterpret_cast<char *>(&node_num_), sizeof(int));
@@ -149,7 +149,7 @@ public:
             index_.read(reinterpret_cast<char *>(&root_num_), sizeof(int));
             index_.seekp(k_head_preserved + sizeof(Node_) * root_num_);
             index_.read(reinterpret_cast<char *>(&root_), sizeof(Node_));
-            data_.open("./bin/"+data_name_);
+            data_.open("./bin/" + data_name_);
         }
     }
 
@@ -171,12 +171,12 @@ public:
     }
 
     void Clear() {
-        index_.open("./bin/"+index_name_, std::ostream::out);
+        index_.open("./bin/" + index_name_, std::ostream::out);
         index_.close();
-        index_.open("./bin/"+index_name_);
-        data_.open("./bin/"+data_name_, std::ostream::out);
+        index_.open("./bin/" + index_name_);
+        data_.open("./bin/" + data_name_, std::ostream::out);
         data_.close();
-        data_.open("./bin/"+data_name_);
+        data_.open("./bin/" + data_name_);
         node_memory_pool_.Clear();
         data_memory_pool_.Clear();
         node_num_ = 0;
@@ -207,9 +207,9 @@ public:
 
     public:
 
-        Iterator(){
-            tree_= nullptr;
-            position_=-1;
+        Iterator() {
+            tree_ = nullptr;
+            position_ = -1;
         }
 
         Iterator(BPTree<key_type, value_type> *tree_in) {
@@ -220,6 +220,15 @@ public:
             tree_ = rhs.tree_;
             object_node_ = rhs.object_node_;
             position_ = rhs.position_;
+        }
+
+        Iterator &operator=(const Iterator &rhs) {
+            if (&rhs == this)
+                return *this;
+            tree_ = rhs.tree_;
+            object_node_ = rhs.object_node_;
+            position_ = rhs.position_;
+            return *this;
         }
 
         Iterator(BPTree<key_type, value_type> *tree_in, const Node_ &node_in, int pos_in) {
@@ -238,13 +247,16 @@ public:
                     object_node_ = tree_in->GetLastNode_();
                     position_ = object_node_.elements_num;
                 }
-            } else
-                throw std::string("Error: Empty BPlusTree.");
+            } else {
+                object_node_ = tree_in->GetLastNode_();
+                position_ = object_node_.elements_num;
+            }
         }
 
         ~Iterator() {
 
         }
+
         bool operator==(const Iterator &rhs) const {
             return tree_ == rhs.tree_ && object_node_.data[position_].key == rhs.object_node_.data[rhs.position_].key;
         }
@@ -302,6 +314,14 @@ public:
             tree_->data_.seekg(sizeof(value_type) * object_node_.data[position_].address);
             tree_->data_.read(reinterpret_cast<char *>(&ans), sizeof(value_type));
             return ans;
+        }
+
+        const key_type GetKey() {
+            return object_node_.data[position_].key;
+        }
+
+        int StoragePosition() {
+            return sizeof(value_type) * object_node_[position_].address;
         }
 
         void SetPrev_() {
@@ -388,8 +408,35 @@ public:
     }
 
     Iterator LowerBound(key_type key_in) {
-        1 / 0; // place holder
-        return End();
+        Node_ object_node = FindObjectNode_(key_in);
+        int l, r, mid, pos;
+        l = 0;
+        r = object_node.elements_num - 1;
+        bool find = false;
+        while (!find && l <= r) {
+            mid = (l + r) / 2;
+            if (object_node.data[mid].key == key_in)
+                find = true, pos = mid;
+            if (object_node.data[mid].key > key_in)
+                r = mid - 1;
+            else
+                l = mid + 1;
+        }
+        if (find) {
+            return Iterator(this, object_node, pos);
+        } else {
+            if (l != object_node.elements_num)
+                return Iterator(this, object_node, l);
+            else {
+                if (object_node.next_num == -1)
+                    return Iterator(this, object_node, l);
+                else {
+                    index_.seekg(k_head_preserved + sizeof(Node_) * object_node.next_num);
+                    index_.read(reinterpret_cast<char *>(&object_node), sizeof(Node_));
+                    return Iterator(this, object_node, 0);
+                }
+            }
+        }
     }
 
     bool Get(key_type key_in, value_type &value_in) {
@@ -413,6 +460,11 @@ public:
             data_.read(reinterpret_cast<char *>(&value_in), sizeof(value_type));
         }
         return find;
+    }
+
+    void BiRead(int pos, value_type &object) {
+        data_.seekg(pos);
+        data_.read(reinterpret_cast<char *>(&object), sizeof(object));
     }
 
     void Insert(key_type key_in, value_type value_in) {
