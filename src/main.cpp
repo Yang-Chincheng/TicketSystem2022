@@ -1,15 +1,9 @@
-#ifdef NDEBUG
-#undef NDEBUG
-#endif
-
-#ifndef DDEBUG
-#define DDEBUG
-#endif
+#define TICKSYS_DEBUG
 
 #include "../lib/utility.h"
 #include "ticketsystem.h"
 #include <string>
-#include <sys/resource.h>
+// #include <sys/resource.h>
 
 inline ticket::Date getDate(const std::string &str) {
     TokenScanner scan(str, '-');
@@ -25,36 +19,34 @@ inline ticket::Time getTime(const std::string &str) {
     return ticket::Time(hh, mm);
 }
 
-void get_exe_resource_limits() {
-    rlimit my_rlimit;
-    getrlimit(RLIMIT_AS, &my_rlimit);
-    std::cerr << my_rlimit.rlim_cur << " " << my_rlimit.rlim_max << std::endl;
-    getrlimit(RLIMIT_DATA, &my_rlimit);
-    std::cerr << my_rlimit.rlim_cur << " " << my_rlimit.rlim_max << std::endl;
-    getrlimit(RLIMIT_FSIZE, &my_rlimit);
-    std::cerr << my_rlimit.rlim_cur << " " << my_rlimit.rlim_max << std::endl;
-    getrlimit(RLIMIT_STACK, &my_rlimit);
-    std::cerr << my_rlimit.rlim_cur << " " << my_rlimit.rlim_max << std::endl;
-}
+// void get_exe_resource_limits() {
+//     rlimit my_rlimit;
+//     getrlimit(RLIMIT_AS, &my_rlimit);
+//     std::cerr << my_rlimit.rlim_cur << " " << my_rlimit.rlim_max << std::endl;
+//     getrlimit(RLIMIT_DATA, &my_rlimit);
+//     std::cerr << my_rlimit.rlim_cur << " " << my_rlimit.rlim_max << std::endl;
+//     getrlimit(RLIMIT_FSIZE, &my_rlimit);
+//     std::cerr << my_rlimit.rlim_cur << " " << my_rlimit.rlim_max << std::endl;
+//     getrlimit(RLIMIT_STACK, &my_rlimit);
+//     std::cerr << my_rlimit.rlim_cur << " " << my_rlimit.rlim_max << std::endl;
+// }
 
-void files() {
-    freopen("/mnt/d/Code/Project/TicketSystem2022/data/normal/basic_3/2.in", "r", stdin);
-    freopen("/mnt/d/Code/Project/TicketSystem2022/tmp.out", "w", stdout);
-}
+// void files() {
+//     freopen("/mnt/d/Code/Project/TicketSystem2022/data/normal/basic_3/2.in", "r", stdin);
+//     freopen("/mnt/d/Code/Project/TicketSystem2022/tmp.out", "w", stdout);
+// }
 
 int main() {
     // files();
     // get_exe_resource_limits();
     ticket::SysManager ticksys;
     std::string cmd;
-// std::cerr << sizeof(ticket::PassTrain) << std::endl;
-// std::cerr << sizeof(ticket::TrainInfo) << std::endl;
-// return 0;
     while(1) {
         getline(std::cin, cmd);
         TokenScanner scan(cmd);
         
-        std::string opt_idx = scan.Next_Token();
+        std::string opt_idx_str = scan.Next_Token();
+        int opt_idx = TokenScanner(opt_idx_str.substr(1), ']').Next_Token<int>();
         std::string opt = scan.Next_Token();
         std::string tag;
 
@@ -263,7 +255,7 @@ int main() {
                         cmp_type = scan.Next_Token() == "cost";
                     else assert(0);
                 }
-                ticksys.query_ticket(opt_idx, date, st, tr, cmp_type);
+                ticksys.query_ticket(opt_idx, st, tr, date, cmp_type);
             }
             else if(opt == "query_transfer") {
                 ticket::Station st;
@@ -282,7 +274,7 @@ int main() {
                         cmp_type = scan.Next_Token() == "cost";
                     else assert(0);
                 }
-                ticksys.query_transfer(opt_idx, date, st, tr, cmp_type);
+                ticksys.query_transfer(opt_idx, st, tr, date, cmp_type);
             }
 
             else if(opt == "buy_ticket") {
@@ -345,15 +337,15 @@ int main() {
                 break;
             }  
             else {
-                std::cerr << opt_idx << " error: " << opt << std::endl;
+                std::cerr << opt_idx_str << " error: " << opt << std::endl;
                 assert(0); 
             }
 
         }
         catch(ticket::exception &e) {
-            std::cout << opt_idx << " -1" << std::endl;
+            std::cout << opt_idx_str << " -1" << std::endl;
             // if(opt_idx == "[745440]")
-            //     std::cerr << ">> " << opt_idx << " note: " << e.what() << std::endl;
+                // std::cerr << ">> " << opt_idx << " note: " << e.what() << std::endl;
         }
         catch(std::string &msg) {
             std::cerr << "[error] " << msg << std::endl;

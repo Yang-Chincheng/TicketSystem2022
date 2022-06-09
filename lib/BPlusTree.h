@@ -277,14 +277,21 @@ public:
             return object_node_.data[position_].key >= rhs.object_node_.data[rhs.position_].key;
         }
 
-        const value_type operator*() {
+        // const value_type operator*() {
+        //     // 无法引用
+        //     if (position_ < 0 || position_ >= object_node_.elements_num)
+        //         throw std::string("Error: Invalid Iterator operation.");
+        //     value_type ans;
+        //     tree_->data_.seekg(sizeof(value_type) * object_node_.data[position_].address);
+        //     tree_->data_.read(reinterpret_cast<char *>(&ans), sizeof(value_type));
+        //     return ans;
+        // }
+
+        const key_type Key() {
             // 无法引用
             if (position_ < 0 || position_ >= object_node_.elements_num)
                 throw std::string("Error: Invalid Iterator operation.");
-            value_type ans;
-            tree_->data_.seekg(sizeof(value_type) * object_node_.data[position_].address);
-            tree_->data_.read(reinterpret_cast<char *>(&ans), sizeof(value_type));
-            return ans;
+            return object_node_.data[position_].key;
         }
 
         const value_type Value() {
@@ -378,6 +385,11 @@ public:
             return std::pair<Iterator, bool>(Iterator(this, object_node, pos), find);
         } else
             return std::pair<Iterator, bool>(this->End(), find);
+    }
+
+    Iterator LowerBound(key_type key_in) {
+        1 / 0; // place holder
+        return End();
     }
 
     bool Get(key_type key_in, value_type &value_in) {

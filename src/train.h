@@ -2,7 +2,7 @@
 #define _TICKET_SYSTEM_TRAIN_H_
 
 #include "../lib/utility.h"
-#include "../lib/BPlusTree.h"
+#include "../lib/cached_bptree.h"
 #include "../lib/hashmap.h"
 #include "../lib/vector.h"
 #include <iostream>
@@ -13,12 +13,11 @@ namespace ticket {
 class TrainManager;
 
 // Infomation Preserver
-struct LineInfo;
 struct TrainInfo;
-struct MetaData;
-struct PassTrain;
+struct SeatInfo;
+struct PassInfo;
 
-// [New] Infomation Transmitter
+// Infomation Transmitter
 struct LinePack;
 struct TravelPack;
 using TransPack = pair<TravelPack, TravelPack>;
@@ -28,47 +27,6 @@ const int max_stanum = 102;
 const int max_date = 100;
 const int max_pnum = 3000;
 
-struct LineInfo {
-    int sta_num;
-    Station sta[max_stanum];
-    int price[max_stanum];
-    int arri_time[max_stanum];
-    int leav_time[max_stanum];
-
-    LineInfo() = default;
-    LineInfo(
-        int _stanum,  
-        Station *_sta,
-        int *_price,
-        const Time &_st_time,
-        int *_tra_time,
-        int *_stp_time
-    );
-    LineInfo(const LineInfo &o) = default;
-    ~LineInfo() = default;
-
-};
-
-struct LinePack: public LineInfo, public InfoPack {
-    TrainID id;
-    Time st_time;
-    char type;
-    int seat[max_stanum];
-    LinePack() = default;
-    LinePack(
-        const TrainID &_id,
-        const LineInfo &info, 
-        const Time &_st_time, 
-        char _type, 
-        int *_seat
-    ): LineInfo(info), id(_id), st_time(_st_time) {
-        type = _type;
-        for(int i = 1; i < info.sta_num; ++i) seat[i] = _seat[i];
-    }
-    friend std::ostream& operator << (std::ostream &os, const LinePack &info);
-
-};
-
 struct TrainInfo {
     bool released;
     char type;
@@ -76,10 +34,13 @@ struct TrainInfo {
     int day_num; // 0-base
     Time st_time;
     Date st_date, ed_date;
-    LineInfo line;
     int tot_seat;
-    int seat[max_date][max_stanum];
-
+    
+    Station sta[max_stanum];
+    int price[max_stanum];
+    int arri_time[max_stanum];
+    int leav_time[max_stanum];
+    
     TrainInfo() = default;
     TrainInfo(
         int _stanum,  
@@ -99,9 +60,41 @@ struct TrainInfo {
     Time arrive_time(int day, int idx);
     Time leave_time(int day, int idx);
     int total_price(int s, int t);
-    int query_seat(int d, int s, int t);
-    int modify_seat(int d, int s, int t, int del);
-    int search_station(const Station &sta, int st, int ed);
+    int search_station(const Station &sta, int st = 1, int ed = -1);
+
+};
+
+struct SeatInfo {
+    int num;
+    int seat[max_stanum];
+
+    SeatInfo() = default;
+    SeatInfo(const SeatInfo &o) = default;
+    SeatInfo(int _num, int _seat): num(_num) {
+        for(int i = 1; i < num; ++i) seat[i] = _seat;
+    }
+
+    int query_seat(int s, int t);
+    int modify_seat(int s, int t, int del);
+};
+
+struct PassInfo {
+    Date st_date;
+    Date ed_date;
+    TrainID id;
+    int idx;
+    int hint;
+
+    PassInfo() = default;
+    PassInfo(const PassInfo &o) = default;
+    PassInfo(
+        const Date &_st,
+        const Date &_ed,
+        const TrainID &_id,
+        int _idx,
+        int _hint
+    ):
+    st_date(_st), ed_date(_ed), id(_id), idx(_idx), hint(_hint) {}
 
 };
 
@@ -115,44 +108,40 @@ struct TravelPack: public InfoPack {
     TravelPack() = default;
     TravelPack(
         const TrainID &_id,
-        const Station &_strt, const Station &_term, 
-        const Time &_leav, const Time &_arri,
-        int _price, int _seat
-    ): id(_id), strt(_strt), term(_term), leav(_leav), arri(_arri) {
-        price = _price, seat = _seat;
-    }
+        const Station &_strt, 
+        const Station &_term, 
+        const Time &_leav, 
+        const Time &_arri,
+        int _price, 
+        int _seat
+    ): 
+    id(_id), strt(_strt), term(_term), 
+    leav(_leav), arri(_arri), 
+    price(_price), seat(_seat) {}
 
     friend std::ostream& operator << (std::ostream &os, const TravelPack &pack);
-
 };
 
 struct TicketPack: public InfoPack {
     int day, sidx, tidx;
     int price, seat;
     Time leave, arrive;
-};
 
-#ifndef _RECORD_PENDING_
-#define _RECORD_PENDING_
-struct PendInfo {
-    Username user; int idx;
-    int sidx, tidx, num;
-    bool mask;
-
-    PendInfo() = default;
-    PendInfo(const PendInfo &o) = default;
-    PendInfo(
-        const Username &_user,
-        int _idx,
+    TicketPack() = default;
+    TicketPack(const TicketPack &o) = default;
+    TicketPack(
+        int _day,
         int _sidx,
         int _tidx,
-        int _num,
-        bool _mask
-    ): 
-    user(_user), idx(_idx), sidx(_sidx), tidx(_tidx), num(_num), mask(_mask) {}
-
+        int _price,
+        int _seat,
+        const Time &_leave,
+        const Time &_arrive
+    ):
+    day(_day), sidx(_sidx), tidx(_tidx),
+    price(_price), seat(_seat),
+    leave(_leave), arrive(_arrive) {}
 };
-#endif
 
 struct ByTime {
     // query_ticket: answer sorting
@@ -194,72 +183,21 @@ struct ByCost {
     }    
 };
 
-struct PassInfo {
-    Date st_date;
-    Date ed_date;
-    TrainID id;
-    int idx;
-    int hint;
-
-    PassInfo() = default;
-    PassInfo(const PassInfo &o):
-    st_date(o.st_date), ed_date(o.ed_date), id(o.id), idx(o.idx), hint(o.hint) {}
-    PassInfo(
-        const Date &_st,
-        const Date &_ed,
-        const TrainID &_id,
-        int _idx,
-        int _hint
-    ):
-    st_date(_st), ed_date(_ed), id(_id), idx(_idx), hint(_hint) {}
-
-};
-
-// struct PassTrain {
-    
-//     struct MetaData {
-//         Date st_date, ed_date;
-//         TrainID id;
-//         int idx;
-//         BPTree<TrainID, TrainInfo>::Iterator iter;
-//         MetaData() = default;
-//         MetaData(const MetaData &o): 
-//         st_date(o.st_date), ed_date(o.ed_date), id(o.id), idx(o.idx), iter(o.iter) {}
-//         MetaData(
-//             const Date &_st, 
-//             const Date &_ed,
-//             const TrainID &_id,
-//             int _idx,
-//             BPTree<TrainID, TrainInfo>::Iterator &_iter 
-//         ): st_date(_st), ed_date(_ed), id(_id), idx(_idx), iter(_iter) {}  
-//     };
-//     int pnum;
-//     MetaData ptrain[max_pnum]; // 0-base
-//     PassTrain() = default;
-//     PassTrain(const PassTrain &o): pnum(o.pnum) {
-//         for(int i = 0; i < pnum; ++i) ptrain[i] = o.ptrain[i];
-//     }
-//     void append(
-//         const Date &_st,
-//         const Date &_ed,
-//         const TrainID &_id,
-//         int _idx,
-//         BPTree<TrainID, TrainInfo>::Iterator &_iter
-//     );
-// };
-
 class TrainManager {
-private:
-    BPTree<TrainID, TrainInfo> train;
-    BPTree<Station, int> pnum;
-    BPTree<pair<Station, int>, PassInfo> pass;
+protected:
+    cached_bptree<TrainID, TrainInfo, StrHasher> train;
+    cached_bptree<pair<TrainID, int>, SeatInfo, PairHasher<TrainID, int, StrHasher>> seat;
+    cached_bptree<pair<Station, int>, PassInfo, PairHasher<Station, int, StrHasher>> pass;
+
+    int clear_train();
 
 public:
-    TrainManager(): train("train"), pnum("passnum"), pass("pass") {}
+    TrainManager(): train("train"), seat("seat"), pass("pass") {}
     TrainManager(const TrainManager &o) = delete;
     ~TrainManager() = default;
 
     int add_train(
+        int opt_idx, 
         const TrainID &id,
         int _stanum,  
         int _seatnum,
@@ -273,53 +211,59 @@ public:
         char _type
     );
 
-    int delete_train(const TrainID& id);
+    int delete_train(
+        int opt_idx,
+        const TrainID& id
+    );
 
-    int release_train(const TrainID &id);
+    int release_train(
+        int opt_idx, 
+        const TrainID &id
+    );
     
     int query_train(
+        int opt_idx,
         const TrainID& id, 
-        const Date &date,
-        LinePack &pack
+        const Date &date
     );
 
     int query_ticket(
+        int opt_idx,
         const Station &strt,
         const Station &term,
         const Date &date,
-        bool cmp_type,
-        vector<TravelPack> &pack
+        bool cmp_type
     );
 
     int query_transfer(
+        int opt_idx,
         const Station &strt,
         const Station &term,
         const Date &date,
-        bool cmp_type,
-        TransPack &pack
+        bool cmp_type
     );
 
-    int check_ticket(
-        const TrainID &id,
-        const Date &date, 
-        const Station &strt,
-        const Station &term,
-        int num,
-        TicketPack &pack
-    );
+    // int check_ticket(
+    //     int opt_idx,
+    //     const TrainID &id,
+    //     const Date &date, 
+    //     const Station &strt,
+    //     const Station &term,
+    //     int num,
+    //     TicketPack &pack
+    // );
 
-    int check_refund(
-        bool suc,
-        const TrainID &id,
-        int day, 
-        int sidx, 
-        int tidx, 
-        int num,
-        vector<PendInfo> &pend, 
-        vector<int> &pack
-    );
-
-    int clear();
+    // int check_refund(
+    //     int opt_idx,
+    //     bool suc,
+    //     const TrainID &id,
+    //     int day, 
+    //     int sidx, 
+    //     int tidx, 
+    //     int num,
+    //     vector<PendInfo> &pend, 
+    //     vector<int> &pack
+    // );
 
 };
 

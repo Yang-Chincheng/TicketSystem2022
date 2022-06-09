@@ -160,13 +160,6 @@ bool operator >= (const Str<maxl> &lhs, const std::string &rhs) {
     return strcmp(lhs.c_str(), rhs.c_str()) >= 0;
 }
 
-struct StrHasher {
-    template <size_t maxl>
-    size_t operator () (const Str<maxl> &s) const {
-        return std::hash<std::string>()(std::string(s));
-    }
-};
-
 const size_t usr_len = 20;
 const size_t psw_len = 30;
 const size_t name_len = 21;

@@ -48,15 +48,15 @@ def main():
     compile_project()
 
     test_point = {
-        'basic_1',
-        'basic_2', 
-        'basic_3', 
+        # 'basic_1',
+        # 'basic_2', 
+        # 'basic_3', 
         # 'basic_4', 
         # 'basic_5', 
         # 'basic_6',
         # 'pressure_1_easy', 
         # 'pressure_1_hard', 
-        # 'pressure_2_easy',
+        'pressure_2_easy',
         # 'pressure_2_hard'
     }
 
