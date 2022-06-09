@@ -400,6 +400,38 @@ public:
             return std::pair<Iterator, bool>(this->End(), find);
     }
 
+    Iterator LowerBound(key_type key_in) {
+        Node_ object_node = FindObjectNode_(key_in);
+        int l, r, mid, pos;
+        l = 0;
+        r = object_node.elements_num - 1;
+        bool find = false;
+        while (!find && l <= r) {
+            mid = (l + r) / 2;
+            if (object_node.data[mid].key == key_in)
+                find = true, pos = mid;
+            if (object_node.data[mid].key > key_in)
+                r = mid - 1;
+            else
+                l = mid + 1;
+        }
+        if (find) {
+            return Iterator(this, object_node, pos);
+        } else {
+            if (l != object_node.elements_num)
+                return Iterator(this, object_node, l);
+            else {
+                if (object_node.next_num == -1)
+                    return Iterator(this, object_node, l);
+                else {
+                    index_.seekg(k_head_preserved + sizeof(Node_) * object_node.next_num);
+                    index_.read(reinterpret_cast<char *>(&object_node), sizeof(Node_));
+                    return Iterator(this, object_node, 0);
+                }
+            }
+        }
+    }
+
     bool Get(key_type key_in, value_type &value_in) {
         Node_ object_node = FindObjectNode_(key_in);
         // 找到节点内是否有对应的
