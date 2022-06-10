@@ -12,6 +12,7 @@
 #include <cassert>
 
 #include "MemoryPool.h"
+#include "BackUp.h"
 
 const int k_max_size = 10;
 const int k_min_size = 3;
@@ -117,10 +118,12 @@ private:
     Node_ root_;
     MemoryPool<int> node_memory_pool_;
     MemoryPool<int> data_memory_pool_;
+    Backup<key_type, value_type> backup_;
 
 public:
     explicit BPTree(const std::string &name_in) : node_memory_pool_(name_in + std::string("_index")),
-                                                  data_memory_pool_(name_in + std::string("_data")) {
+                                                  data_memory_pool_(name_in + std::string("_data")),
+                                                  backup_(name_in) {
         index_name_ = name_in + std::string("_index_storage");
         data_name_ = name_in + std::string("_data_storage");
         index_.open("./" + index_name_);
@@ -464,7 +467,7 @@ assert(index_);
         data_.read(reinterpret_cast<char *>(&object), sizeof(object));
     }
 
-    void Insert(key_type key_in, value_type value_in) {
+    void Insert(key_type key_in, value_type value_in, int time, bool is_backup = true) {
         Node_ object_node = FindObjectNode_(key_in);
         // 找到节点内的对应位置进行插入
         int l, r, mid, pos;
@@ -496,6 +499,12 @@ assert(index_);
         data_.write(reinterpret_cast<char *>(&value_in), sizeof(value_type));
         index_.seekp(k_head_preserved + sizeof(Node_) * object_node.my_num);
         index_.write(reinterpret_cast<char *>(&object_node), sizeof(Node_));
+        // 备份
+        if (is_backup) {
+            value_type temp;
+            backup_.AddRecord(time, 1, key_in, temp);
+        }
+
         // 检查是否需要裂块
         if (object_node.elements_num >= k_max_size)
             BreakNode_(object_node);
@@ -503,7 +512,7 @@ assert(index_);
             root_ = object_node;
     }
 
-    void Set(key_type key_in, value_type value_in) {
+    void Set(key_type key_in, value_type value_in, int time, bool is_backup = true) {
         Node_ object_node = FindObjectNode_(key_in);
         int l, r, mid, pos;
         l = 0;
@@ -519,18 +528,26 @@ assert(index_);
                 l = mid + 1;
         }
         if (!find) {
-            Insert(key_in, value_in);
+            Insert(key_in, value_in, time, is_backup);
             return;
         }
+        // 备份
+        if (is_backup) {
+            value_type bu;
+            data_.seekg(sizeof(value_type) * object_node.data[pos].address);
+            data_.write(reinterpret_cast<char *>(&bu), sizeof(value_type));
+            backup_.AddRecord(time, 0, key_in, bu);
+        }
+
         data_.seekp(sizeof(value_type) * object_node.data[pos].address);
         data_.write(reinterpret_cast<char *>(&value_in), sizeof(value_type));
     }
 
-    void Delete(key_type key_in, value_type value_in) {
-        Delete(key_in);
+    void Delete(key_type key_in, value_type value_in, int time, bool is_backup = true) {
+        Delete(key_in, time, is_backup);
     }
 
-    void Delete(key_type key_in) {
+    void Delete(key_type key_in, int time, bool is_backup = true) {
         Node_ object_node = FindObjectNode_(key_in);
         // 找到节点内的对应项进行删除
         int l, r, mid, pos;
@@ -550,6 +567,14 @@ assert(index_);
         if (!if_find)
             throw std::string("Error: Deleted a non-existent object.");
         int deleted_pos = object_node.data[pos].address;// 删除的内容在data_中的位置
+        // 备份
+        if (is_backup) {
+            value_type bu;
+            data_.seekg(sizeof(value_type) * deleted_pos);
+            data_.read(reinterpret_cast<char *>(&bu), sizeof(value_type));
+            backup_.AddRecord(time, 2, key_in, bu);
+        }
+
         for (int i = pos; i < object_node.elements_num - 1; i++)
             object_node.data[i] = object_node.data[i + 1];
         object_node.elements_num--;
@@ -567,6 +592,21 @@ assert(index_);
         }
         if (object_node == root_)
             root_ = object_node;
+    }
+
+    void RollBack(int object_time) {// 回滚至目标时间之前
+        int time_now, op;
+        key_type key;
+        value_type value;
+        time_now = backup_.Time();
+        while (object_time < time_now) {// 需要执行回滚操作
+            backup_.LastRecord(time_now,op,key,value);
+            if(op==0||op==2){// 回滚修改和删除操作
+                Set(key,value,time_now,false);
+            }else if(op==1){
+                Delete(key,time_now,false);
+            }
+        }
     }
 
     void InputInArray(key_type *key_array_in, value_type *value_array_in, int length) {
