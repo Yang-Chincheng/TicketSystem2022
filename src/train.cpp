@@ -410,4 +410,11 @@ int TrainManager::clear_train() {
     return 0;
 }
 
+int TrainManager::rollback_train(int tstamp) {
+    train.roll_back(tstamp);
+    seat.roll_back(tstamp);
+    pass.roll_back(tstamp);
+    return 0;
+}
+
 }

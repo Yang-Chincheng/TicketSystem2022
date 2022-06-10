@@ -83,7 +83,7 @@ int main() {
         std::string opt = scan.Next_Token();
         std::string tag;
 
-// std::cerr << opt_idx_str << std::endl;
+std::cerr << opt_idx_str << std::endl;
 
         try {
             if(opt == "add_user") {
@@ -110,7 +110,7 @@ quser.start();
                         maddr = scan.Next_Token<ticket::MailAddr>();
                     else if(tag == "-g")                    
                         priv = scan.Next_Token<int>();
-                    else assert(0);
+                    else ASSERT(0);
                 }
                 ticksys.add_user(
                     opt_idx, cur_user, new_user, pwd, name, maddr, priv 
@@ -131,7 +131,7 @@ quser.start();
                         user = scan.Next_Token<ticket::Username>();
                     else if(tag == "-p")
                         pwd = scan.Next_Token<ticket::Password>();
-                    else assert(0);
+                    else ASSERT(0);
                 }
                 ticksys.login(opt_idx, user, pwd);
 #ifdef TIME_INSPECT
@@ -147,7 +147,7 @@ quser.start();
                     tag = scan.Next_Token();
                     if(tag == "-u")
                         user = scan.Next_Token<ticket::Username>();
-                    else assert(0);
+                    else ASSERT(0);
                 }
                 ticksys.logout(opt_idx, user);
 #ifdef TIME_INSPECT
@@ -166,7 +166,7 @@ quser.start();
                         cur_user = scan.Next_Token<ticket::Username>();
                     else if(tag == "-u")
                         qry_user = scan.Next_Token<ticket::Username>();
-                    else assert(0);
+                    else ASSERT(0);
                 }
                 ticksys.query_profile(opt_idx, cur_user, qry_user);
 #ifdef TIME_INSPECT
@@ -197,7 +197,7 @@ quser.start();
                         maddr = scan.Next_Token<ticket::MailAddr>();
                     else if(tag == "-g")
                         priv = scan.Next_Token<int>();
-                    else assert(0);
+                    else ASSERT(0);
                 }
                 ticksys.modify_profile(
                     opt_idx, cur_user, mod_user, pwd, name, maddr, priv
@@ -261,7 +261,7 @@ quser.stop();
                     }
                     else if(tag == "-y")
                         type = (scan.Next_Token())[0];
-                    else assert(0);
+                    else ASSERT(0);
                 }
                 ticksys.add_train(
                     opt_idx, id, sta_num, seat_num, sta, price,
@@ -274,7 +274,7 @@ quser.stop();
                     tag = scan.Next_Token();
                     if(tag == "-i")
                         id = scan.Next_Token<ticket::TrainID>();
-                    else assert(0);
+                    else ASSERT(0);
                 }
                 ticksys.delete_train(opt_idx, id);
             }
@@ -284,7 +284,7 @@ quser.stop();
                     tag = scan.Next_Token();
                     if(tag == "-i")
                         id = scan.Next_Token<ticket::TrainID>();
-                    else assert(0);
+                    else ASSERT(0);
                 }
                 ticksys.release_train(opt_idx, id);
             }
@@ -297,7 +297,7 @@ quser.stop();
                         id = scan.Next_Token<ticket::TrainID>();
                     else if(tag == "-d")
                         date = getDate(scan.Next_Token());
-                    else assert(0);
+                    else ASSERT(0);
                 }
                 ticksys.query_train(opt_idx, id, date);
             }
@@ -319,7 +319,7 @@ qtick.start();
                         date = getDate(scan.Next_Token());
                     else if(tag == "-p")
                         cmp_type = scan.Next_Token() == "cost";
-                    else assert(0);
+                    else ASSERT(0);
                 }
                 ticksys.query_ticket(opt_idx, st, tr, date, cmp_type);
 #ifdef TIME_INSPECT
@@ -344,7 +344,7 @@ qtran.start();
                         date = getDate(scan.Next_Token());
                     else if(tag == "-p")
                         cmp_type = scan.Next_Token() == "cost";
-                    else assert(0);
+                    else ASSERT(0);
                 }
                 ticksys.query_transfer(opt_idx, st, tr, date, cmp_type);
 #ifdef TIME_INSPECT
@@ -379,7 +379,7 @@ btick.start();
                         tr = scan.Next_Token<ticket::Station>();
                     else if(tag == "-q")
                         trax_type = scan.Next_Token() == "true";
-                    else assert(0);
+                    else ASSERT(0);
                 }
                 ticksys.buy_ticket(opt_idx, user, id, date, st, tr, num, trax_type);
 #ifdef TIME_INSPECT
@@ -395,7 +395,7 @@ qorder.start();
                     tag = scan.Next_Token();
                     if(tag == "-u")
                         user = scan.Next_Token<ticket::Username>();
-                    else assert(0);
+                    else ASSERT(0);
                 }
                 ticksys.query_order(opt_idx, user);
 #ifdef TIME_INSPECT
@@ -414,12 +414,24 @@ rtick.start();
                         user = scan.Next_Token<ticket::Username>();
                     else if(tag == "-n")
                         idx = scan.Next_Token<int>();
-                    else assert(0);
+                    else ASSERT(0);
                 }
                 ticksys.refund_ticket(opt_idx, user, idx);
 #ifdef TIME_INSPECT
 rtick.stop();
 #endif
+            }
+
+            else if(opt == "rollback") {
+                assert(0);
+                int time_idx;
+                while(!scan.Is_End()) {
+                    tag = scan.Next_Token();
+                    if(tag == "-t")
+                        time_idx = scan.Next_Token<int>();
+                    else ASSERT(0);
+                }
+                ticksys.rollback(opt_idx, time_idx);   
             }
 
             else if(opt == "clean") {
@@ -431,7 +443,7 @@ rtick.stop();
             }  
             else {
                 std::cerr << opt_idx_str << " error: " << opt << std::endl;
-                assert(0); 
+                ASSERT(0); 
             }
 
         }

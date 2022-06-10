@@ -120,6 +120,11 @@ public:
         bpt.Clear(), cache.clear();
     }
 
+    void roll_back(int tstamp) {
+        cache.clear();
+        bpt.RollBack(tstamp);
+    }
+
     ~cached_bptree() {}
 };
 

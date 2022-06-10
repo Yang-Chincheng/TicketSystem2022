@@ -44,6 +44,8 @@ protected:
 
     int clear_user();
 
+    int rollback_user(int opt_idx);
+
 public:
     UserManager(): user("user"), online() {}
     UserManager(const UserManager &o) = delete;
@@ -85,6 +87,7 @@ public:
         const MailAddr &mod_maddr,
         int mod_priv
     );
+
 };
 
 }

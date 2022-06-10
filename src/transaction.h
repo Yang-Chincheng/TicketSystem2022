@@ -91,6 +91,8 @@ protected:
 
     int clear_trax();
 
+    int rollback_trax(int opt_idx);
+
 public:
     TraxManager(): rnum("rnum", 128), record("record"), pending("pending") {}
     TraxManager(const TraxManager &o) = delete;

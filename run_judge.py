@@ -4,7 +4,7 @@ import subprocess
 from filecmp import cmp as fcmp
 import time
 
-data_dir = 'data/normal'
+data_dir = 'data/roll_back'
 compile_script = 'build.sh'
 run_script = 'run.sh'
 clean_script = 'clean.sh'
@@ -54,8 +54,8 @@ def main():
         'basic_4', 
         'basic_5', 
         'basic_6',
-        # 'basic_extra',
-        # 'pressure_1_easy', 
+        'basic_extra',
+        'pressure_1_easy', 
         # 'pressure_1_hard', 
         # 'pressure_2_easy',
         # 'pressure_2_hard',

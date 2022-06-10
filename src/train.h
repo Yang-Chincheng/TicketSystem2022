@@ -225,6 +225,8 @@ protected:
 
     int clear_train();
 
+    int rollback_train(int opt_idx);
+
 public:
     TrainManager(): train("train", 2048), seat("seat", 2048), pass("pass", 2048) {}
     TrainManager(const TrainManager &o) = delete;
