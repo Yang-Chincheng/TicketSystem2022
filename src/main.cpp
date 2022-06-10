@@ -1,15 +1,18 @@
-#ifdef NDEBUG
-#undef NDEBUG
-#endif
-
-#ifndef DDEBUG
-#define DDEBUG
-#endif
+// #define TICKSYS_DEBUG
+// #define TICKSYS_ROLLBACK
+// #define TIME_INSPECT
 
 #include "../lib/utility.h"
 #include "ticketsystem.h"
 #include <string>
-#include <sys/resource.h>
+#ifdef TIME_INSPECT
+    #include <unistd.h>
+    #include <sys/ioctl.h>
+    #include <time.h>
+#endif
+#ifdef RESOURCE_INSPECT
+    #include <sys/resource.h>
+#endif
 
 inline ticket::Date getDate(const std::string &str) {
     TokenScanner scan(str, '-');
@@ -25,6 +28,7 @@ inline ticket::Time getTime(const std::string &str) {
     return ticket::Time(hh, mm);
 }
 
+#ifdef RESOURCE_INSPECT
 void get_exe_resource_limits() {
     rlimit my_rlimit;
     getrlimit(RLIMIT_AS, &my_rlimit);
@@ -36,32 +40,56 @@ void get_exe_resource_limits() {
     getrlimit(RLIMIT_STACK, &my_rlimit);
     std::cerr << my_rlimit.rlim_cur << " " << my_rlimit.rlim_max << std::endl;
 }
+#endif
 
-void files() {
-    freopen("/mnt/d/Code/Project/TicketSystem2022/data/normal/basic_3/2.in", "r", stdin);
-    freopen("/mnt/d/Code/Project/TicketSystem2022/tmp.out", "w", stdout);
-}
+#ifdef TIME_INSPECT
+struct timer {
+    int sysHz;
+    unsigned long mark;
+    unsigned long tick; 
+
+    timer() {
+        sysHz = sysconf(_SC_CLK_TCK);
+    }
+
+    void start() {
+        mark = time(NULL);
+    }
+
+    void stop() {
+        tick += time(NULL) - mark;
+    }
+
+    double total() {
+        return 1.0 * tick / sysHz;
+    }
+
+} quser, qtick, btick, qtran, qorder, rtick;
+#endif
 
 int main() {
-    // files();
-    // get_exe_resource_limits();
+    std::cout.sync_with_stdio(false);
+#ifdef RESOURCE_INSPECT
+    get_exe_resource_limits();
+#endif
     ticket::SysManager ticksys;
     std::string cmd;
-// std::cerr << sizeof(ticket::PassTrain) << std::endl;
-// std::cerr << sizeof(ticket::TrainInfo) << std::endl;
-// return 0;
     while(1) {
         getline(std::cin, cmd);
         TokenScanner scan(cmd);
         
-        std::string opt_idx = scan.Next_Token();
+        std::string opt_idx_str = scan.Next_Token();
+        int opt_idx = TokenScanner(opt_idx_str.substr(1), ']').Next_Token<int>();
         std::string opt = scan.Next_Token();
         std::string tag;
 
-// std::cerr << opt_idx << std::endl;
+// std::cerr << opt_idx_str << std::endl;
 
         try {
             if(opt == "add_user") {
+#ifdef TIME_INSPECT
+quser.start();
+#endif
                 ticket::Username cur_user;
                 ticket::Username new_user;
                 ticket::Password pwd;
@@ -87,8 +115,14 @@ int main() {
                 ticksys.add_user(
                     opt_idx, cur_user, new_user, pwd, name, maddr, priv 
                 );
+#ifdef TIME_INSPECT
+quser.stop();
+#endif
             }
             else if(opt == "login") {
+#ifdef TIME_INSPECT
+quser.start();
+#endif
                 ticket::Username user;
                 ticket::Password pwd;
                 while(!scan.Is_End()) {
@@ -100,8 +134,14 @@ int main() {
                     else assert(0);
                 }
                 ticksys.login(opt_idx, user, pwd);
+#ifdef TIME_INSPECT
+quser.stop();
+#endif
             }
             else if(opt == "logout") {
+#ifdef TIME_INSPECT
+quser.start();
+#endif
                 ticket::Username user;
                 while(!scan.Is_End()) {
                     tag = scan.Next_Token();
@@ -110,8 +150,14 @@ int main() {
                     else assert(0);
                 }
                 ticksys.logout(opt_idx, user);
+#ifdef TIME_INSPECT
+quser.stop();
+#endif
             }
             else if(opt == "query_profile") {
+#ifdef TIME_INSPECT
+quser.start();
+#endif
                 ticket::Username cur_user;
                 ticket::Username qry_user;
                 while(!scan.Is_End()) {
@@ -123,8 +169,14 @@ int main() {
                     else assert(0);
                 }
                 ticksys.query_profile(opt_idx, cur_user, qry_user);
+#ifdef TIME_INSPECT
+quser.stop();
+#endif
             }
             else if(opt == "modify_profile") {
+#ifdef TIME_INSPECT
+quser.start();
+#endif
                 ticket::Username cur_user;
                 ticket::Username mod_user;
                 ticket::Password pwd; // defualt: ""
@@ -150,6 +202,9 @@ int main() {
                 ticksys.modify_profile(
                     opt_idx, cur_user, mod_user, pwd, name, maddr, priv
                 );
+#ifdef TIME_INSPECT
+quser.stop();
+#endif
             }
 
             else if(opt == "add_train") {
@@ -247,6 +302,9 @@ int main() {
                 ticksys.query_train(opt_idx, id, date);
             }
             else if(opt == "query_ticket") {
+#ifdef TIME_INSPECT
+qtick.start();
+#endif
                 ticket::Station st;
                 ticket::Station tr;
                 ticket::Date date;
@@ -263,9 +321,15 @@ int main() {
                         cmp_type = scan.Next_Token() == "cost";
                     else assert(0);
                 }
-                ticksys.query_ticket(opt_idx, date, st, tr, cmp_type);
+                ticksys.query_ticket(opt_idx, st, tr, date, cmp_type);
+#ifdef TIME_INSPECT
+qtick.stop();
+#endif
             }
             else if(opt == "query_transfer") {
+#ifdef TIME_INSPECT
+qtran.start();
+#endif
                 ticket::Station st;
                 ticket::Station tr;
                 ticket::Date date;
@@ -282,10 +346,16 @@ int main() {
                         cmp_type = scan.Next_Token() == "cost";
                     else assert(0);
                 }
-                ticksys.query_transfer(opt_idx, date, st, tr, cmp_type);
+                ticksys.query_transfer(opt_idx, st, tr, date, cmp_type);
+#ifdef TIME_INSPECT
+qtran.stop();
+#endif
             }
 
             else if(opt == "buy_ticket") {
+#ifdef TIME_INSPECT
+btick.start();
+#endif
                 ticket::Username user;
                 ticket::TrainID id;
                 ticket::Date date;
@@ -312,8 +382,14 @@ int main() {
                     else assert(0);
                 }
                 ticksys.buy_ticket(opt_idx, user, id, date, st, tr, num, trax_type);
+#ifdef TIME_INSPECT
+btick.stop();
+#endif
             }
             else if(opt == "query_order") {
+#ifdef TIME_INSPECT
+qorder.start();
+#endif
                 ticket::Username user;
                 while(!scan.Is_End()) {
                     tag = scan.Next_Token();
@@ -322,8 +398,14 @@ int main() {
                     else assert(0);
                 }
                 ticksys.query_order(opt_idx, user);
+#ifdef TIME_INSPECT
+qorder.stop();
+#endif
             }
             else if(opt == "refund_ticket") {
+#ifdef TIME_INSPECT
+rtick.start();
+#endif
                 ticket::Username user;
                 int idx = 0;
                 while(!scan.Is_End()) {
@@ -335,6 +417,9 @@ int main() {
                     else assert(0);
                 }
                 ticksys.refund_ticket(opt_idx, user, idx);
+#ifdef TIME_INSPECT
+rtick.stop();
+#endif
             }
 
             else if(opt == "clean") {
@@ -345,14 +430,14 @@ int main() {
                 break;
             }  
             else {
-                std::cerr << opt_idx << " error: " << opt << std::endl;
+                std::cerr << opt_idx_str << " error: " << opt << std::endl;
                 assert(0); 
             }
 
         }
         catch(ticket::exception &e) {
-            std::cout << opt_idx << " -1" << std::endl;
-            // if(opt_idx == "[745440]")
+            std::cout << opt_idx_str << " -1" << std::endl;
+            // if(opt_idx_str == "[2239848]")
             //     std::cerr << ">> " << opt_idx << " note: " << e.what() << std::endl;
         }
         catch(std::string &msg) {
@@ -363,5 +448,15 @@ int main() {
         }
 
     }
+
+#ifdef TIME_INSPECT
+std::cerr << "quser: " << quser.total() << std::endl;
+std::cerr << "qtick: " << qtick.total() << std::endl;
+std::cerr << "qtran: " << qtran.total() << std::endl;
+std::cerr << "btick: " << btick.total() << std::endl;
+std::cerr << "rtick: " << rtick.total() << std::endl;
+std::cerr << "qorder: " << qorder.total() << std::endl;
+#endif
+
     return 0;
 }

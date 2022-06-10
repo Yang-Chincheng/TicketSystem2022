@@ -14,7 +14,15 @@
 #include "str.h"
 #include "TokenScanner.h"
 
+#ifdef TICKSYS_DEBUG
+#define ASSERT(__EXPR__) assert(__EXPR__)
+#else
+#define ASSERT(__EXPR__) 0
+#endif
+
 namespace ticket {
+
+const int INF = 0x7fffffff;
 
 /**
  * @brief a pair structure
@@ -120,6 +128,29 @@ T& cmax(T& lhs, const T &rhs) {
 
 // base of information pack classes 
 struct InfoPack {};
+
+struct StrHasher {
+    template <size_t maxl>
+    size_t operator () (const Str<maxl> &s) const {
+        return std::hash<std::string>()(std::string(s));
+    }
+};
+
+inline StrHasher strhasher;
+
+template <
+    typename T,
+    typename U,
+    typename _HashT = std::hash<T>,
+    typename _HashU = std::hash<U>
+>
+struct PairHasher {
+    size_t operator () (const pair<T, U> &obj) const {
+        size_t key1 = _HashT()(obj.first);
+        size_t key2 = _HashU()(obj.second);
+        return key1 ^ (key2 + 0x9e3779b9 + (key1 << 6) + (key1 >> 2));
+    }
+};
 
 }
 

@@ -3,193 +3,88 @@
 
 namespace ticket {
 
-int SysManager::add_user(const std::string &opt_idx, const Username &cur_usr, const Username &new_usr, const Password &pwd, const Name &name, const MailAddr &maddr, int priv) 
-{
-    try {user.add_user(cur_usr, new_usr, pwd, name, maddr, priv); }
-    catch(exception &e) {throw e; }
-    catch(std::string &msg) {throw msg; }
-    catch(...) {throw; }
-    std::cout << opt_idx << " 0" << std::endl;
-    return 0;
-}
 
-int SysManager::login(const std::string &opt_idx, const Username &usr, const Password &pwd) 
+int SysManager::buy_ticket(int opt_idx, const Username &usr_str, const TrainID &id_str, const Date &date, Station &start_str, Station &term_str, int num, bool pending_tag) 
 {
-    try {user.login(usr, pwd); }
-    catch(exception &e) {throw e; }
-    catch(std::string &msg) {throw msg; }
-    catch(...) {throw; }
-    std::cout << opt_idx << " 0" << std::endl;
-    return 0;
-}
-
-int SysManager::logout(const std::string &opt_idx, const Username &usr) 
-{
-    try {user.logout(usr); }
-    catch(exception &e) {throw e; }
-    catch(std::string &msg) {throw msg; }
-    catch(...) {throw; }
-    std::cout << opt_idx << " 0" << std::endl;
-    return 0;
-}
-
-int SysManager::query_profile(const std::string &opt_idx, const Username &cur_usr, const Username &qry_usr) 
-{
+    size_t usr = strhasher(usr_str);
+    size_t id = strhasher(id_str);
+    size_t start = strhasher(start_str);
+    size_t term = strhasher(term_str);
     try {
-        UserPack pack;
-        user.query_profile(cur_usr, qry_usr, pack);
-        std::cout << opt_idx << " " << pack << std::endl;
-    }
-    catch(exception &e) {throw e; }
-    catch(std::string &msg) {throw msg; }
-    catch(...) {throw; }
-    return 0;
-}
+        if(!is_online(usr_str)) throw transaction_error("user need to log in first");
+        
+        TrainInfo tr;
+        if(!train.get(id, tr) || !tr.released) {
+        // if(!train.Get(id, tr) || !tr.released) {
+            throw transaction_error("ticket not found");
+        }
+        if(num > tr.tot_seat) {
+            throw transaction_error("exceed the total number of tickets");
+        }
+        int sidx = tr.search_station(start_str);
+        if(!sidx) {
+            throw transaction_error("ticket not found");
+        }
+        int tidx = tr.search_station(term_str, sidx);
+        if(!tidx) {
+            throw transaction_error("ticket not found");
+        }
 
-int SysManager::modify_profile(const std::string &opt_idx, const Username &cur_usr, const Username &mod_usr, const Password &pwd, const Name &name, const MailAddr &maddr, int priv) 
-{
-    try {
-        UserPack pack;
-        user.modify_profile(cur_usr, mod_usr, pwd, name, maddr, priv, pack);
-        std::cout << opt_idx << " " << pack << std::endl;
-    }
-    catch(exception &e) {throw e; }
-    catch(std::string &msg) {throw msg; }
-    catch(...) {throw; }
-    return 0;
-}
+        Date st_date = tr.leave_time( 0, sidx).date;
+        Date ed_date = tr.leave_time(-1, sidx).date;
+        if(date < st_date || date > ed_date) {
+            throw transaction_error("ticket not found");
+        }
 
-int SysManager::add_train(const std::string &opt_idx, const TrainID &id, int station_num, int seat_num, Station *stations, int *prices, const Time &start_time, int *traveltimes, int *stoptimes, const Date &start_date, const Date &end_date, char type) 
-{
-    try {
-// std::cerr << id << " " << station_num << " " << seat_num << " " << start_time << " " << start_date << " " << end_date << std::endl;
-// for(int i = 1; i <= station_num; ++i) std::cerr << stations[i] << "|"; std::cerr << std::endl;
-// for(int i = 2; i <= station_num; ++i) std::cerr << prices[i] << "|"; std::cerr << std::endl;
-// for(int i = 1; i <  station_num; ++i) std::cerr << traveltimes[i] << "|"; std::cerr << std::endl;
-// for(int i = 2; i <  station_num; ++i) std::cerr << stoptimes[i] << "|"; std::cerr << std::endl;
-        train.add_train(
-            id, station_num, seat_num, 
-            stations, prices, start_time, traveltimes, stoptimes, 
-            start_date, end_date, type
+        int day = date - st_date;
+        SeatInfo st;
+        bool fb = seat.get(make_pair(id, day), st);
+        // bool fb = seat.Get(make_pair(id, day), st);
+        int tick = st.query_seat(sidx, tidx);
+        int price = tr.total_price(sidx, tidx);
+
+        if(num > tick && !pending_tag) {
+            throw transaction_error("insufficient remaining tickets");
+        }
+        Status status = (num <= tick? SUCCESS: PENDING);
+        Time leave = tr.leave_time(day, sidx);
+        Time arrive = tr.arrive_time(day, tidx);
+        
+        int len;
+        if(!rnum.get(usr, len)) len = 0;
+        // if(!rnum.Get(usr, len)) len = 0;
+        record.put(
+        // record.Set(
+            getTraxID(usr, len++),
+            TraxInfo(
+                opt_idx, 
+                status, id_str, start_str, term_str, leave, arrive, num, price, 
+                day, sidx, tidx
+            ),
+            opt_idx, TRAX_ROLLBACK
         );
-    }
-    catch(exception &e) {throw e; }
-    catch(std::string &msg) {throw msg; }
-    catch(...) {throw; }
-    std::cout << opt_idx << " 0" << std::endl;
-    return 0;
-}
+        rnum.put(usr, len, opt_idx, TRAX_ROLLBACK);
+        // rnum.Set(usr, len, opt_idx, TRAX_ROLLBACK);
 
-int SysManager::delete_train(const std::string &opt_idx, const TrainID &id) 
-{
-    try {
-        train.delete_train(id);
-    }
-    catch(exception &e) {throw e; }
-    catch(std::string &msg) {throw msg; }
-    catch(...) {throw; }
-    std::cout << opt_idx << " 0" << std::endl;
-    return 0;
-}
 
-int SysManager::release_train(const std::string &opt_idx, const TrainID &id) 
-{
-    try {
-        train.release_train(id);
-    }
-    catch(exception &e) {throw e; }
-    catch(std::string &msg) {throw msg; }
-    catch(...) {throw; }
-    std::cout << opt_idx << " 0" << std::endl;
-    return 0;
-}
-
-int SysManager::query_train(const std::string &opt_idx, const TrainID &id, const Date &date) 
-{
-    try {
-        LinePack pack;
-        train.query_train(id, date, pack);
-        std::cout << opt_idx << " " << pack;
-    }
-    catch(exception &e) {throw e; }
-    catch(std::string &msg) {throw msg; }
-    catch(...) {throw; }
-    return 0;
-}
-
-int SysManager::query_ticket(const std::string &opt_idx, const Date &date, const Station &start, const Station &term, bool cmp_type) 
-{
-    try {
-        vector<TravelPack> pack;
-        train.query_ticket(start, term, date, cmp_type, pack);
-        std::cout << opt_idx << " " << pack.size() << std::endl;
-        for(TravelPack &tick: pack) std::cout << tick << std::endl;
-    }
-    catch(exception &e) {throw e; }
-    catch(std::string &msg) {throw msg; }
-    catch(...) {throw; }
-    return 0;
-}
-
-int SysManager::query_transfer(const std::string &opt_idx, const Date &date, const Station &start, const Station &term, bool cmp_type) 
-{
-    try {
-        TransPack pack;
-        if(!~train.query_transfer(start, term, date, cmp_type, pack)) std::cout << opt_idx << " 0" << std::endl;
-        else std::cout << opt_idx << " " << pack.first << std::endl << pack.second << std::endl;
-    }
-    catch(exception &e) {throw e; }
-    catch(std::string &msg) {throw msg; }
-    catch(...) {throw; }
-    return 0;
-}
-
-int SysManager::buy_ticket(const std::string &opt_idx, const Username &usr, const TrainID &id, const Date &date, Station &start, Station &term, int num, bool pending_tag) 
-{
-    try {
-        if(!user.is_online(usr)) throw transaction_error("user need to log in first");
-        TicketPack tick;
-        train.check_ticket(id, date, start, term, num, tick);
-        if(tick.seat >= num) {
-            trax.append_record(
-                usr, SUCCESS, id, start, term, 
-                tick.leave, tick.arrive, num, tick.price, 
-                tick.day, tick.sidx, tick.tidx
-            );
-// if(id == "LeavesofGrass" && tick.day == 6) std::cerr << "SUCESSTICKINFO " << tick.sidx << " " << tick.tidx << " " << tick.seat << " " << num << std::endl;
-// std::cerr << opt_idx << " " << tick.price << " " << num << std::endl;
-            std::cout << opt_idx << " " << 1ll * tick.price * num << std::endl;    
+        if(status == SUCCESS) {
+            // buy ticket succeeded
+            st.modify_seat(sidx, tidx, -num);
+            seat.put(make_pair(id, day), st, opt_idx, TRAIN_ROLLBACK);
+            // seat.Set(make_pair(id, day), st, opt_idx, TRAIN_ROLLBACK);
+            std::cout << "[" << opt_idx << "] " << 1ll * price * num << "\n";    
         }
-        else if(pending_tag) {
-            int len = trax.append_record(
-                usr, PENDING, id, start, term, 
-                tick.leave, tick.arrive, num, tick.price, 
-                tick.day, tick.sidx, tick.tidx
+        else {
+            // buy ticket pending
+            pending.put(
+            // pending.Set(
+                getPendID(id, day, opt_idx),
+                PendInfo(
+                    opt_idx, usr, len, sidx, tidx, num
+                ),
+                opt_idx, TRAX_ROLLBACK
             );
-// if(id == "LeavesofGrass" && tick.day == 6) std::cerr << "PENDTICKINFO " << tick.sidx << " " << tick.tidx << " " << tick.seat << " " << num << std::endl;
-// std::cout << "PENDING " << id << " " << tick.day << " " << tick.sidx << " " << tick.tidx << " " << num << std::endl;
-            trax.append_pending(
-                id, tick.day, usr, len, tick.sidx, tick.tidx, num
-            );
-            std::cout << opt_idx << " queue" << std::endl;
-        }
-        else throw transaction_error("insufficient remaining tickets");
-    }
-    catch(exception &e) {throw e; }
-    catch(std::string &msg) {throw msg; }
-    catch(...) {throw; }
-    return 0;
-}
-
-int SysManager::query_order(const std::string &opt_idx, const Username &usr) 
-{
-    try {
-        if(!user.is_online(usr)) throw transaction_error("user need to log in first");
-        vector<TraxPack> pack;
-        trax.query_record(usr, pack);
-        std::cout << opt_idx << " " << pack.size() << std::endl;
-        for(int i = pack.size() - 1; i >= 0; --i) {
-            std::cout << pack[i] << std::endl;
+            std::cout << "[" << opt_idx << "] queue" << "\n";
         }
     }
     catch(exception &e) {throw e; }
@@ -198,45 +93,124 @@ int SysManager::query_order(const std::string &opt_idx, const Username &usr)
     return 0;
 }
 
-int SysManager::refund_ticket(const std::string &opt_idx, const Username &usr, int idx) 
+int SysManager::query_order(int opt_idx, const Username &usr_str) 
 {
+    size_t usr = strhasher(usr_str);
     try {
-        if(!user.is_online(usr)) throw transaction_error("user need to log in first");
-        TraxInfo refnd;
-        trax.query_record(usr, idx, 1, refnd);
-// if(usr == "GreyThroat" && refnd.id == "IHEARDthatyouask" && refnd.start == "江西省宜春市" && refnd.termi == "黑龙江省安达市") {
-//     std::cerr << "[DEBUG] " << opt_idx << " " << idx << std::endl;
-// }
-        if(refnd.status == REFUNDED) {
+        if(!is_online(usr_str)) throw transaction_error("user need to log in first");
+        auto iter = record.lower_bound(getTraxID(usr, 0));
+        auto last = record.lower_bound(getTraxID(usr, opt_idx));
+        // auto iter = record.LowerBound(getTraxID(usr, 0));
+        // auto last = record.LowerBound(getTraxID(usr, opt_idx));
+        if(iter == last) {
+            std::cout << "[" << opt_idx << "] 0\n";
+            return 0;
+        }
+        vector<TraxInfo> res; res.clear();
+        for(; iter != last; ++iter) res.push_back(iter.getval());
+        // for(; iter != last; ++iter) res.push_back(iter.GetValue());
+        std::cout << "[" << opt_idx << "] " << res.size() << "\n";
+        auto it = res.end();
+        do {
+            --it;
+            if(it->status == SUCCESS) std::cout << "[success] ";
+            if(it->status == PENDING) std::cout << "[pending] ";
+            if(it->status == REFUNDED) std::cout << "[refunded] ";
+            std::cout << it->id << " ";
+            std::cout << it->start << " " << it->leaving.date << " " << it->leaving;
+            std::cout << " -> ";
+            std::cout << it->termi << " " << it->arriving.date << " " << it->arriving;
+            std::cout << " " << it->price << " " << it->number << "\n";
+        }
+        while(it != res.begin());
+    }
+    catch(exception &e) {throw e; }
+    catch(std::string &msg) {throw msg; }
+    catch(...) {throw; }
+    return 0;
+}
+
+int SysManager::refund_ticket(int opt_idx, const Username &usr_str, int idx) 
+{
+    size_t usr = strhasher(usr_str);
+    try {
+        if(!is_online(usr_str)) throw transaction_error("user need to log in first");
+        
+        int len;
+        bool fb = rnum.get(usr, len);
+        // bool fb = rnum.Get(usr, len);
+        ASSERT(fb);
+        if(idx > len) {
+            throw transaction_error("record not found");
+        }
+
+        TraxInfo rf;
+        fb = record.get(getTraxID(usr, len - idx), rf);
+        // fb = record.Get(getTraxID(usr, len - idx), rf);
+        ASSERT(fb);
+        size_t id = strhasher(rf.id);
+
+        if(rf.status == REFUNDED) {
             throw transaction_error("tickets have been refunded");
         }
-        trax.update_status(usr, idx, 1, REFUNDED);
-        // if(refnd.status == PENDING) {
-        //     trax.flip_masking(refnd.id, refnd.day, )
-        // }
-        vector<PendInfo> pend;
-        trax.query_pending(refnd.id, refnd.day, pend);
-        vector<int> index;
-// std::cerr << refnd.sidx << " " << refnd.tidx << std::endl;
-        train.check_refund(
-            refnd.status == SUCCESS,
-            refnd.id, refnd.day, refnd.sidx, refnd.tidx, refnd.number, 
-            pend, index
-        );
-        trax.flip_masking(refnd.id, refnd.day, index);
-        for(int i: index) {
-            trax.update_status(pend[i].user, pend[i].idx, 0, SUCCESS);
+        else if(rf.status == SUCCESS) {
+            rf.status = REFUNDED;
+            SeatInfo st;
+            fb = seat.get(make_pair(id, rf.day), st);
+            // fb = seat.Get(make_pair(id, rf.day), st);
+            ASSERT(fb);
+            st.modify_seat(rf.sidx, rf.tidx, rf.number);
+
+            auto iter = pending.lower_bound(getPendID(id, rf.day, 0));
+            auto last = pending.lower_bound(getPendID(id, rf.day, opt_idx));
+            // auto iter = pending.LowerBound(getPendID(id, rf.day, 0));
+            // auto last = pending.LowerBound(getPendID(id, rf.day, opt_idx));
+
+            if(iter != last) {
+                PendInfo pd;
+                TraxInfo rec;
+                vector<int> suc;
+                for(; iter != last; ++iter) {
+                    pd = iter.getval();
+                    // pd = iter.GetValue();
+                    if(st.query_seat(pd.sidx, pd.tidx) >= pd.num) {
+                        suc.push_back(pd.opt_time);
+                        st.modify_seat(pd.sidx, pd.tidx, -pd.num);
+                        auto ID = getTraxID(pd.user, pd.idx - 1);
+                        fb = record.get(ID, rec);
+                        // fb = record.Get(ID, rec);
+                        ASSERT(fb);
+                        rec.status = SUCCESS;
+                        record.put(ID, rec, opt_idx, TRAX_ROLLBACK);
+                        // record.Set(ID, rec, opt_idx, TRAX_ROLLBACK);
+                    }
+                }
+                for(int i: suc) {
+                    pending.remove(getPendID(id, rf.day, i), opt_idx, TRAX_ROLLBACK);
+                    // pending.Delete(getPendID(id, rf.day, i), opt_idx, TRAX_ROLLBACK);
+                }
+            }
+            seat.put(make_pair(id, rf.day), st, opt_idx, TRAIN_ROLLBACK); 
+            // seat.Set(make_pair(id, rf.day), st, opt_idx, TRAIN_ROLLBACK); 
+
         }
+        else {
+            rf.status = REFUNDED;
+            pending.remove(getPendID(id, rf.day, rf.opt_time), opt_idx, TRAX_ROLLBACK); 
+            // pending.Delete(getPendID(id, rf.day, rf.opt_time), opt_idx, TRAX_ROLLBACK);            
+        }
+        record.put(getTraxID(usr, len - idx), rf, opt_idx, TRAX_ROLLBACK);
+        // record.Set(getTraxID(usr, len - idx), rf, opt_idx, TRAX_ROLLBACK);
     }
     catch(exception &e) {throw e; }
     catch(std::string &msg) {throw msg; }
     catch(...) {throw; }
-    std::cout << opt_idx << " 0" << std::endl;
+    std::cout << "[" << opt_idx << "] 0\n";
     return 0;
 }
 
 
-int SysManager::rollback(const std::string &opt_idx, int time_idx) 
+int SysManager::rollback(int opt_idx, int time_idx) 
 {
     try {
 
@@ -247,22 +221,23 @@ int SysManager::rollback(const std::string &opt_idx, int time_idx)
     return 0;
 }
 
-int SysManager::clean(const std::string &opt_idx) 
+int SysManager::clean(int opt_idx) 
 {
     try {
-        user.clear();
-        train.clear();
-        trax.clear();
+        clear_user();
+        clear_train();
+        clear_trax();
     }
     catch(exception &e) {throw e; }
     catch(std::string &msg) {throw msg; }
     catch(...) {throw; }
+    std::cout << "[" << opt_idx << "] 0\n";
     return 0;
 }
 
-int SysManager::exit(const std::string &opt_idx) 
+int SysManager::exit(int opt_idx) 
 {
-    std::cout << opt_idx << " bye" << std::endl;
+    std::cout << "[" << opt_idx << "] bye\n";
     return 0;
 }
 

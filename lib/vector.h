@@ -6,6 +6,8 @@
 // #include <climits>
 #include <cstddef>
 #include <vector>
+#include <iostream>
+#include <functional>
 
 namespace ticket {
 /**
@@ -333,10 +335,49 @@ void mergesort(vector<T> &arr, int l, int r, vector<T> &tmp, Cmp comp) {
 }
 
 template <typename T, typename Cmp>
+void insertsort(vector<T> &arr, int l, int r) {
+	T tmp; Cmp comp;
+	for(int i = l + 1, j; i <= r; ++i) {
+		tmp = arr[i];
+		for(j = i - 1; j >= l; --j) {
+			if(comp(tmp, arr[j])) arr[j + 1] = arr[j];
+			else break;
+		}
+		arr[j + 1] = tmp;
+	}
+}
+
+template <typename T, typename Cmp>
+void quicksort(vector<T> &arr, int l, int r) {
+	if(l >= r) return ;
+	if(r - l <= 3) {
+		insertsort<T, Cmp>(arr, l, r);
+		return ;
+	}
+	int mid = (l + r) >> 1;
+	Cmp comp;
+	if(comp(arr[r], arr[mid])) std::swap(arr[mid], arr[r]);
+	if(comp(arr[r], arr[l])) std::swap(arr[l], arr[r]);
+	if(comp(arr[l], arr[mid])) std::swap(arr[l], arr[mid]);
+	T tmp = arr[l];
+	int x = l, y = r;
+	while(x < y) {
+		while(x < y && comp(tmp, arr[y])) --y;
+		arr[x] = arr[y];
+		while(x < y && comp(arr[x], tmp)) ++x;
+		arr[y] = arr[x];
+	}
+	arr[x] = tmp;
+	quicksort<T, Cmp>(arr, l, x - 1);
+	quicksort<T, Cmp>(arr, x + 1, r);
+}
+
+template <typename T, typename Cmp = std::less<T>>
 void sort(vector<T> &arr, int l, int r) {
 	if(l >= r) return ;
-	Cmp comp; vector<T> tmp; tmp.resize(r - l);
-	mergesort(arr, l, r - 1, tmp, comp);
+	quicksort<T, Cmp>(arr, l, r - 1);
+	// Cmp comp; vector<T> tmp; tmp.resize(r - l);
+	// mergesort(arr, l, r - 1, tmp, comp);
 }
 
 }

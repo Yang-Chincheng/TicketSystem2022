@@ -3,49 +3,52 @@
 
 #include "../lib/utility.h"
 #include "../lib/vector.h"
-#include "../lib/BPlusTree.h"
+#include "../lib/cached_bptree.h"
 #include <iostream>
 
-#define SPLIT_INTO_VOLUMES 0
+#ifdef TICKSYS_ROLLBACK
+    #define TRAX_ROLLBACK 1
+#else 
+    #define TRAX_ROLLBACK 0
+#endif
 
 namespace ticket {
 
-#ifndef _RECORD_PENDING_
-#define _RECORD_PENDING_
 struct PendInfo {
-    Username user; int idx;
+    int opt_time;
+    size_t user; int idx;
     int sidx, tidx, num;
-    bool mask;
 
     PendInfo() = default;
     PendInfo(const PendInfo &o) = default;
     PendInfo(
-        const Username &_user,
+        int _opt_idx,
+        size_t &_user,
         int _idx,
         int _sidx,
         int _tidx,
-        int _num,
-        bool _mask
+        int _num
     ): 
-    user(_user), idx(_idx), sidx(_sidx), tidx(_tidx), num(_num), mask(_mask) {}
+    opt_time(_opt_idx), user(_user), idx(_idx), sidx(_sidx), tidx(_tidx), num(_num) {}
 
 };
-#endif
 
 enum Status {SUCCESS, PENDING, REFUNDED};
 struct TraxInfo {
+    int opt_time;
     Status status;
     TrainID id;
     Station start;
     Station termi;
     Time leaving;
     Time arriving;
-    int number;
-    int day, price, sidx, tidx;
+    int number, price;
+    int day, sidx, tidx;
 
     TraxInfo() = default;
     TraxInfo(const TraxInfo &o) = default;
     TraxInfo(
+        int _opt_idx,
         const Status &_sta,
         const TrainID &_id,
         const Station &_s,
@@ -53,129 +56,44 @@ struct TraxInfo {
         const Time &_lv,
         const Time &_ar,
         int _num, 
-        int _day, 
         int _pri,
+        int _day, 
         int _sidx, 
         int _tidx
     ):
-    status(_sta), id(_id), start(_s), termi(_t), leaving(_lv), arriving(_ar), 
+    opt_time(_opt_idx), status(_sta), id(_id), 
+    start(_s), termi(_t), leaving(_lv), arriving(_ar), 
     number(_num), day(_day), price(_pri), sidx(_sidx), tidx(_tidx) {}
 
 };
 
-struct TraxPack: public InfoPack {
-    Status status;
-    TrainID id;
-    Station start;
-    Station termi;
-    Time leaving;
-    Time arriving;
-    int price;
-    int number;
-    
-    TraxPack() = default;
-    TraxPack(const TraxPack &o) = default;
-    TraxPack(const TraxInfo &info):
-    status(info.status), id(info.id), start(info.start), termi(info.termi),
-    leaving(info.leaving), arriving(info.arriving), price(info.price), number(info.number) {}
+using TraxID = pair<size_t, int>;
+using PendID = pair<pair<size_t, int>, int>;
 
-    friend std::ostream& operator << (std::ostream &os, const TraxPack &pack);
+using TraxHasher = PairHasher<size_t, int>;
+using PendHasher = PairHasher<pair<size_t, int>, int, PairHasher<size_t, int>>;
 
-};
-
-using TraxID = pair<Username, int>;
-using PendID = pair<pair<TrainID, int>, int>;
-
-inline TraxID getTraxID(const Username &usr, int idx) {
+inline TraxID getTraxID(size_t usr, int idx) {
     return make_pair(usr, idx);
 }
-inline PendID getPendID(const TrainID &id, int day, int idx) {
+inline PendID getPendID(size_t id, int day, int idx) {
     return make_pair(make_pair(id, day), idx);
 }
 
 class TraxManager {
-private:
-    BPTree<Username, int> rnum;
-    BPTree<pair<TrainID, int>, int> pnum;
-    BPTree<TraxID, TraxInfo> record;
-    BPTree<PendID, PendInfo> pending;
+protected:
+    cached_bptree<size_t, int> rnum;
+    cached_bptree<TraxID, TraxInfo, TraxHasher> record;
+    cached_bptree<PendID, PendInfo, PendHasher> pending;
+    // BPTree<size_t, int> rnum;
+    // BPTree<TraxID, TraxInfo> record;
+    // BPTree<PendID, PendInfo> pending;
+
+    int clear_trax();
 
 public:
-    TraxManager(): rnum("recordnum"), pnum("pendingnum"), record("record"), pending("pending") {}
+    TraxManager(): rnum("rnum", 128), record("record"), pending("pending") {}
     TraxManager(const TraxManager &o) = delete;
-
-    int append_record(
-        const Username &usr,
-        const Status &sta,
-        const TrainID &id,
-        const Station &st,
-        const Station &tm,
-        const Time &lv,
-        const Time &ar,
-        int num,
-        int price,
-        int day,
-        int sidx, 
-        int tidx
-    );
-
-    int append_pending(
-        const TrainID &train,
-        int day, 
-        const Username &user,
-        int idx,
-        int sidx, 
-        int tidx,
-        int num
-    );
-
-    int pop_record(
-        const Username &usr
-    );
-
-    int pop_pending(
-        const TrainID &train, 
-        int day
-    );
-
-    int query_record(
-        const Username &usr,
-        int idx,
-        bool rev, 
-        TraxInfo &pack
-    );
-
-    int query_record(
-        const Username &usr,
-        vector<TraxPack> &pack
-    );
-
-    int query_pending(
-        const TrainID &id,
-        int day, int idx,
-        PendInfo &pack
-    );
-
-    int query_pending(
-        const TrainID &id,
-        int day,
-        vector<PendInfo> &pack
-    );
-
-    int update_status(
-        const Username &usr,
-        int idx, 
-        bool rev,
-        const Status &new_sta 
-    );
-
-    int flip_masking(
-        const TrainID &id,
-        int day,
-        vector<int> idx
-    );
-    
-    int clear();
     
 };
 

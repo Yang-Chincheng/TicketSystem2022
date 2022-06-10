@@ -1,8 +1,14 @@
 #ifndef _TICKET_SYSTEM_USR_H_
 #define _TICKET_SYSTEM_USR_H_
 
+#ifdef TICKSYS_ROLLBACK
+    #define USER_ROLLBACK 1
+#else 
+    #define USER_ROLLBACK 0
+#endif
+
 #include "../lib/utility.h"
-#include "../lib/BPlusTree.h"
+#include "../lib/cached_bptree.h"
 #include "../lib/hashmap.h"
 
 namespace ticket {
@@ -28,28 +34,23 @@ struct UserInfo {
 
 };
 
-struct UserPack: public UserInfo, public InfoPack {
-    Username uid;
-
-    UserPack() = default;
-    UserPack(const UserPack &o) = default;
-    UserPack(const Username &_uid, const UserInfo &info)
-    : UserInfo(info), uid(_uid) {}
-
-    friend std::ostream& operator << (std::ostream &os, const UserPack &pack);
-
-};
-
 class UserManager {
-private:
-    BPTree<Username, UserInfo> user;
+protected:
+    cached_bptree<size_t, UserInfo> user;
+    // BPTree<size_t, UserInfo> user;
     hashmap<Username, bool, StrHasher> online;
+
+    int is_online(const Username &user);
+
+    int clear_user();
+
 public:
     UserManager(): user("user"), online() {}
     UserManager(const UserManager &o) = delete;
     ~UserManager() = default;
 
     int add_user(
+        int opt_idx,
         const Username &cur_usr, 
         const Username &new_usr, 
         const Password &pwd, 
@@ -59,33 +60,31 @@ public:
     );
 
     int login(
+        int opt_idx,
         const Username &usr, 
         const Password &pwd
     );
 
     int logout(
+        int opt_idx,
         const Username &usr
     );
 
     int query_profile(
+        int opt_idx,
         const Username &cur_usr,
-        const Username &qry_usr,
-        UserPack &pack
+        const Username &qry_usr
     );
 
     int modify_profile(
+        int opt_idx,
         const Username &cur_usr, 
         const Username &mod_usr, 
         const Password &mod_pwd, 
         const Name &mod_name,
         const MailAddr &mod_maddr,
-        int mod_priv,
-        UserPack &pack
+        int mod_priv
     );
-
-    int is_online(const Username &user);
-
-    int clear();
 };
 
 }

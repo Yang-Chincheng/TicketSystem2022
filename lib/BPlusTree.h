@@ -9,6 +9,7 @@
 #include <iostream>
 #include <string>
 #include <fstream>
+#include <cassert>
 
 #include "MemoryPool.h"
 #include "BackUp.h"
@@ -292,17 +293,17 @@ public:
             return object_node_.data[position_].key >= rhs.object_node_.data[rhs.position_].key;
         }
 
-        const value_type operator*() {
-            // 无法引用
-            if (position_ < 0 || position_ >= object_node_.elements_num)
-                throw std::string("Error: Invalid Iterator operation.");
-            value_type ans;
-            tree_->data_.seekg(sizeof(value_type) * object_node_.data[position_].address);
-            tree_->data_.read(reinterpret_cast<char *>(&ans), sizeof(value_type));
-            return ans;
-        }
+        // const value_type operator*() {
+        //     // 无法引用
+        //     if (position_ < 0 || position_ >= object_node_.elements_num)
+        //         throw std::string("Error: Invalid Iterator operation.");
+        //     value_type ans;
+        //     tree_->data_.seekg(sizeof(value_type) * object_node_.data[position_].address);
+        //     tree_->data_.read(reinterpret_cast<char *>(&ans), sizeof(value_type));
+        //     return ans;
+        // }
 
-        const value_type Value() {
+        const value_type GetValue() {
             // 无法引用
             if (position_ < 0 || position_ >= object_node_.elements_num)
                 throw std::string("Error: Invalid Iterator operation.");
