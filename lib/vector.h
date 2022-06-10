@@ -335,8 +335,25 @@ void mergesort(vector<T> &arr, int l, int r, vector<T> &tmp, Cmp comp) {
 }
 
 template <typename T, typename Cmp>
+void insertsort(vector<T> &arr, int l, int r) {
+	T tmp; Cmp comp;
+	for(int i = l + 1, j; i <= r; ++i) {
+		tmp = arr[i];
+		for(j = i - 1; j >= l; --j) {
+			if(comp(tmp, arr[j])) arr[j + 1] = arr[j];
+			else break;
+		}
+		arr[j + 1] = tmp;
+	}
+}
+
+template <typename T, typename Cmp>
 void quicksort(vector<T> &arr, int l, int r) {
 	if(l >= r) return ;
+	if(r - l <= 3) {
+		insertsort<T, Cmp>(arr, l, r);
+		return ;
+	}
 	int mid = (l + r) >> 1;
 	Cmp comp;
 	if(comp(arr[r], arr[mid])) std::swap(arr[mid], arr[r]);

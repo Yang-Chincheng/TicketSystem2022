@@ -186,7 +186,10 @@ int TrainManager::release_train(int opt_idx, const TrainID &id_str) {
         // pass.Set(
             make_pair(strhasher(tr.sta[i]), id),
             PassInfo(
-                tr.leave_time(0, i).date, tr.leave_time(-1, i).date, id_str, i, hint
+                tr.leave_time(0, i).date, tr.day_num, 
+                tr.arrive_time(0, i), tr.leave_time(0, i),
+                tr.total_price(1, i),
+                id_str, i, hint
             ), 
             opt_idx, TRAIN_ROLLBACK
         );
@@ -241,7 +244,7 @@ int TrainManager::query_train(int opt_idx, const TrainID &id_str, const Date &da
 int TrainManager::query_ticket(int opt_idx, const Station &strt_str, const Station &term_str, const Date &date, bool cmp_type) {
     size_t strt = strhasher(strt_str);
     size_t term = strhasher(term_str);
-    PassInfo ps;
+    PassInfo ps_s, ps_t;
     TrainInfo tr;
     SeatInfo st;
     bool fb;
@@ -263,27 +266,30 @@ int TrainManager::query_ticket(int opt_idx, const Station &strt_str, const Stati
         // size_t id = iter_s.GetKey().second; 
         // while(iter_t != last_t && iter_t.GetKey().second < id) ++iter_t;
         // if(iter_t == last_t || iter_t.GetKey().second != id) continue;
-        ps = iter_s.getval();
+        ps_s = iter_s.getval();
+        ps_t = iter_t.getval();
         // ps = iter_s.GetValue();
-        int sidx = ps.idx;
-        int tidx = iter_t.getval().idx;
+        int sidx = ps_s.idx;
+        int tidx = ps_t.idx;
         // int tidx = iter_t.GetValue().idx;
         // rough check using abstract
-        if(ps.idx < tidx && date >= ps.st_date && date <= ps.ed_date) {
+        int day = date - ps_s.st_date;
+        if(sidx < tidx && day >= 0 && day < ps_s.dura) {
             // get detail train info
-            fb = train.get_with_hint(id, tr, ps.hint);
+            // fb = train.get_with_hint(id, tr, ps.hint);
             // train.BiRead(ps.hint, tr); fb = 1;
-            ASSERT(fb);
+            // ASSERT(fb);
             // detail check and get ans
-            int day = date - ps.st_date;
             fb = seat.get(make_pair(id, day), st);
             // fb = seat.Get(make_pair(id, day), st);
             ASSERT(fb);
             int res_seat = st.query_seat(sidx, tidx);
+            Time t1 = ps_s.arri_time + ps_s.stop_time; t1.date += day;
+            Time t2 = ps_t.arri_time; t2.date += day;
             res.push_back(TravelPack(
-                ps.id, strt_str, term_str,
-                tr.leave_time(day, sidx), tr.arrive_time(day, tidx),
-                tr.total_price(sidx, tidx),
+                ps_s.id, strt_str, term_str,
+                t1, t2,
+                ps_t.pre_price - ps_s.pre_price,
                 res_seat
             ));
         }
@@ -324,11 +330,11 @@ int TrainManager::query_transfer(int opt_idx, const Station &strt_str, const Sta
         size_t id_s = iter_s.getkey().second;
         // ps_s = iter_s.GetValue();
         // size_t id_s = iter_s.GetKey().second;
-        if(date >= ps_s.st_date && date <= ps_s.ed_date) {
+        int day_s = date - ps_s.st_date;
+        if(day_s >= 0 && day_s < ps_s.dura) {
             fb = train.get_with_hint(id_s, tr_s, ps_s.hint);
             // train.BiRead(ps_s.hint, tr_s); fb = 1;
             ASSERT(fb);
-            int day_s = date - ps_s.st_date;
             fb = seat.get(make_pair(id_s, day_s), st_s);
             // fb = seat.Get(make_pair(id_s, day_s), st_s);
             ASSERT(fb);

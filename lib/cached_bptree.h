@@ -68,7 +68,8 @@ public:
 
         _Val getval() {
             _Val ret;
-            tree->bpt.BiRead(iter.StoragePosition(), ret);
+            tree->read(iter.GetKey(), ret, iter.StoragePosition());
+            // tree->bpt.BiRead(iter.StoragePosition(), ret);
             return ret;
         }
 
