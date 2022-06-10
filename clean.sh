@@ -1,29 +1,29 @@
-rm pending_data_memory_pool_storage
-rm pending_data_storage
-rm pending_index_memory_pool_storage
-rm pending_index_storage
-rm rnum_data_memory_pool_storage
-rm rnum_data_storage
-rm rnum_index_memory_pool_storage
-rm rnum_index_storage
-rm record_data_memory_pool_storage
-rm record_data_storage
-rm record_index_memory_pool_storage
-rm record_index_storage
-rm seat_data_memory_pool_storage
-rm seat_data_storage
-rm seat_index_memory_pool_storage
-rm seat_index_storage
-rm pass_data_memory_pool_storage
-rm pass_data_storage
-rm pass_index_memory_pool_storage
-rm pass_index_storage
-rm train_data_memory_pool_storage
-rm train_data_storage
-rm train_index_memory_pool_storage
-rm train_index_storage
-rm user_data_memory_pool_storage
-rm user_data_storage
-rm user_index_memory_pool_storage
-rm user_index_storage
-# rm -r bin/*
+# rm pending_data_memory_pool_storage
+# rm pending_data_storage
+# rm pending_index_memory_pool_storage
+# rm pending_index_storage
+# rm rnum_data_memory_pool_storage
+# rm rnum_data_storage
+# rm rnum_index_memory_pool_storage
+# rm rnum_index_storage
+# rm record_data_memory_pool_storage
+# rm record_data_storage
+# rm record_index_memory_pool_storage
+# rm record_index_storage
+# rm seat_data_memory_pool_storage
+# rm seat_data_storage
+# rm seat_index_memory_pool_storage
+# rm seat_index_storage
+# rm pass_data_memory_pool_storage
+# rm pass_data_storage
+# rm pass_index_memory_pool_storage
+# rm pass_index_storage
+# rm train_data_memory_pool_storage
+# rm train_data_storage
+# rm train_index_memory_pool_storage
+# rm train_index_storage
+# rm user_data_memory_pool_storage
+# rm user_data_storage
+# rm user_index_memory_pool_storage
+# rm user_index_storage
+rm -r bin/*
