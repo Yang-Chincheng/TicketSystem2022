@@ -30,7 +30,8 @@ struct UserInfo {
 
 class UserManager {
 protected:
-    cached_bptree<Username, UserInfo, StrHasher> user;
+    // cached_bptree<size_t, UserInfo> user;
+    BPTree<size_t, UserInfo> user;
     hashmap<Username, bool, StrHasher> online;
 
     int is_online(const Username &user);

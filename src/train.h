@@ -64,19 +64,37 @@ struct TrainInfo {
 
 };
 
+const int block_bit = 4;
+const int block_siz = 2 << block_bit;
+const int block_num = (max_stanum - 1) >> block_bit + 1;
+
+#define __id(_x) ((_x) >> block_bit)
+#define __lb(_x) ((_x) << block_bit)
+#define __rb(_x) (((_x + 1) << block_bit) - 1)
+
 struct SeatInfo {
-    int num;
-    int seat[max_stanum];
+    int val[block_num];
+    int tag[block_num];
+    int seat[block_num << block_bit];
 
     SeatInfo() = default;
     SeatInfo(const SeatInfo &o) = default;
-    SeatInfo(int _num, int _seat): num(_num) {
-        for(int i = 1; i < num; ++i) seat[i] = _seat;
-    }
+    SeatInfo(int _num, int _seat);
 
     int query_seat(int s, int t);
     int modify_seat(int s, int t, int del);
 };
+
+// struct SeatInfo {
+//     int seat[max_stanum];
+
+//     SeatInfo() = default;
+//     SeatInfo(const SeatInfo &o) = default;
+//     SeatInfo(int _num, int _seat);
+
+//     int query_seat(int s, int t);
+//     int modify_seat(int s, int t, int del);
+// };
 
 struct PassInfo {
     Date st_date;
@@ -185,9 +203,12 @@ struct ByCost {
 
 class TrainManager {
 protected:
-    cached_bptree<TrainID, TrainInfo, StrHasher> train;
-    cached_bptree<pair<TrainID, int>, SeatInfo, PairHasher<TrainID, int, StrHasher>> seat;
-    cached_bptree<pair<Station, int>, PassInfo, PairHasher<Station, int, StrHasher>> pass;
+    // cached_bptree<size_t, TrainInfo> train;
+    // cached_bptree<pair<size_t, int>, SeatInfo, PairHasher<size_t, int>> seat;
+    // cached_bptree<pair<size_t, size_t>, PassInfo, PairHasher<size_t, size_t>> pass;
+    BPTree<size_t, TrainInfo> train;
+    BPTree<pair<size_t, int>, SeatInfo> seat;
+    BPTree<pair<size_t, size_t>, PassInfo> pass;
 
     int clear_train();
 
@@ -243,27 +264,6 @@ public:
         bool cmp_type
     );
 
-    // int check_ticket(
-    //     int opt_idx,
-    //     const TrainID &id,
-    //     const Date &date, 
-    //     const Station &strt,
-    //     const Station &term,
-    //     int num,
-    //     TicketPack &pack
-    // );
-
-    // int check_refund(
-    //     int opt_idx,
-    //     bool suc,
-    //     const TrainID &id,
-    //     int day, 
-    //     int sidx, 
-    //     int tidx, 
-    //     int num,
-    //     vector<PendInfo> &pend, 
-    //     vector<int> &pack
-    // );
 
 };
 

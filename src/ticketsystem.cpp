@@ -4,23 +4,28 @@
 namespace ticket {
 
 
-int SysManager::buy_ticket(int opt_idx, const Username &usr, const TrainID &id, const Date &date, Station &start, Station &term, int num, bool pending_tag) 
+int SysManager::buy_ticket(int opt_idx, const Username &usr_str, const TrainID &id_str, const Date &date, Station &start_str, Station &term_str, int num, bool pending_tag) 
 {
+    size_t usr = strhasher(usr_str);
+    size_t id = strhasher(id_str);
+    size_t start = strhasher(start_str);
+    size_t term = strhasher(term_str);
     try {
-        if(!is_online(usr)) throw transaction_error("user need to log in first");
+        if(!is_online(usr_str)) throw transaction_error("user need to log in first");
         
         TrainInfo tr;
-        if(!train.get(id, tr) || !tr.released) {
+        // if(!train.get(id, tr) || !tr.released) {
+        if(!train.Get(id, tr) || !tr.released) {
             throw transaction_error("ticket not found");
         }
         if(num > tr.tot_seat) {
             throw transaction_error("exceed the total number of tickets");
         }
-        int sidx = tr.search_station(start);
+        int sidx = tr.search_station(start_str);
         if(!sidx) {
             throw transaction_error("ticket not found");
         }
-        int tidx = tr.search_station(term, sidx);
+        int tidx = tr.search_station(term_str, sidx);
         if(!tidx) {
             throw transaction_error("ticket not found");
         }
@@ -33,7 +38,8 @@ int SysManager::buy_ticket(int opt_idx, const Username &usr, const TrainID &id, 
 
         int day = date - st_date;
         SeatInfo st;
-        bool fb = seat.get(make_pair(id, day), st);
+        // bool fb = seat.get(make_pair(id, day), st);
+        bool fb = seat.Get(make_pair(id, day), st);
         int tick = st.query_seat(sidx, tidx);
         int price = tr.total_price(sidx, tidx);
 
@@ -45,26 +51,35 @@ int SysManager::buy_ticket(int opt_idx, const Username &usr, const TrainID &id, 
         Time arrive = tr.arrive_time(day, tidx);
         
         int len;
-        if(!rnum.get(usr, len)) len = 0;
-        record.put(
+        // if(!rnum.get(usr, len)) len = 0;
+        if(!rnum.Get(usr, len)) len = 0;
+        // record.put(
+        record.Set(
             getTraxID(usr, len++),
             TraxInfo(
                 opt_idx, 
-                status, id, start, term, leave, arrive, num, price, 
+                status, id_str, start_str, term_str, leave, arrive, num, price, 
                 day, sidx, tidx
             )
         );
-        rnum.put(usr, len);
+        // rnum.put(usr, len);
+        rnum.Set(usr, len);
+
 
         if(status == SUCCESS) {
             // buy ticket succeeded
             st.modify_seat(sidx, tidx, -num);
-            seat.put(make_pair(id, day), st);
+            // seat.put(make_pair(id, day), st);
+// std::cerr << "reached HERE 1" << std::endl;
+            seat.Set(make_pair(id, day), st);
+// std::cerr << "reached HERE 2" << std::endl;
+            
             std::cout << "[" << opt_idx << "] " << 1ll * price * num << std::endl;    
         }
         else {
             // buy ticket pending
-            pending.put(
+            // pending.put(
+            pending.Set(
                 getPendID(id, day, opt_idx),
                 PendInfo(
                     opt_idx, usr, len, sidx, tidx, num
@@ -79,18 +94,22 @@ int SysManager::buy_ticket(int opt_idx, const Username &usr, const TrainID &id, 
     return 0;
 }
 
-int SysManager::query_order(int opt_idx, const Username &usr) 
+int SysManager::query_order(int opt_idx, const Username &usr_str) 
 {
+    size_t usr = strhasher(usr_str);
     try {
-        if(!is_online(usr)) throw transaction_error("user need to log in first");
-        auto iter = record.lower_bound(getTraxID(usr, 0));
-        auto last = record.lower_bound(getTraxID(usr, opt_idx));
+        if(!is_online(usr_str)) throw transaction_error("user need to log in first");
+        // auto iter = record.lower_bound(getTraxID(usr, 0));
+        // auto last = record.lower_bound(getTraxID(usr, opt_idx));
+        auto iter = record.LowerBound(getTraxID(usr, 0));
+        auto last = record.LowerBound(getTraxID(usr, opt_idx));
         if(iter == last) {
             std::cout << "[" << opt_idx << "] 0" << std::endl;
             return 0;
         }
         vector<TraxInfo> res; res.clear();
-        for(; iter != last; ++iter) res.push_back(*iter);
+        // for(; iter != last; ++iter) res.push_back(*iter);
+        for(; iter != last; ++iter) res.push_back(iter.GetValue());
         std::cout << "[" << opt_idx << "] " << res.size() << std::endl;
         auto it = res.end();
         do {
@@ -112,61 +131,77 @@ int SysManager::query_order(int opt_idx, const Username &usr)
     return 0;
 }
 
-int SysManager::refund_ticket(int opt_idx, const Username &usr, int idx) 
+int SysManager::refund_ticket(int opt_idx, const Username &usr_str, int idx) 
 {
+    size_t usr = strhasher(usr_str);
     try {
-        if(!is_online(usr)) throw transaction_error("user need to log in first");
+        if(!is_online(usr_str)) throw transaction_error("user need to log in first");
         
         int len;
-        bool fb = rnum.get(usr, len);
+        // bool fb = rnum.get(usr, len);
+        bool fb = rnum.Get(usr, len);
         ASSERT(fb);
         if(idx > len) {
             throw transaction_error("record not found");
         }
 
         TraxInfo rf;
-        fb = record.get(getTraxID(usr, len - idx), rf);
+        // fb = record.get(getTraxID(usr, len - idx), rf);
+        fb = record.Get(getTraxID(usr, len - idx), rf);
         ASSERT(fb);
-        
+        size_t id = strhasher(rf.id);
+
         if(rf.status == REFUNDED) {
             throw transaction_error("tickets have been refunded");
         }
         else if(rf.status == SUCCESS) {
             rf.status = REFUNDED;
             SeatInfo st;
-            fb = seat.get(make_pair(rf.id, rf.day), st);
+            // fb = seat.get(make_pair(id, rf.day), st);
+            fb = seat.Get(make_pair(id, rf.day), st);
             ASSERT(fb);
             st.modify_seat(rf.sidx, rf.tidx, rf.number);
 
-            auto iter = pending.lower_bound(getPendID(rf.id, rf.day, 0));
-            auto last = pending.lower_bound(getPendID(rf.id, rf.day, opt_idx));
+            // auto iter = pending.lower_bound(getPendID(id, rf.day, 0));
+            // auto last = pending.lower_bound(getPendID(id, rf.day, opt_idx));
+            auto iter = pending.LowerBound(getPendID(id, rf.day, 0));
+            auto last = pending.LowerBound(getPendID(id, rf.day, opt_idx));
+
             if(iter != last) {
                 PendInfo pd;
                 TraxInfo rec;
                 vector<int> suc;
                 for(; iter != last; ++iter) {
-                    pd = *iter;
+                    // pd = *iter;
+                    pd = iter.GetValue();
                     if(st.query_seat(pd.sidx, pd.tidx) >= pd.num) {
                         suc.push_back(pd.opt_time);
                         st.modify_seat(pd.sidx, pd.tidx, -pd.num);
                         auto ID = getTraxID(pd.user, pd.idx - 1);
-                        fb = record.get(ID, rec);
+                        // fb = record.get(ID, rec);
+                        fb = record.Get(ID, rec);
                         ASSERT(fb);
                         rec.status = SUCCESS;
-                        record.put(ID, rec);
+                        // record.put(ID, rec);
+                        record.Set(ID, rec);
                     }
                 }
                 for(int i: suc) {
-                    pending.remove(getPendID(rf.id, rf.day, i));
+                    // pending.remove(getPendID(id, rf.day, i));
+                    pending.Delete(getPendID(id, rf.day, i));
                 }
             }
-            seat.put(make_pair(rf.id, rf.day), st); 
+            // seat.put(make_pair(id, rf.day), st); 
+            seat.Set(make_pair(id, rf.day), st); 
+
         }
         else {
             rf.status = REFUNDED;
-            pending.remove(getPendID(rf.id, rf.day, rf.opt_time));            
+            // pending.remove(getPendID(id, rf.day, rf.opt_time)); 
+            pending.Delete(getPendID(id, rf.day, rf.opt_time));            
         }
-        record.put(getTraxID(usr, len - idx), rf);
+        // record.put(getTraxID(usr, len - idx), rf);
+        record.Set(getTraxID(usr, len - idx), rf);
     }
     catch(exception &e) {throw e; }
     catch(std::string &msg) {throw msg; }

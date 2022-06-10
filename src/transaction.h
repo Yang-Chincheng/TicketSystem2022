@@ -10,14 +10,14 @@ namespace ticket {
 
 struct PendInfo {
     int opt_time;
-    Username user; int idx;
+    size_t user; int idx;
     int sidx, tidx, num;
 
     PendInfo() = default;
     PendInfo(const PendInfo &o) = default;
     PendInfo(
         int _opt_idx,
-        const Username &_user,
+        size_t &_user,
         int _idx,
         int _sidx,
         int _tidx,
@@ -61,29 +61,32 @@ struct TraxInfo {
 
 };
 
-using TraxID = pair<Username, int>;
-using PendID = pair<TrainID, pair<int, int>>;
+using TraxID = pair<size_t, int>;
+using PendID = pair<pair<size_t, int>, int>;
 
-using TraxHasher = PairHasher<Username, int, StrHasher>;
-using PendHasher = PairHasher<TrainID, pair<int, int>, StrHasher, PairHasher<int, int>>;
+using TraxHasher = PairHasher<size_t, int>;
+using PendHasher = PairHasher<pair<size_t, int>, int, PairHasher<size_t, int>>;
 
-inline TraxID getTraxID(const Username &usr, int idx) {
+inline TraxID getTraxID(size_t usr, int idx) {
     return make_pair(usr, idx);
 }
-inline PendID getPendID(const TrainID &id, int day, int idx) {
-    return make_pair(id, make_pair(day, idx));
+inline PendID getPendID(size_t id, int day, int idx) {
+    return make_pair(make_pair(id, day), idx);
 }
 
 class TraxManager {
 protected:
-    cached_bptree<Username, int, StrHasher> rnum;
-    cached_bptree<TraxID, TraxInfo, TraxHasher> record;
-    cached_bptree<PendID, PendInfo, PendHasher> pending;
+    // cached_bptree<size_t, int> rnum;
+    // cached_bptree<TraxID, TraxInfo, TraxHasher> record;
+    // cached_bptree<PendID, PendInfo, PendHasher> pending;
+    BPTree<size_t, int> rnum;
+    BPTree<TraxID, TraxInfo> record;
+    BPTree<PendID, PendInfo> pending;
 
     int clear_trax();
 
 public:
-    TraxManager(): rnum("record_num"), record("record"), pending("pending") {}
+    TraxManager(): rnum("rnum"), record("record"), pending("pending") {}
     TraxManager(const TraxManager &o) = delete;
     
 };

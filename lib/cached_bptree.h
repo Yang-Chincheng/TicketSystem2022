@@ -6,7 +6,7 @@
 #include <functional>
 #include <string>
 #include <iostream>
-#include <map>
+// #include <map>
 
 namespace ticket {
 
@@ -17,7 +17,11 @@ template <
     typename _Equal = std::equal_to<_Key>
 >
 class cached_bptree {
-private:
+// public:
+//     struct iterator;
+//     friend struct iterator;
+
+private:    
     int max_cache_num;
     int cache_num;
     BPTree<_Key, _Val> bpt;
@@ -26,7 +30,7 @@ private:
     bool read(const _Key &key, _Val &val, int hint = -1) {
         if(cache.find(key) != cache.end()) val = cache[key];
         else {
-            if(~hint);
+            if(~hint) bpt.BiRead(hint, val);
             else if(!bpt.Get(key, val)) return 0;
             if(cache_num == max_cache_num) {
                 auto cur = cache.begin();
@@ -61,17 +65,17 @@ private:
     }
 
 public:
-    cached_bptree(const std::string &name, int _cache_size = 512): bpt(), cache() {
+    cached_bptree(const std::string &name, int _cache_size = 512): bpt(name), cache() {
         cache_num = 0;
-        max_cache_num = std::max((_cache_size << 10) / (sizeof(_Key) + sizeof(_Val)), 1);
+        max_cache_num = std::max((_cache_size << 10) / (sizeof(_Key) + sizeof(_Val)), 1ul);
     }
     
     struct iterator {
-        cached_bptree<_Key, _Val> *tree;
+        cached_bptree *tree;
         typename BPTree<_Key, _Val>::Iterator iter;
 
         iterator() = default;
-        iterator(cached_bptree<_Key, _Val> *_tree, typename BPTree<_Key, _Val>::Iterator &_iter)
+        iterator(cached_bptree *_tree, const typename BPTree<_Key, _Val>::Iterator &_iter)
         : tree(_tree), iter(_iter) {}
         iterator(const iterator &o) = default;
         ~iterator() = default;
@@ -85,7 +89,7 @@ public:
 
         _Val operator * () {
             _Val ret;
-            tree->read(iter.Key(), ret /*, iter.Hint()*/);
+            tree->read(iter.GetKey(), ret, iter.StoragePosition());
             return ret;
         }
 
@@ -95,13 +99,17 @@ public:
         iterator& operator -- () {
             --iter; return *this;
         }
+
+        int position() {
+            return iter.StoragePosition();
+        }
         
     };
 
     bool get(const _Key &key, _Val &val) {
         return read(key, val);
     }
-    bool get_with_hint(int hint, const _Key &key, _Val &val) {
+    bool get_with_hint(const _Key &key, _Val &val, int hint) {
         return read(key, val, hint);
     }
     void put(const _Key &key, const _Val &val) {
@@ -121,13 +129,13 @@ public:
         return iterator(this, bpt.LowerBound(key));
     }
 
-    void flush() {
-        for(auto &cur: cache) {
-            bpt.Set(cur.first, cur.second);
-        }
-        cache.clear();
-        cache_num = 0;
-    }
+    // void flush() {
+    //     for(auto &cur: cache) {
+    //         bpt.Set(cur.first, cur.second);
+    //     }
+    //     cache.clear();
+    //     cache_num = 0;
+    // }
 
     bool empty() {
         return bpt.Empty();
@@ -137,10 +145,7 @@ public:
         bpt.Clear(), cache.clear();
     }
 
-    ~cached_bptree() {
-        flush();
-    }
-
+    ~cached_bptree() {}
 };
 
 }

@@ -3,6 +3,9 @@
 #include "../lib/utility.h"
 #include "ticketsystem.h"
 #include <string>
+#include <unistd.h>
+#include <sys/ioctl.h>
+#include <time.h>
 // #include <sys/resource.h>
 
 inline ticket::Date getDate(const std::string &str) {
@@ -36,7 +39,31 @@ inline ticket::Time getTime(const std::string &str) {
 //     freopen("/mnt/d/Code/Project/TicketSystem2022/tmp.out", "w", stdout);
 // }
 
+struct timer {
+    int sysHz;
+    unsigned long mark;
+    unsigned long tick; 
+
+    timer() {
+        sysHz = sysconf(_SC_CLK_TCK);
+    }
+
+    void start() {
+        mark = time(NULL);
+    }
+
+    void stop() {
+        tick += time(NULL) - mark;
+    }
+
+    double total() {
+        return 1.0 * tick / sysHz;
+    }
+
+} quser, qtick, btick, qtran, qorder, rtick;
+
 int main() {
+    std::cout.sync_with_stdio(false);
     // files();
     // get_exe_resource_limits();
     ticket::SysManager ticksys;
@@ -50,10 +77,11 @@ int main() {
         std::string opt = scan.Next_Token();
         std::string tag;
 
-// std::cerr << opt_idx << std::endl;
+// std::cerr << opt_idx_str << std::endl;
 
         try {
             if(opt == "add_user") {
+quser.start();
                 ticket::Username cur_user;
                 ticket::Username new_user;
                 ticket::Password pwd;
@@ -79,8 +107,10 @@ int main() {
                 ticksys.add_user(
                     opt_idx, cur_user, new_user, pwd, name, maddr, priv 
                 );
+quser.stop();
             }
             else if(opt == "login") {
+quser.start();
                 ticket::Username user;
                 ticket::Password pwd;
                 while(!scan.Is_End()) {
@@ -92,8 +122,10 @@ int main() {
                     else assert(0);
                 }
                 ticksys.login(opt_idx, user, pwd);
+quser.stop();
             }
             else if(opt == "logout") {
+quser.start();
                 ticket::Username user;
                 while(!scan.Is_End()) {
                     tag = scan.Next_Token();
@@ -102,8 +134,10 @@ int main() {
                     else assert(0);
                 }
                 ticksys.logout(opt_idx, user);
+quser.stop();
             }
             else if(opt == "query_profile") {
+quser.start();
                 ticket::Username cur_user;
                 ticket::Username qry_user;
                 while(!scan.Is_End()) {
@@ -115,8 +149,10 @@ int main() {
                     else assert(0);
                 }
                 ticksys.query_profile(opt_idx, cur_user, qry_user);
+quser.stop();
             }
             else if(opt == "modify_profile") {
+quser.start();
                 ticket::Username cur_user;
                 ticket::Username mod_user;
                 ticket::Password pwd; // defualt: ""
@@ -142,6 +178,7 @@ int main() {
                 ticksys.modify_profile(
                     opt_idx, cur_user, mod_user, pwd, name, maddr, priv
                 );
+quser.stop();
             }
 
             else if(opt == "add_train") {
@@ -239,6 +276,7 @@ int main() {
                 ticksys.query_train(opt_idx, id, date);
             }
             else if(opt == "query_ticket") {
+qtick.start();
                 ticket::Station st;
                 ticket::Station tr;
                 ticket::Date date;
@@ -256,8 +294,10 @@ int main() {
                     else assert(0);
                 }
                 ticksys.query_ticket(opt_idx, st, tr, date, cmp_type);
+qtick.stop();
             }
             else if(opt == "query_transfer") {
+qtran.start();
                 ticket::Station st;
                 ticket::Station tr;
                 ticket::Date date;
@@ -275,9 +315,11 @@ int main() {
                     else assert(0);
                 }
                 ticksys.query_transfer(opt_idx, st, tr, date, cmp_type);
+qtran.stop();
             }
 
             else if(opt == "buy_ticket") {
+btick.start();
                 ticket::Username user;
                 ticket::TrainID id;
                 ticket::Date date;
@@ -304,8 +346,10 @@ int main() {
                     else assert(0);
                 }
                 ticksys.buy_ticket(opt_idx, user, id, date, st, tr, num, trax_type);
+btick.stop();
             }
             else if(opt == "query_order") {
+qorder.start();
                 ticket::Username user;
                 while(!scan.Is_End()) {
                     tag = scan.Next_Token();
@@ -314,8 +358,10 @@ int main() {
                     else assert(0);
                 }
                 ticksys.query_order(opt_idx, user);
+qorder.stop();
             }
             else if(opt == "refund_ticket") {
+rtick.start();
                 ticket::Username user;
                 int idx = 0;
                 while(!scan.Is_End()) {
@@ -327,6 +373,7 @@ int main() {
                     else assert(0);
                 }
                 ticksys.refund_ticket(opt_idx, user, idx);
+rtick.stop();
             }
 
             else if(opt == "clean") {
@@ -344,8 +391,8 @@ int main() {
         }
         catch(ticket::exception &e) {
             std::cout << opt_idx_str << " -1" << std::endl;
-            // if(opt_idx == "[745440]")
-                // std::cerr << ">> " << opt_idx << " note: " << e.what() << std::endl;
+            // if(opt_idx_str == "[2239848]")
+            //     std::cerr << ">> " << opt_idx << " note: " << e.what() << std::endl;
         }
         catch(std::string &msg) {
             std::cerr << "[error] " << msg << std::endl;
@@ -355,5 +402,13 @@ int main() {
         }
 
     }
+
+std::cerr << "quser: " << quser.total() << std::endl;
+std::cerr << "qtick: " << qtick.total() << std::endl;
+std::cerr << "qtran: " << qtran.total() << std::endl;
+std::cerr << "btick: " << btick.total() << std::endl;
+std::cerr << "rtick: " << rtick.total() << std::endl;
+std::cerr << "qorder: " << qorder.total() << std::endl;
+
     return 0;
 }

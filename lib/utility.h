@@ -136,6 +136,8 @@ struct StrHasher {
     }
 };
 
+inline StrHasher strhasher;
+
 template <
     typename T,
     typename U,
