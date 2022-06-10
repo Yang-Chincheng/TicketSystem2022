@@ -1,5 +1,5 @@
 // #define TICKSYS_DEBUG
-// #define TICKSYS_ROLLBACK
+#define TICKSYS_ROLLBACK
 // #define TIME_INSPECT
 
 #include "../lib/utility.h"
@@ -83,7 +83,7 @@ int main() {
         std::string opt = scan.Next_Token();
         std::string tag;
 
-std::cerr << opt_idx_str << std::endl;
+// std::cout << opt_idx_str << std::endl;
 
         try {
             if(opt == "add_user") {
@@ -423,7 +423,7 @@ rtick.stop();
             }
 
             else if(opt == "rollback") {
-                assert(0);
+                // assert(0);
                 int time_idx;
                 while(!scan.Is_End()) {
                     tag = scan.Next_Token();
