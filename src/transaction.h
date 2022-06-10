@@ -6,6 +6,12 @@
 #include "../lib/cached_bptree.h"
 #include <iostream>
 
+#ifdef TICKSYS_ROLLBACK
+    #define TRAX_ROLLBACK 1
+#else 
+    #define TRAX_ROLLBACK 0
+#endif
+
 namespace ticket {
 
 struct PendInfo {
@@ -76,17 +82,17 @@ inline PendID getPendID(size_t id, int day, int idx) {
 
 class TraxManager {
 protected:
-    // cached_bptree<size_t, int> rnum;
-    // cached_bptree<TraxID, TraxInfo, TraxHasher> record;
-    // cached_bptree<PendID, PendInfo, PendHasher> pending;
-    BPTree<size_t, int> rnum;
-    BPTree<TraxID, TraxInfo> record;
-    BPTree<PendID, PendInfo> pending;
+    cached_bptree<size_t, int> rnum;
+    cached_bptree<TraxID, TraxInfo, TraxHasher> record;
+    cached_bptree<PendID, PendInfo, PendHasher> pending;
+    // BPTree<size_t, int> rnum;
+    // BPTree<TraxID, TraxInfo> record;
+    // BPTree<PendID, PendInfo> pending;
 
     int clear_trax();
 
 public:
-    TraxManager(): rnum("rnum"), record("record"), pending("pending") {}
+    TraxManager(): rnum("rnum", 128), record("record"), pending("pending") {}
     TraxManager(const TraxManager &o) = delete;
     
 };

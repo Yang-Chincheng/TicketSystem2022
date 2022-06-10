@@ -127,11 +127,8 @@ public:
         index_name_ = name_in + std::string("_index_storage");
         data_name_ = name_in + std::string("_data_storage");
         index_.open("./" + index_name_);
-// assert(!index_);
         if (!index_) {
             index_.open("./" + index_name_, std::ostream::out);
-// std::cerr << "." + index_name_ << std::endl;
-assert(index_);
             node_num_ = 0;
             data_num_ = 0;
             record_num_ = 0;

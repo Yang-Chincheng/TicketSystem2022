@@ -7,6 +7,12 @@
 #include "../lib/vector.h"
 #include <iostream>
 
+#ifdef TICKSYS_ROLLBACK
+    #define TRAIN_ROLLBACK 1
+#else
+    #define TRAIN_ROLLBACK 0
+#endif
+
 namespace ticket {
 
 // Manager
@@ -203,17 +209,17 @@ struct ByCost {
 
 class TrainManager {
 protected:
-    // cached_bptree<size_t, TrainInfo> train;
-    // cached_bptree<pair<size_t, int>, SeatInfo, PairHasher<size_t, int>> seat;
-    // cached_bptree<pair<size_t, size_t>, PassInfo, PairHasher<size_t, size_t>> pass;
-    BPTree<size_t, TrainInfo> train;
-    BPTree<pair<size_t, int>, SeatInfo> seat;
-    BPTree<pair<size_t, size_t>, PassInfo> pass;
+    cached_bptree<size_t, TrainInfo> train;
+    cached_bptree<pair<size_t, int>, SeatInfo, PairHasher<size_t, int>> seat;
+    cached_bptree<pair<size_t, size_t>, PassInfo, PairHasher<size_t, size_t>> pass;
+    // BPTree<size_t, TrainInfo> train;
+    // BPTree<pair<size_t, int>, SeatInfo> seat;
+    // BPTree<pair<size_t, size_t>, PassInfo> pass;
 
     int clear_train();
 
 public:
-    TrainManager(): train("train"), seat("seat"), pass("pass") {}
+    TrainManager(): train("train", 1024), seat("seat", 1024), pass("pass", 1024) {}
     TrainManager(const TrainManager &o) = delete;
     ~TrainManager() = default;
 

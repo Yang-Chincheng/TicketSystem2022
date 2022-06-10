@@ -6,10 +6,12 @@
 namespace ticket {
 
 int TraxManager::clear_trax() {
-    // record.clear();
-    // pending.clear();
-    record.Clear();
-    pending.Clear();    
+    rnum.clear();
+    record.clear();
+    pending.clear();
+    // rnum.Clear();
+    // record.Clear();
+    // pending.Clear();    
     return 0;
 }
 

@@ -6,7 +6,6 @@
 #include <functional>
 #include <string>
 #include <iostream>
-// #include <map>
 
 namespace ticket {
 
@@ -17,13 +16,8 @@ template <
     typename _Equal = std::equal_to<_Key>
 >
 class cached_bptree {
-// public:
-//     struct iterator;
-//     friend struct iterator;
-
 private:    
     int max_cache_num;
-    int cache_num;
     BPTree<_Key, _Val> bpt;
     hashmap<_Key, _Val, _Hash, _Equal> cache;
 
@@ -32,41 +26,22 @@ private:
         else {
             if(~hint) bpt.BiRead(hint, val);
             else if(!bpt.Get(key, val)) return 0;
-            if(cache_num == max_cache_num) {
-                auto cur = cache.begin();
-                bpt.Set(cur->first, cur->second);
-                cache.erase(cur);
-                cache_num--;
-            }
+            if(cache.size() == max_cache_num) cache.erase(cache.begin());
             cache[key] = val;
-            cache_num++;
         }
         return 1;
     }
-    void write(const _Key &key, const _Val &val) {
+    void write(const _Key &key, const _Val &val, int opt_idx, bool rollback = 0) {
         if(cache.find(key) != cache.end()) cache[key] = val;
         else {
-            if(cache_num == max_cache_num) {
-                auto cur = cache.begin();
-                bpt.Set(cur->first, cur->second);
-                cache.erase(cur);
-                cache_num--;
-            }
+            if(cache.size() == max_cache_num) cache.erase(cache.begin());
             cache[key] = val;
-            cache_num++;
         }
-        bpt.Set(key, val);
-    }
-    void erase(const _Key &key) {
-        auto iter = cache.find(key);
-        if(iter == cache.end()) return ;
-        cache.erase(iter);
-        cache_num--;
+        bpt.Set(key, val, opt_idx, rollback);
     }
 
 public:
     cached_bptree(const std::string &name, int _cache_size = 512): bpt(name), cache() {
-        cache_num = 0;
         max_cache_num = std::max((_cache_size << 10) / (sizeof(_Key) + sizeof(_Val)), 1ul);
     }
     
@@ -87,9 +62,13 @@ public:
             return tree != rhs.tree || iter != rhs.iter;
         }
 
-        _Val operator * () {
+        _Key getkey() {
+            return iter.GetKey();
+        }
+
+        _Val getval() {
             _Val ret;
-            tree->read(iter.GetKey(), ret, iter.StoragePosition());
+            tree->bpt.BiRead(iter.StoragePosition(), ret);
             return ret;
         }
 
@@ -100,7 +79,7 @@ public:
             --iter; return *this;
         }
 
-        int position() {
+        int getpos() {
             return iter.StoragePosition();
         }
         
@@ -112,30 +91,25 @@ public:
     bool get_with_hint(const _Key &key, _Val &val, int hint) {
         return read(key, val, hint);
     }
-    void put(const _Key &key, const _Val &val) {
-        write(key, val);
+    void put(const _Key &key, const _Val &val, int opt_idx, bool rollback = 0) {
+        write(key, val, opt_idx, rollback);
     }
-    void remove(const _Key &key) {
-        bpt.Delete(key), erase(key);
+    void remove(const _Key &key, int opt_idx, bool rollback = 0) {
+        bpt.Delete(key, opt_idx, rollback);
+        auto iter = cache.find(key);
+        if(iter != cache.end()) cache.erase(iter);
     }
 
     iterator find(const _Key &key) {
         return iterator(this, bpt.Search(key).first);
     }
     bool count(const _Key &key) {
+        if(cache.find(key) != cache.end()) return 1;
         return bpt.Search(key).second;
     }
     iterator lower_bound(const _Key &key) {
         return iterator(this, bpt.LowerBound(key));
     }
-
-    // void flush() {
-    //     for(auto &cur: cache) {
-    //         bpt.Set(cur.first, cur.second);
-    //     }
-    //     cache.clear();
-    //     cache_num = 0;
-    // }
 
     bool empty() {
         return bpt.Empty();

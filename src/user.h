@@ -1,6 +1,12 @@
 #ifndef _TICKET_SYSTEM_USR_H_
 #define _TICKET_SYSTEM_USR_H_
 
+#ifdef TICKSYS_ROLLBACK
+    #define USER_ROLLBACK 1
+#else 
+    #define USER_ROLLBACK 0
+#endif
+
 #include "../lib/utility.h"
 #include "../lib/cached_bptree.h"
 #include "../lib/hashmap.h"
@@ -30,8 +36,8 @@ struct UserInfo {
 
 class UserManager {
 protected:
-    // cached_bptree<size_t, UserInfo> user;
-    BPTree<size_t, UserInfo> user;
+    cached_bptree<size_t, UserInfo> user;
+    // BPTree<size_t, UserInfo> user;
     hashmap<Username, bool, StrHasher> online;
 
     int is_online(const Username &user);
