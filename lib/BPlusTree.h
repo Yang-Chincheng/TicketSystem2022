@@ -598,7 +598,7 @@ public:
         time_now = backup_.Time();
         while (object_time<=time_now) {// 需要执行回滚操作
             backup_.LastRecord(time_now,op,key,value);
-            if(time_now==object_time)
+            if(time_now<=object_time)
                 break;
             if(op==0||op==2){// 回滚修改和删除操作
                 Set(key,value,time_now,false);
