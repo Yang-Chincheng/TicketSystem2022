@@ -137,15 +137,14 @@ int SysManager::refund_ticket(int opt_idx, const Username &usr_str, int idx)
         if(!is_online(usr_str)) throw transaction_error("user need to log in first");
         
         int len;
-        bool fb = rnum.get(usr, len);
+        if(!rnum.get(usr, len)) len = 0;
         // bool fb = rnum.Get(usr, len);
-        ASSERT(fb);
         if(idx > len) {
             throw transaction_error("record not found");
         }
 
         TraxInfo rf;
-        fb = record.get(getTraxID(usr, len - idx), rf);
+        bool fb = record.get(getTraxID(usr, len - idx), rf);
         // fb = record.Get(getTraxID(usr, len - idx), rf);
         ASSERT(fb);
         size_t id = strhasher(rf.id);
