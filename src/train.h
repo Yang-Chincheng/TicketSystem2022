@@ -104,7 +104,10 @@ struct SeatInfo {
 
 struct PassInfo {
     Date st_date;
-    Date ed_date;
+    int dura;
+    Time arri_time;
+    int stop_time;
+    int pre_price;
     TrainID id;
     int idx;
     int hint;
@@ -113,12 +116,16 @@ struct PassInfo {
     PassInfo(const PassInfo &o) = default;
     PassInfo(
         const Date &_st,
-        const Date &_ed,
+        int _dura,
+        const Time &_arri,
+        const Time &_leav,
+        int _pre,
         const TrainID &_id,
         int _idx,
         int _hint
     ):
-    st_date(_st), ed_date(_ed), id(_id), idx(_idx), hint(_hint) {}
+    st_date(_st), dura(_dura), arri_time(_arri), stop_time(_leav - _arri), 
+    pre_price(_pre), id(_id), idx(_idx), hint(_hint) {}
 
 };
 
@@ -219,7 +226,7 @@ protected:
     int clear_train();
 
 public:
-    TrainManager(): train("train", 1024), seat("seat", 1024), pass("pass", 1024) {}
+    TrainManager(): train("train", 2048), seat("seat", 2048), pass("pass", 2048) {}
     TrainManager(const TrainManager &o) = delete;
     ~TrainManager() = default;
 

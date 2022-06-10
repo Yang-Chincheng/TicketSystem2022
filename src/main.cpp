@@ -1,5 +1,6 @@
 // #define TICKSYS_DEBUG
 // #define TICKSYS_ROLLBACK
+// #define TIME_INSPECT
 
 #include "../lib/utility.h"
 #include "ticketsystem.h"
