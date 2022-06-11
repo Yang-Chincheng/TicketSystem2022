@@ -37,16 +37,16 @@ private:
 public:
     explicit Backup(const std::string &name_in) {
         file_name_ = name_in + std::string("_backup_storage");
-        file_.open("./bin/" + file_name_);
+        file_.open("" + file_name_);
         if (!file_) {
-            file_.open("./bin/" + file_name_, std::ostream::out);
+            file_.open("" + file_name_, std::ostream::out);
 //            time_now_ = 0;
             record_num_ = 0;
             file_.seekp(0);
             file_.write(reinterpret_cast<char *>(&record_num_), sizeof(int));
 //            file_.write(reinterpret_cast<char *>(&time_now_), sizeof(int));
             file_.close();
-            file_.open("./bin/" + file_name_);
+            file_.open("" + file_name_);
         } else {
             file_.seekg(0);
             file_.read(reinterpret_cast<char *>(&record_num_), sizeof(int));
