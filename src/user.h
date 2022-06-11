@@ -4,7 +4,7 @@
 #ifdef TICKSYS_ROLLBACK
     #define USER_ROLLBACK 1
 #else 
-    #define USER_ROLLBACK 0
+    #define USER_ROLLBACK 1
 #endif
 
 #include "../lib/utility.h"

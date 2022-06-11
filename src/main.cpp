@@ -83,7 +83,7 @@ int main() {
         std::string opt = scan.Next_Token();
         std::string tag;
 
-// std::cout << opt_idx_str << std::endl;
+// std::cout << opt_idx_str << " " << opt << std::endl;
 
         try {
             if(opt == "add_user") {
@@ -449,8 +449,8 @@ rtick.stop();
         }
         catch(ticket::exception &e) {
             std::cout << opt_idx_str << " -1" << std::endl;
-            // if(opt_idx_str == "[2239848]")
-            //     std::cerr << ">> " << opt_idx << " note: " << e.what() << std::endl;
+            if(opt_idx_str == "[4463]")
+                std::cerr << ">> " << opt_idx << " note: " << e.what() << std::endl;
         }
         catch(std::string &msg) {
             std::cerr << "[error] " << msg << std::endl;

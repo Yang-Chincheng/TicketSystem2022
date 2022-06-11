@@ -262,7 +262,12 @@ public:
         }
 
         bool operator==(const Iterator &rhs) const {
-            return tree_ == rhs.tree_ && object_node_.data[position_].key == rhs.object_node_.data[rhs.position_].key;
+            if(tree_ != rhs.tree_) return 0;
+            bool tag1 = position_ < object_node_.elements_num;
+            bool tag2 = rhs.position_ < rhs.object_node_.elements_num;
+            if(tag1 != tag2) return 0;
+            if(tag1 && tag2) return object_node_.data[position_].key == rhs.object_node_.data[rhs.position_].key;
+            return 1;
         }
 
         bool operator!=(const Iterator &rhs) const {
@@ -532,7 +537,7 @@ public:
         if (is_backup) {
             value_type bu;
             data_.seekg(sizeof(value_type) * object_node.data[pos].address);
-            data_.write(reinterpret_cast<char *>(&bu), sizeof(value_type));
+            data_.read(reinterpret_cast<char *>(&bu), sizeof(value_type));
             backup_.AddRecord(time, 0, key_in, bu);
         }
 
@@ -595,11 +600,10 @@ public:
         int time_now, op;
         key_type key;
         value_type value;
-        time_now = backup_.Time();
-        while (object_time<=time_now) {// 需要执行回滚操作
+        while (!backup_.Empty()) {// 需要执行回滚操作
             backup_.LastRecord(time_now,op,key,value);
-            if(time_now<=object_time)
-                break;
+// std::cout << object_time << " " << time_now << std::endl;
+            if(time_now <= object_time) break;
             if(op==0||op==2){// 回滚修改和删除操作
                 Set(key,value,time_now,false);
             }else if(op==1){
