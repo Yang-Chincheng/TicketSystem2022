@@ -11,8 +11,8 @@
 
 namespace ticket {
 /**
- * @brief a data container like std::vector
- *        store data in a successive memory and support random access.
+ * @brief A data container like std::vector
+ * store data in a successive memory and support random access.
  */
 template <typename T>
 class vector {
@@ -319,6 +319,10 @@ public:
 	}
 };
 
+/**
+ * @brief Implementation of the mergesort algorithm
+ * a support function for sort
+ */
 template <typename T, typename Cmp>
 void mergesort(vector<T> &arr, int l, int r, vector<T> &tmp, Cmp comp) {
 	if(l == r) return ;
@@ -334,6 +338,10 @@ void mergesort(vector<T> &arr, int l, int r, vector<T> &tmp, Cmp comp) {
 	for(int i = 0; i < t; ++i) arr[l + i] = tmp[i];
 }
 
+/**
+ * @brief Implementation of the insertsort algorithm
+ * a support function for sort
+ */
 template <typename T, typename Cmp>
 void insertsort(vector<T> &arr, int l, int r) {
 	T tmp; Cmp comp;
@@ -347,15 +355,21 @@ void insertsort(vector<T> &arr, int l, int r) {
 	}
 }
 
+/**
+ * @brief Implementation of the quicksort algorithm
+ * a support function for sort
+ */
 template <typename T, typename Cmp>
 void quicksort(vector<T> &arr, int l, int r) {
 	if(l >= r) return ;
+	// use insert sort when there are few elements
 	if(r - l <= 3) {
 		insertsort<T, Cmp>(arr, l, r);
 		return ;
 	}
 	int mid = (l + r) >> 1;
 	Cmp comp;
+	// rearrage the elements, ensuring arr[mid] <= arr[l] <= arr[r]
 	if(comp(arr[r], arr[mid])) std::swap(arr[mid], arr[r]);
 	if(comp(arr[r], arr[l])) std::swap(arr[l], arr[r]);
 	if(comp(arr[l], arr[mid])) std::swap(arr[l], arr[mid]);
@@ -372,12 +386,14 @@ void quicksort(vector<T> &arr, int l, int r) {
 	quicksort<T, Cmp>(arr, x + 1, r);
 }
 
+/**
+ * @brief Sort the elements with index within [l, r) in a vector
+ * use optimized quicksort algorithm by default
+ */
 template <typename T, typename Cmp = std::less<T>>
 void sort(vector<T> &arr, int l, int r) {
 	if(l >= r) return ;
 	quicksort<T, Cmp>(arr, l, r - 1);
-	// Cmp comp; vector<T> tmp; tmp.resize(r - l);
-	// mergesort(arr, l, r - 1, tmp, comp);
 }
 
 }

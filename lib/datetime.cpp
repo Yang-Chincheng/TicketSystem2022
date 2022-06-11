@@ -3,9 +3,6 @@
 
 namespace ticket {
 
-/**
- * @brief implementaion of struct Date; 
- */
 Date& Date::operator += (int days) {
     day += days;
     while(day > __day_number[month]) day -= __day_number[month++];
@@ -68,10 +65,6 @@ int operator - (const Date &lhs, const Date &rhs) {
     int days = __prefix_total[lhs.month - 1] - __prefix_total[rhs.month - 1];
     return days + lhs.day - rhs.day;
 }
-
-/**
- * @brief implementation of struct Time;  
- */
 
 Time::operator std::string() const {
     std::string ret = "";

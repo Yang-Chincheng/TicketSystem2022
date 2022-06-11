@@ -6,11 +6,7 @@
 #include "../lib/cached_bptree.h"
 #include <iostream>
 
-#ifdef TICKSYS_ROLLBACK
-    #define TRAX_ROLLBACK 1
-#else 
-    #define TRAX_ROLLBACK 1
-#endif
+#define TRAX_ROLLBACK 1
 
 namespace ticket {
 
@@ -82,12 +78,12 @@ inline PendID getPendID(size_t id, int day, int idx) {
 
 class TraxManager {
 protected:
+    // numbers of transaction records of users
     cached_bptree<size_t, int> rnum;
+    // transaction records of all users
     cached_bptree<TraxID, TraxInfo, TraxHasher> record;
+    // pending list of a certain train in a certain day
     cached_bptree<PendID, PendInfo, PendHasher> pending;
-    // BPTree<size_t, int> rnum;
-    // BPTree<TraxID, TraxInfo> record;
-    // BPTree<PendID, PendInfo> pending;
 
     int clear_trax();
 

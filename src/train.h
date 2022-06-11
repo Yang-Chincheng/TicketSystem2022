@@ -7,11 +7,7 @@
 #include "../lib/vector.h"
 #include <iostream>
 
-#ifdef TICKSYS_ROLLBACK
-    #define TRAIN_ROLLBACK 1
-#else
-    #define TRAIN_ROLLBACK 1
-#endif
+#define TRAIN_ROLLBACK 1
 
 namespace ticket {
 
@@ -90,17 +86,6 @@ struct SeatInfo {
     int query_seat(int s, int t);
     int modify_seat(int s, int t, int del);
 };
-
-// struct SeatInfo {
-//     int seat[max_stanum];
-
-//     SeatInfo() = default;
-//     SeatInfo(const SeatInfo &o) = default;
-//     SeatInfo(int _num, int _seat);
-
-//     int query_seat(int s, int t);
-//     int modify_seat(int s, int t, int del);
-// };
 
 struct PassInfo {
     Date st_date;
@@ -216,12 +201,12 @@ struct ByCost {
 
 class TrainManager {
 protected:
+    // train information
     cached_bptree<size_t, TrainInfo> train;
+    // numbers of rest seats of a certain train in a certain day
     cached_bptree<pair<size_t, int>, SeatInfo, PairHasher<size_t, int>> seat;
+    // information of trains passing certain stations
     cached_bptree<pair<size_t, size_t>, PassInfo, PairHasher<size_t, size_t>> pass;
-    // BPTree<size_t, TrainInfo> train;
-    // BPTree<pair<size_t, int>, SeatInfo> seat;
-    // BPTree<pair<size_t, size_t>, PassInfo> pass;
 
     int clear_train();
 

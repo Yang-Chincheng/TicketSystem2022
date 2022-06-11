@@ -24,8 +24,6 @@
 
 namespace ticket {
 
-const int INF = 0x7fffffff;
-
 /**
  * @brief a pair structure
  */
@@ -84,6 +82,7 @@ pair<T, U> make_pair(const T &a, const U &b) {
 /**
  * @brief implementation of sort function
  * 
+ * use mergesort as the default sort algorithm
  * a default constructor of element type is required
  * 
  */
@@ -113,7 +112,6 @@ void sort(T *arr, int l, int r) {
 
 /**
  * @brief implementation of cmin & cmax functions
- * 
  */
 
 template <typename T, typename Cmp>
@@ -131,15 +129,25 @@ T& cmax(T& lhs, const T &rhs) {
 // base of information pack classes 
 struct InfoPack {};
 
+/**
+ * @brief Hash policy for Str type
+ * based on the std::hash<std::string> policy
+ * 
+ */
 struct StrHasher {
     template <size_t maxl>
     size_t operator () (const Str<maxl> &s) const {
         return std::hash<std::string>()(std::string(s));
     }
 };
-
 inline StrHasher strhasher;
 
+/**
+ * @brief Hash policy for pair type
+ *  
+ * @tparam _HashT Hash policy for the first type in pair 
+ * @tparam _HashU Hash policy for the second type in pair
+ */
 template <
     typename T,
     typename U,

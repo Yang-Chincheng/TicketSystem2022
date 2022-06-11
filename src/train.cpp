@@ -28,7 +28,6 @@ Time TrainInfo::arrive_time(int day, int idx) {
     if(day < 0) day += day_num;
     ASSERT(day >= 0 && day < day_num);
     ASSERT(idx >= 1);
-    // if(idx < 0) idx += sta_num;
     Time time = st_time;
     time.date = st_date + day;
     time += arri_time[idx];
@@ -39,7 +38,6 @@ Time TrainInfo::leave_time(int day, int idx) {
     if(day < 0) day += day_num;
     ASSERT(day >= 0 && day < day_num);
     ASSERT(idx >= 1);
-    // if(idx < 0) idx += sta_num;
     Time time = st_time;
     time.date = st_date + day;
     time += leav_time[idx];
@@ -63,7 +61,7 @@ SeatInfo::SeatInfo(int _num, int _seat) {
 }
 
 int SeatInfo::query_seat(int s, int t) {
-    int ret = 0x7fffffff;
+    int ret = INT32_MAX;
     int x = __id(s);
     int y = __id(--t);
     if(x == y) {
@@ -81,7 +79,7 @@ int SeatInfo::modify_seat(int s, int t, int del) {
     int y = __id(--t);
     if(x == y) {
         for(int i = s; i <= t; ++i) seat[i] += del;
-        val[x] = 0x7fffffff;
+        val[x] = INT32_MAX;
         for(int i = __lb(x); i < __lb(x + 1); ++i) {
             val[x] = std::min(val[x], seat[i]);
         }
@@ -89,39 +87,21 @@ int SeatInfo::modify_seat(int s, int t, int del) {
         return 0;
     }
     for(int i = __rb(x); i >= s; --i) seat[i] += del;
-    val[x] = 0x7fffffff;
+    val[x] = INT32_MAX;
     for(int i = __lb(x); i < __lb(x + 1); ++i) val[x] = std::min(val[x], seat[i]);
     val[x] += tag[x]; 
     for(int i = __lb(y); i <= t; ++i) seat[i] += del;
-    val[y] = 0x7fffffff;
+    val[y] = INT32_MAX;
     for(int i = __lb(y); i < __lb(y + 1); ++i) val[y] = std::min(val[y], seat[i]);
     val[y] += tag[y]; 
     for(int i = x + 1; i < y; ++i) tag[i] += del, val[i] += del;
     return 0;
 }
 
-// SeatInfo::SeatInfo(int _num, int _seat) {
-//     for(int i = 1; i < _num; ++i) seat[i] = _seat;
-// }
-
-// int SeatInfo::query_seat(int s, int t) {
-//     int ret = 0x7fffffff;
-//     for(int i = s; i < t; ++i) ret = std::min(ret, seat[i]);
-//     return ret;
-// }
-
-// int SeatInfo::modify_seat(int s, int t, int del) {
-//     for(int i = s; i < t; ++i) seat[i] += del;
-//     return 0;
-// }
-
 std::ostream& operator << (std::ostream &os, const TravelPack &pack) {
     os << pack.id << " " << pack.strt << " " << pack.leav.date << " " << pack.leav << " -> ";
     os << pack.term << " " << pack.arri.date << " " << pack.arri << " ";
     os << pack.price << " " << pack.seat;
-    // os << std::string(pack.id) + " " + std::string(pack.strt) + " " + std::string(pack.leav.date) + " " + std::string(pack.leav) + " -> "
-    //     + std::string(pack.term) + " " + std::string(pack.arri.date) + " " + std::string(pack.arri) + " "
-    //     + std::to_string(pack.price) + " " + std::to_string(pack.seat);
     return os;
 }
 
@@ -129,20 +109,17 @@ int TrainManager::add_train(int opt_idx, const TrainID &id_str, int _stanum, int
 {
     size_t id = strhasher(id_str);
     if(train.count(id)) {
-    // if(train.Search(id).second) {
         throw train_error("train already exists, addition failed");
     }
     TrainInfo tr(
         _stanum, _seatnum, _sta, _price, _st_time, _tra_time, _stp_time, _st_date, _ed_date, _type
     );
     train.put(id, tr, opt_idx, TRAIN_ROLLBACK);
-    // train.Set(id, tr, opt_idx, TRAIN_ROLLBACK);
     // update seat info
     int day_num = tr.day_num;
     SeatInfo st(_stanum, _seatnum);
     for(int i = 0; i < tr.day_num; ++i) { 
         seat.put(make_pair(id, i), st, opt_idx, TRAIN_ROLLBACK);
-        // seat.Set(make_pair(id, i), SeatInfo(tr.sta_num, tr.tot_seat), opt_idx, TRAIN_ROLLBACK);
     }
     std::cout << "[" << opt_idx << "] 0\n";
     return 0;
@@ -152,14 +129,12 @@ int TrainManager::delete_train(int opt_idx, const TrainID &id_str) {
     size_t id = strhasher(id_str);
     TrainInfo tr;
     if(!train.get(id, tr)) {
-    // if(!train.Get(id, tr)) {
         throw train_error("train not found");
     }
     if(tr.released) {
         throw train_error("the train has released, deletion failed");
     }
     train.remove(id, opt_idx, TRAIN_ROLLBACK);
-    // train.Delete(id, opt_idx, TRAIN_ROLLBACK);
     std::cout << "[" << opt_idx << "] 0\n";
     return 0;
 }
@@ -168,23 +143,19 @@ int TrainManager::release_train(int opt_idx, const TrainID &id_str) {
     size_t id = strhasher(id_str);
     TrainInfo tr;
     if(!train.get(id, tr)) {
-    // if(!train.Get(id, tr)) {
         throw train_error("train not found");
     }
     if(tr.released) {
         throw train_error("the train has released");
     }
-    // set release tag as 1
+    // set release tag to be true
     tr.released = 1;
     train.put(id, tr, opt_idx, TRAIN_ROLLBACK);
-    // train.Set(id, tr, opt_idx, TRAIN_ROLLBACK);
 
     // update by-pass train list
     int hint = train.find(id).getpos();
-    // int hint = train.Search(id).first.StoragePosition(); 
     for(int i = 1; i <= tr.sta_num; ++i) {
         pass.put(
-        // pass.Set(
             make_pair(strhasher(tr.sta[i]), id),
             PassInfo(
                 tr.leave_time(0, i).date, tr.day_num, 
@@ -204,7 +175,6 @@ int TrainManager::query_train(int opt_idx, const TrainID &id_str, const Date &da
     TrainInfo tr;
     SeatInfo st;
     if(!train.get(id, tr)) {
-    // if(!train.Get(id, tr)) {
         throw train_error("train not found");
     }
     if(date < tr.st_date || date > tr.ed_date) {
@@ -212,7 +182,6 @@ int TrainManager::query_train(int opt_idx, const TrainID &id_str, const Date &da
     }
     int day = date - tr.st_date;
     bool fb = seat.get(make_pair(id, day), st);
-    // bool fb = seat.Get(make_pair(id, day), st);
     ASSERT(fb);
 
     std::cout << "[" << opt_idx << "] ";
@@ -237,7 +206,6 @@ int TrainManager::query_train(int opt_idx, const TrainID &id_str, const Date &da
         // number of rest seat
         if(i == tr.sta_num) std::cout << "x" << "\n";
         else std::cout << st.seat[i] + st.tag[__id(i)] << "\n";
-        // else std::cout << st.seat[i] << "\n";
     }
     return 0;
 }
@@ -254,35 +222,22 @@ int TrainManager::query_ticket(int opt_idx, const Station &strt_str, const Stati
     auto last_s = pass.lower_bound(make_pair(strt, UINT64_MAX));
     auto iter_t = pass.lower_bound(make_pair(term, 0));
     auto last_t = pass.lower_bound(make_pair(term, UINT64_MAX));     
-    // auto iter_s = pass.LowerBound(make_pair(strt, 0));
-    // auto last_s = pass.LowerBound(make_pair(strt, UINT64_MAX));
-    // auto iter_t = pass.LowerBound(make_pair(term, 0));
-    // auto last_t = pass.LowerBound(make_pair(term, UINT64_MAX));
 
     vector<TravelPack> res; res.clear();
     for(; iter_s != last_s; ++iter_s) {
+        // find a train passing both the source and the destination station
         size_t id = iter_s.getkey().second;
         while(iter_t != last_t && iter_t.getkey().second < id) ++iter_t;
         if(iter_t == last_t || iter_t.getkey().second != id) continue;
-        // size_t id = iter_s.GetKey().second; 
-        // while(iter_t != last_t && iter_t.GetKey().second < id) ++iter_t;
-        // if(iter_t == last_t || iter_t.GetKey().second != id) continue;
+        
         ps_s = iter_s.getval();
         ps_t = iter_t.getval();
-        // ps = iter_s.GetValue();
         int sidx = ps_s.idx;
         int tidx = ps_t.idx;
-        // int tidx = iter_t.GetValue().idx;
-        // rough check using abstract
         int day = date - ps_s.st_date;
+        // check date range
         if(sidx < tidx && day >= 0 && day < ps_s.dura) {
-            // get detail train info
-            // fb = train.get_with_hint(id, tr, ps.hint);
-            // train.BiRead(ps.hint, tr); fb = 1;
-            // ASSERT(fb);
-            // detail check and get ans
             fb = seat.get(make_pair(id, day), st);
-            // fb = seat.Get(make_pair(id, day), st);
             ASSERT(fb);
             int res_seat = st.query_seat(sidx, tidx);
             Time t1 = ps_s.arri_time + ps_s.stop_time; t1.date += day;
@@ -314,43 +269,37 @@ int TrainManager::query_transfer(int opt_idx, const Station &strt_str, const Sta
 
     auto iter_t = pass.lower_bound(make_pair(term, 0));
     auto last_t = pass.lower_bound(make_pair(term, UINT64_MAX));
-    // auto iter_t = pass.LowerBound(make_pair(term, 0));
-    // auto last_t = pass.LowerBound(make_pair(term, UINT64_MAX));
+    // buffer for iter_t traverse
     vector<PassInfo> buff;
     for(; iter_t != last_t; ++iter_t) buff.push_back(iter_t.getval());
-    // for(int id; iter_t != last_t; ++iter_t) buff.push_back(iter_t.GetValue());
 
     auto iter_s = pass.lower_bound(make_pair(strt, 0));
     auto last_s = pass.lower_bound(make_pair(strt, UINT64_MAX));
-    // auto iter_s = pass.LowerBound(make_pair(strt, 0));
-    // auto last_s = pass.LowerBound(make_pair(strt, UINT64_MAX));
     TransPack res;
     // enumerate all the train passing the start station
     for(; iter_s != last_s; ++iter_s) {
         ps_s = iter_s.getval();
         size_t id_s = iter_s.getkey().second;
-        // ps_s = iter_s.GetValue();
-        // size_t id_s = iter_s.GetKey().second;
+        
         int day_s = date - ps_s.st_date;
         if(day_s >= 0 && day_s < ps_s.dura) {
             fb = train.get_with_hint(id_s, tr_s, ps_s.hint);
-            // train.BiRead(ps_s.hint, tr_s); fb = 1;
             ASSERT(fb);
             fb = seat.get(make_pair(id_s, day_s), st_s);
-            // fb = seat.Get(make_pair(id_s, day_s), st_s);
             ASSERT(fb);
+            
             // enumerate all the train passing the terminal station
             for(auto &ps_t: buff) {
                 size_t id_t = strhasher(ps_t.id);
                 // trains shound be different 
                 if(id_s == id_t) continue;
                 fb = train.get_with_hint(id_t, tr_t, ps_t.hint);
-                // train.BiRead(ps_t.hint, tr_t), fb = 1;
                 ASSERT(fb);
+                
+                // search the exchange station
                 mp.clear();
                 for(int k = ps_s.idx + 1; k <= tr_s.sta_num; ++k) mp[tr_s.sta[k]] = k;
                 for(int k = ps_t.idx - 1; k >= 1; --k) {
-                    // the exchange station
                     Station ex_sta = tr_t.sta[k];
                     int ex_idx = mp[ex_sta];
                     if(!ex_idx) continue;
@@ -362,11 +311,9 @@ int TrainManager::query_transfer(int opt_idx, const Station &strt_str, const Sta
                         if(arri_ex > tr_t.leave_time(day_t, k)) day_t++;
                         
                         fb = seat.get(make_pair(id_t, day_t), st_t);
-                        // fb = seat.Get(make_pair(id_t, day_t), st_t);
                         ASSERT(fb);
                         int res_s = st_s.query_seat(ps_s.idx, ex_idx);
                         int res_t = st_t.query_seat(k, ps_t.idx);
-                        // if(!res_s || !res_t) continue;
                         TransPack cur(
                             TravelPack(
                                 ps_s.id,
@@ -405,9 +352,6 @@ int TrainManager::clear_train() {
     train.clear();
     seat.clear();
     pass.clear();
-    // train.Clear();
-    // seat.Clear();
-    // pass.Clear();
     return 0;
 }
 

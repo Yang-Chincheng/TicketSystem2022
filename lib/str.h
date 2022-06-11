@@ -10,9 +10,11 @@
 namespace ticket {
 
 /**
- * @brief an encapsulation of C-style string (char array with fixed length)
- * @tparam maxlen: maxinum length of the string
+ * @brief An encapsulation of C-style string (char array with fixed length)
+ * supprt standard stream input/output
+ * supprt conversion from/to a C/C++ style string
  * 
+ * @tparam maxlen Maxinum length of the string
  * 
  */
 
@@ -37,19 +39,10 @@ public:
         str[len] = '\0';
     }
     Str(const Str<maxlen> &_str) {
-// std::cerr << "error: " << _str << std::endl;
         len = _str.length();
         memcpy(str, _str.c_str(), len * sizeof(char));
         str[len] = '\0';
     }
-//     template <size_t maxl>
-//     Str(const Str<maxl> &_str) {
-// std::cerr << "error: " << _str << std::endl;
-//         assert(_str.length() <= maxlen);
-//         len = _str.length();
-//         memcpy(str, _str.c_str(), len * sizeof(char));
-//         str[len] = '\0';
-//     }
     ~Str() = default;
 
     size_t length() const {return len; }

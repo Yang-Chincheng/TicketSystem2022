@@ -11,10 +11,8 @@ int UserManager::add_user(int opt_idx, const Username &cur_usr_str, const Userna
     size_t new_usr = strhasher(new_usr_str);
     // when creating the first user
     if(user.empty()) {
-    // if(user.Empty()) {
         priv = 10;
         user.put(new_usr, UserInfo(pwd, name, maddr, priv), opt_idx, USER_ROLLBACK);
-        // user.Set(new_usr, UserInfo(pwd, name, maddr, priv), opt_idx, USER_ROLLBACK);
         std::cout << "[" << opt_idx << "] 0\n";
         return 0;
     }
@@ -24,19 +22,16 @@ int UserManager::add_user(int opt_idx, const Username &cur_usr_str, const Userna
     }
     UserInfo cur_info;
     user.get(cur_usr, cur_info);
-    // user.Get(cur_usr, cur_info);
     // privledge not high enough
     if(priv >= cur_info.pri) {
        throw user_error("current user doesn't have enough privledge, failed to create new account"); 
     }
     // new user already exists
     if(user.count(new_usr)) {
-    // if(user.Search(new_usr).second) {
         throw user_error("username already exists, failed to create new account");
     }
     // success
     user.put(new_usr, UserInfo(pwd, name, maddr, priv), opt_idx, USER_ROLLBACK);
-    // user.Set(new_usr, UserInfo(pwd, name, maddr, priv), opt_idx, USER_ROLLBACK);
     std::cout << "[" << opt_idx << "] 0\n";
     return 0;
 }
@@ -46,7 +41,6 @@ int UserManager::login(int opt_idx, const Username &usr_str, const Password &pwd
     size_t usr = strhasher(usr_str);
     // user does not exist
     if(!user.count(usr)) {
-    // if(!user.Search(usr).second) {
         throw user_error("user not found");
     }
     // user have logged in
@@ -55,7 +49,6 @@ int UserManager::login(int opt_idx, const Username &usr_str, const Password &pwd
     }
     UserInfo info;
     user.get(usr, info);
-    // user.Get(usr, info);
     // wrong password
     if(info.pwd != pwd) {
         throw user_error("wrong password, please try again");
@@ -91,21 +84,17 @@ int UserManager::query_profile(int opt_idx, const Username &cur_usr_str, const U
     if(cur_usr == qry_usr) {
         UserInfo info;
         user.get(cur_usr, info);
-        // user.Get(cur_usr, info);
         std::cout << "[" << opt_idx << "] ";
         std::cout << qry_usr_str << " " << info.name << " " << info.maddr << " " << info.pri << "\n";
         return 0;
     }
     // query user does not exist
     if(!user.count(qry_usr)) {
-    // if(!user.Search(qry_usr).second) {
         throw user_error("user not found");
     }
     UserInfo cur_info, qry_info;
     user.get(cur_usr, cur_info);
     user.get(qry_usr, qry_info);
-    // user.Get(cur_usr, cur_info);
-    // user.Get(qry_usr, qry_info);
 
     // privilege not enough
     if(cur_info.pri <= qry_info.pri) {
@@ -126,7 +115,6 @@ int UserManager::modify_profile(int opt_idx, const Username &cur_usr_str, const 
     }
     UserInfo cur_info;
     user.get(cur_usr, cur_info);
-    // user.Get(cur_usr, cur_info);
 
     if(cur_usr == mod_usr) {
         if(~mod_priv && mod_priv >= cur_info.pri) {
@@ -139,21 +127,19 @@ int UserManager::modify_profile(int opt_idx, const Username &cur_usr_str, const 
             ~mod_priv? mod_priv: cur_info.pri
         );
         user.put(cur_usr, info, opt_idx, USER_ROLLBACK);
-        // user.Set(cur_usr, info, opt_idx, USER_ROLLBACK);
         std::cout << "[" << opt_idx << "] ";
         std::cout << cur_usr_str << " " << info.name << " " << info.maddr << " " << info.pri << "\n";    
         return 0;
     }
     if(!user.count(mod_usr)) {
-    // if(!user.Search(mod_usr).second) {
         throw user_error("user not found");
     }
     UserInfo mod_info;
     user.get(mod_usr, mod_info);
-    // user.Get(mod_usr, mod_info);
     if(cur_info.pri <= mod_info.pri || cur_info.pri <= mod_priv) {
         throw user_error("privilege not enough");
     }
+    // defualt value refers to no-modification 
     UserInfo info(
         mod_pwd? mod_pwd: mod_info.pwd,
         mod_name? mod_name: mod_info.name,
@@ -161,7 +147,6 @@ int UserManager::modify_profile(int opt_idx, const Username &cur_usr_str, const 
         ~mod_priv? mod_priv: mod_info.pri
     );
     user.put(mod_usr, info, opt_idx, USER_ROLLBACK);
-    // user.Set(mod_usr, info, opt_idx, USER_ROLLBACK);
     std::cout << "[" << opt_idx << "] ";
     std::cout << mod_usr_str << " " << info.name << " " << info.maddr << " " << info.pri << "\n";    
     return 0;
@@ -174,7 +159,6 @@ int UserManager::is_online(const Username &user) {
 int UserManager::clear_user() {
     online.clear();
     user.clear();
-    // user.Clear();
     return 0;
 }
 

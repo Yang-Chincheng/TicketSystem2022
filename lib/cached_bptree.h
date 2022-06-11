@@ -9,6 +9,16 @@
 
 namespace ticket {
 
+/**
+ * @brief A file-based bptree with linked-hashmap cache
+ * supports rollback operation
+ * 
+ * @tparam _Key Key type of the bptree
+ * @tparam _Val Value type of the bptree
+ * @tparam _Hash Hash policy of the key type
+ * @tparam _Equal Equal policy of the key type
+ * 
+ */
 template <
     typename _Key, 
     typename _Val, 
@@ -16,9 +26,12 @@ template <
     typename _Equal = std::equal_to<_Key>
 >
 class cached_bptree {
-private:    
+private:
+    // maxinum number of elements in cache
     int max_cache_num;
+    // a file-based bptree
     BPTree<_Key, _Val> bpt;
+    // cache using a linked hashmap
     hashmap<_Key, _Val, _Hash, _Equal> cache;
 
     bool read(const _Key &key, _Val &val, int hint = -1) {
@@ -41,6 +54,13 @@ private:
     }
 
 public:
+    /**
+     * @brief Construct a new cached bptree object
+
+     * @param name Name of the storage file 
+     * @param _cache_size Maxinum size for cache in KB, 512KB by default
+     * 
+     */
     cached_bptree(const std::string &name, int _cache_size = 512): bpt(name), cache() {
         max_cache_num = std::max((_cache_size << 10) / (sizeof(_Key) + sizeof(_Val)), 1ul);
     }
@@ -96,9 +116,19 @@ public:
     bool get(const _Key &key, _Val &val) {
         return read(key, val);
     }
+
+    /**
+     * @brief Get the value of an element with a hint of its storage location 
+     * 
+     * @param key Key of the element
+     * @param val Value will be stored here
+     * @param hint A hint of storage location
+     * 
+     */
     bool get_with_hint(const _Key &key, _Val &val, int hint) {
         return read(key, val, hint);
     }
+
     void put(const _Key &key, const _Val &val, int opt_idx, bool rollback = 0) {
         write(key, val, opt_idx, rollback);
     }
