@@ -69,7 +69,6 @@ public:
         _Val getval() {
             _Val ret;
             tree->read(iter.GetKey(), ret, iter.StoragePosition());
-            // tree->bpt.BiRead(iter.StoragePosition(), ret);
             return ret;
         }
 
@@ -85,6 +84,14 @@ public:
         }
         
     };
+
+    iterator begin() {
+        return iterator(this, bpt.Begin());
+    }
+
+    iterator end() {
+        return iterator(this, bpt.End());
+    }
 
     bool get(const _Key &key, _Val &val) {
         return read(key, val);
@@ -116,8 +123,17 @@ public:
         return bpt.Empty();
     }
 
+    void flush() {
+        cache.clear();
+    }
+
     void clear() {
         bpt.Clear(), cache.clear();
+    }
+
+    void roll_back(int tstamp) {
+        cache.clear();
+        bpt.RollBack(tstamp);
     }
 
     ~cached_bptree() {}

@@ -5,7 +5,7 @@ SET(CMAKE_CXX_STANDARD 17)
 SET(CMAKE_CXX_FLAGS "-Ofast")
 # for local test
 # SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-z,stack-size=419430400")
-# SET(CMAKE_CXX_FLAGS "-fsanitize=address -Wall")
+# SET(CMAKE_CXX_FLAGS "-fsanitize=address")
 # SET(CMAKE_CXX_STACK_SIZE "419430400")
 
 # INCLUDE_DIRECTORIES(./src)

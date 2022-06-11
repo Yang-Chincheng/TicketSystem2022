@@ -9,7 +9,7 @@
 #ifdef TICKSYS_ROLLBACK
     #define TRAX_ROLLBACK 1
 #else 
-    #define TRAX_ROLLBACK 0
+    #define TRAX_ROLLBACK 1
 #endif
 
 namespace ticket {
@@ -90,6 +90,8 @@ protected:
     // BPTree<PendID, PendInfo> pending;
 
     int clear_trax();
+
+    int rollback_trax(int opt_idx);
 
 public:
     TraxManager(): rnum("rnum", 128), record("record"), pending("pending") {}

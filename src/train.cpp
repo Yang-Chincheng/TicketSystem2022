@@ -139,8 +139,9 @@ int TrainManager::add_train(int opt_idx, const TrainID &id_str, int _stanum, int
     // train.Set(id, tr, opt_idx, TRAIN_ROLLBACK);
     // update seat info
     int day_num = tr.day_num;
+    SeatInfo st(_stanum, _seatnum);
     for(int i = 0; i < tr.day_num; ++i) { 
-        seat.put(make_pair(id, i), SeatInfo(tr.sta_num, tr.tot_seat), opt_idx, TRAIN_ROLLBACK);
+        seat.put(make_pair(id, i), st, opt_idx, TRAIN_ROLLBACK);
         // seat.Set(make_pair(id, i), SeatInfo(tr.sta_num, tr.tot_seat), opt_idx, TRAIN_ROLLBACK);
     }
     std::cout << "[" << opt_idx << "] 0\n";
@@ -407,6 +408,13 @@ int TrainManager::clear_train() {
     // train.Clear();
     // seat.Clear();
     // pass.Clear();
+    return 0;
+}
+
+int TrainManager::rollback_train(int tstamp) {
+    train.roll_back(tstamp);
+    seat.roll_back(tstamp);
+    pass.roll_back(tstamp);
     return 0;
 }
 

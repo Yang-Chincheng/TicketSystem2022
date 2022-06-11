@@ -10,7 +10,7 @@
 #ifdef TICKSYS_ROLLBACK
     #define TRAIN_ROLLBACK 1
 #else
-    #define TRAIN_ROLLBACK 0
+    #define TRAIN_ROLLBACK 1
 #endif
 
 namespace ticket {
@@ -72,7 +72,7 @@ struct TrainInfo {
 
 const int block_bit = 4;
 const int block_siz = 2 << block_bit;
-const int block_num = (max_stanum - 1) >> block_bit + 1;
+const int block_num = ((max_stanum - 1) >> block_bit) + 1;
 
 #define __id(_x) ((_x) >> block_bit)
 #define __lb(_x) ((_x) << block_bit)
@@ -224,6 +224,8 @@ protected:
     // BPTree<pair<size_t, size_t>, PassInfo> pass;
 
     int clear_train();
+
+    int rollback_train(int opt_idx);
 
 public:
     TrainManager(): train("train", 2048), seat("seat", 2048), pass("pass", 2048) {}

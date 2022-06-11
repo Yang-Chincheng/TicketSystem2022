@@ -14,6 +14,8 @@
 #include "str.h"
 #include "TokenScanner.h"
 
+#define TICKSYS_DEBUG
+
 #ifdef TICKSYS_DEBUG
 #define ASSERT(__EXPR__) assert(__EXPR__)
 #else

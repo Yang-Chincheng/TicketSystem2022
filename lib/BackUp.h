@@ -84,14 +84,17 @@ public:
     }
 
     void LastRecord(int &time, int &op, key_type &key, value_type &value) {
-        record_num_--;
         Record record;
-        file_.seekg(k_head_preserved_backup + sizeof(Record) *record_num_);
+        file_.seekg(k_head_preserved_backup + sizeof(Record) *(record_num_-1));
         file_.read(reinterpret_cast<char *>(&record), sizeof(Record));
         time = record.time;
         op = record.op;
         key = record.key;
         value = record.data;
+    }
+
+    void Pop(){
+        record_num_--;
     }
 };
 

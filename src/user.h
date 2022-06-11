@@ -4,7 +4,7 @@
 #ifdef TICKSYS_ROLLBACK
     #define USER_ROLLBACK 1
 #else 
-    #define USER_ROLLBACK 0
+    #define USER_ROLLBACK 1
 #endif
 
 #include "../lib/utility.h"
@@ -43,6 +43,8 @@ protected:
     int is_online(const Username &user);
 
     int clear_user();
+
+    int rollback_user(int opt_idx);
 
 public:
     UserManager(): user("user"), online() {}
@@ -85,6 +87,7 @@ public:
         const MailAddr &mod_maddr,
         int mod_priv
     );
+
 };
 
 }

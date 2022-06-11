@@ -178,4 +178,10 @@ int UserManager::clear_user() {
     return 0;
 }
 
+int UserManager::rollback_user(int tstamp) {
+    online.clear();
+    user.roll_back(tstamp);
+    return 0;
+}
+
 }

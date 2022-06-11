@@ -15,4 +15,11 @@ int TraxManager::clear_trax() {
     return 0;
 }
 
+int TraxManager::rollback_trax(int tstamp) {
+    rnum.roll_back(tstamp);
+    record.roll_back(tstamp);
+    pending.roll_back(tstamp);   
+    return 0;
+}
+
 }

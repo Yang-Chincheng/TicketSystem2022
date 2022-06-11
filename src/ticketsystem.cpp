@@ -212,11 +212,17 @@ int SysManager::refund_ticket(int opt_idx, const Username &usr_str, int idx)
 int SysManager::rollback(int opt_idx, int time_idx) 
 {
     try {
-
+        if(time_idx > opt_idx) {
+            throw rollback_error("illegal time stamp");
+        }
+        rollback_user(time_idx);
+        rollback_train(time_idx);
+        rollback_trax(time_idx);
     }
     catch(exception &e) {throw e; }
     catch(std::string &msg) {throw msg; }
     catch(...) {throw; }
+    std::cout << "[" << opt_idx << "] 0\n";
     return 0;
 }
 
