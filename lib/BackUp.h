@@ -37,7 +37,7 @@ private:
 public:
     explicit Backup(const std::string &name_in) {
         file_name_ = name_in + std::string("_backup_storage");
-        file_.open("" + file_name_);
+        file_.open("./bin/" + file_name_);
         if (!file_) {
             file_.open("" + file_name_, std::ostream::out);
 //            time_now_ = 0;
