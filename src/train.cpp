@@ -105,7 +105,7 @@ std::ostream& operator << (std::ostream &os, const TravelPack &pack) {
     return os;
 }
 
-int TrainManager::add_train(int opt_idx, const TrainID &id_str, int _stanum, int _seatnum, Station *_sta, int *_price, const Time &_st_time, int *_tra_time, int *_stp_time, const Date &_st_date, const Date &_ed_date, char _type) 
+int TrainManager::add_train(unsigned long opt_idx, const TrainID &id_str, int _stanum, int _seatnum, Station *_sta, int *_price, const Time &_st_time, int *_tra_time, int *_stp_time, const Date &_st_date, const Date &_ed_date, char _type) 
 {
     size_t id = strhasher(id_str);
     if(train.count(id)) {
@@ -125,7 +125,7 @@ int TrainManager::add_train(int opt_idx, const TrainID &id_str, int _stanum, int
     return 0;
 }
 
-int TrainManager::delete_train(int opt_idx, const TrainID &id_str) {
+int TrainManager::delete_train(unsigned long opt_idx, const TrainID &id_str) {
     size_t id = strhasher(id_str);
     TrainInfo tr;
     if(!train.get(id, tr)) {
@@ -139,7 +139,7 @@ int TrainManager::delete_train(int opt_idx, const TrainID &id_str) {
     return 0;
 }
 
-int TrainManager::release_train(int opt_idx, const TrainID &id_str) {
+int TrainManager::release_train(unsigned long opt_idx, const TrainID &id_str) {
     size_t id = strhasher(id_str);
     TrainInfo tr;
     if(!train.get(id, tr)) {
@@ -170,7 +170,7 @@ int TrainManager::release_train(int opt_idx, const TrainID &id_str) {
     return 0;
 }
 
-int TrainManager::query_train(int opt_idx, const TrainID &id_str, const Date &date) {
+int TrainManager::query_train(unsigned long opt_idx, const TrainID &id_str, const Date &date) {
     size_t id = strhasher(id_str);
     TrainInfo tr;
     SeatInfo st;
@@ -210,7 +210,7 @@ int TrainManager::query_train(int opt_idx, const TrainID &id_str, const Date &da
     return 0;
 }
 
-int TrainManager::query_ticket(int opt_idx, const Station &strt_str, const Station &term_str, const Date &date, bool cmp_type) {
+int TrainManager::query_ticket(unsigned long opt_idx, const Station &strt_str, const Station &term_str, const Date &date, bool cmp_type) {
     size_t strt = strhasher(strt_str);
     size_t term = strhasher(term_str);
     PassInfo ps_s, ps_t;
@@ -258,7 +258,7 @@ int TrainManager::query_ticket(int opt_idx, const Station &strt_str, const Stati
     return 0;
 }
 
-int TrainManager::query_transfer(int opt_idx, const Station &strt_str, const Station &term_str, const Date &date, bool cmp_type) {
+int TrainManager::query_transfer(unsigned long opt_idx, const Station &strt_str, const Station &term_str, const Date &date, bool cmp_type) {
     size_t strt = strhasher(strt_str);
     size_t term = strhasher(term_str);
     bool tag = 0, fb;
@@ -355,7 +355,7 @@ int TrainManager::clear_train() {
     return 0;
 }
 
-int TrainManager::rollback_train(int tstamp) {
+int TrainManager::rollback_train(unsigned long tstamp) {
     train.roll_back(tstamp);
     seat.roll_back(tstamp);
     pass.roll_back(tstamp);

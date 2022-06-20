@@ -1,0 +1,1 @@
+rm *_storage -f

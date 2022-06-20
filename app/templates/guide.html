@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+
+<!-- 前端好难写QAQ -->
+
+<html lang="zh-CN">
+
+<head>
+    <title>使用指南 · Ticket System</title>
+    <link rel="icon" href="../static/arona.ico">
+    
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="author" content="Modem514 EternalFir">
+    <meta name="description" content="a simple web front end for course assignment">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <link rel="stylesheet" href="../static/css/theme.css">
+
+    <style>
+        /* Make the carousel slide images fully responsive */
+        .carousel-inner img {
+            display: block;
+            /* margin: auto; */
+            height: 100%;
+            width: 100%;
+        }
+        .avatar .avatar-hiden {
+            display: none;
+        }
+    </style>
+
+</head>
+
+<body class="bg-light">
+    <header class="header">    
+        <!-- navbar -->
+        <nav class="navbar navbar-expand-lg navbar-dark sticky-top bg-theme1" id="navbar">
+            <div class="container">
+                <!-- brand -->
+                <div class="navbar-brand mr-auto">
+                    <img src="../static/avatars/arona.svg" width="48rem" class="mr-3 rounded">
+                    <a class="navbar-brand" href="#">火车票管理系统</a>
+                </div>
+                <!-- toggler -->
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <!-- collapse content -->
+                <div class="collapse navbar-collapse" id="navbarCollapse">
+                    <ul class="navbar-nav mr-auto">
+                        <li class="nav-item">
+                            <a class="nav-link text-light" href="#announce">公告</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-light" href="#log">日志</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-light" href="#">指南</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-light" href="#">关于</a>
+                        </li>
+                    </ul>
+                    <form class="form-inline mt-2 mt-md-0 mr-3">
+                        <input class="form-control mr-sm-2" type="text" placeholder="搜索你想要的功能" aria-label="Search">
+                        <button class="btn btn-outline-light my-2 my-sm-0" type="submit">搜索</button>
+                    </form>
+                    <span class="navbar-nav">
+                        <a class="nav-link" href="/login">登录</a>
+                    </span>
+                    <img src="../static/avatars/default.svg" class="rounded avatar" height="50rem">
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="mt-2">
+        <!-- guide -->
+        <h2>用户文档</h2>
+
+
+        <h3>To Start with</h3>
+
+        <p>用户在进入/index后，可跟随页面按钮指引跳转到登录界面。</p>
+
+        <p>用户在成功登录后，根据所用账户权限等级的不同，将会进入管理员的index界面或者普通用户的index界面</p>
+
+        <p>普通用户可在本网站实现查询火车信息、查询订票及换乘方案、订购车票、查询自身订单等操作。皆可根据图形化按钮指引，或自动在不同的专属页面之间进行跳转。</p>
+
+        <p>管理员账户可在本网站增加、发布、删除火车，查询、增加、更改普通用户信息，将数据库清空或回滚至指定时间状态等操作。同样，操作可直接遵循图形化的按钮的指引</p>
+
+<h3>页面具体功能</h3>
+
+<h4>普通账户</h4>
+
+#### query_train
+
+输入目标列车的ID及希望出行的时间，点击查询按钮，即可得到目标火车在出行当天的运行时间、余票数量等数据
+
+#### query_ticket & query_transfer
+
+在两个目的地之间直达的列车查询和经过换乘的出行方案查询功能在本前端中被集成到了同一个页面。用户在输入了自己出行计划的相关信息后，可以同通过不同的按钮，查询直达和换乘出行的不同结果。
+
+所有符合要求的出行方案将会以图形化表格的形式显示在查询页面的下方。
+
+#### buy_ticket
+
+输入目标火车票相关信息后，用户可以直接在该界面购买火车票。同时可通过勾选下部的”在余票不足时接受候补“，以选择自己的订票方式。
+
+#### query_order
+
+在此页面，用户可以查询本账户下过的所有火车票订单。订单将会以图形化表格的形式显示在查询页面的下方。同时，该订单的状态也会以不同的颜色显示在订单的左侧。订单涉及到的具体火车信息也会显示在上。 
+
+#### refund ticket
+
+用户在此页面查询了本账户订单后，可使用每条订单右侧的按钮进行退订。同时根据异步的实现方法，在退订某条订单后，若其他订单因此受到影响，则其显示转状态也会相应改变。
+
+### 管理员账户
+
+#### add_user
+
+管理员可在此处添加系统中的账户
+
+#### query_user
+
+在此，管理员可以实现对已知ID的账户的具体信息的查询
+
+#### modify_profile
+
+在此页面，管理员可以修改指定账户的邮箱、真实姓名、权限等具体信息
+
+#### add_train
+
+管理员可在此增添数据库内的火车
+
+#### release_train
+
+通过提供火车ID，管理员可以在此将系统内的火车设置为release状态，使得普通用户可以购买它们的车票。
+
+#### delete_train
+
+提供ID，管理员可以删除数据库内的火车
+
+注意：已经release的火车无法被删除
+
+#### rollback&clean
+
+在这两个页面中，管理员可对ticketsystem的数据库进行大规模的处理
+
+分别是可以清空当前产生的全部数据以及将目前的数据库回滚至指定时间的状态。
+
+### 前端设计特色
+
+$\bullet$ 本网站页面采用了响应式的技术，能够自行折叠、调整排列以适应不同大小的窗口，借此可以迁移到不同的的平台上。
+
+$\bullet$ 本系统前端采用了大规模、友好的图形化界面，以及充分的信息填写指引，方便用户更好的使用本系统。
+
+$\bullet$ 通过异步的实现，使得本系统在出现显示的信息发生变化时仅会实时的刷新受到影响的部分内容，而不用重新加载整个网页，提升了用户体验。
+
+### 系统部署使用方式
+
+下载了github上的kuhou，仅需在python3.8及以上环境中运行server.py，便可以在7777本地端口中使用本系统。在链接了公网IP后，也可以将本系统部署在云端服务器上，进行远程访问。
+        </p>
+
+    </main>
+    
+    <footer class="footer bg-dark py-3">
+        <div class="text-center text-light">
+            Ticket Manangement System &copy; 2022
+        </div>
+    </footer>
+
+</body>
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-fQybjgWLrvvRgtW6bFlB7jaZrFsaBXjsOMm/tB9LTS58ONXgqbR9W8oWht/amnpF" crossorigin="anonymous"></script>
+
+<!-- <script src="./static/index.js"></script> -->
+
+
+</html>

@@ -15,12 +15,12 @@ template<class key_type, class value_type>
 class Backup {
 private:
     struct Record {
-        int time;
+        unsigned long time;
         int op;// 0-change,1-insert,2-delete
         key_type key;
         value_type data; // data before the operation
 
-        Record(int time_in, int op_in, const key_type &key_in, const value_type &value_in) {
+        Record(unsigned long time_in, int op_in, const key_type &key_in, const value_type &value_in) {
             time = time_in;
             op = op_in;
             key = key_in;
@@ -37,7 +37,7 @@ private:
 public:
     explicit Backup(const std::string &name_in) {
         file_name_ = name_in + std::string("_backup_storage");
-        file_.open("./bin/" + file_name_);
+        file_.open("" + file_name_);
         if (!file_) {
             file_.open("" + file_name_, std::ostream::out);
 //            time_now_ = 0;
@@ -75,7 +75,7 @@ public:
         return record.time;
     }
 
-    void AddRecord(int time, int op, const key_type key_in, const value_type &value_before) {
+    void AddRecord(unsigned long time, int op, const key_type key_in, const value_type &value_before) {
         Record record(time, op, key_in, value_before);
         file_.seekp(k_head_preserved_backup + sizeof(Record) * record_num_);
         file_.write(reinterpret_cast<char *>(&record), sizeof(record));
@@ -83,7 +83,7 @@ public:
 //        time_now_=time;
     }
 
-    void LastRecord(int &time, int &op, key_type &key, value_type &value) {
+    void LastRecord(unsigned long &time, int &op, key_type &key, value_type &value) {
         Record record;
         file_.seekg(k_head_preserved_backup + sizeof(Record) *(record_num_-1));
         file_.read(reinterpret_cast<char *>(&record), sizeof(Record));

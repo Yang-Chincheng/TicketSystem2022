@@ -19,7 +19,7 @@ public:
     SysManager(const SysManager &o) = delete;
 
     int buy_ticket(
-        int opt_idx,
+        unsigned long opt_idx,
         const Username &usr,
         const TrainID &id,
         const Date &date,
@@ -30,27 +30,27 @@ public:
     );
 
     int query_order(
-        int opt_idx,
+        unsigned long opt_idx,
         const Username &usr
     );
 
     int refund_ticket(
-        int opt_idx,
+        unsigned long opt_idx,
         const Username &usr,
         int idx
     );
 
     int rollback(
-        int opt_idx,
+        unsigned long opt_idx,
         int time_idx
     );
 
     int clean(
-        int opt_idx
+        unsigned long opt_idx
     );
 
     int exit(
-        int opt_idx
+        unsigned long opt_idx
     );
 
 };

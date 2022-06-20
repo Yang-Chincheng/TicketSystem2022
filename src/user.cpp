@@ -5,7 +5,7 @@
 
 namespace ticket {
 
-int UserManager::add_user(int opt_idx, const Username &cur_usr_str, const Username &new_usr_str, const Password &pwd, const Name &name, const MailAddr &maddr, int priv ) 
+int UserManager::add_user(unsigned long opt_idx, const Username &cur_usr_str, const Username &new_usr_str, const Password &pwd, const Name &name, const MailAddr &maddr, int priv ) 
 {
     size_t cur_usr = strhasher(cur_usr_str);
     size_t new_usr = strhasher(new_usr_str);
@@ -36,7 +36,7 @@ int UserManager::add_user(int opt_idx, const Username &cur_usr_str, const Userna
     return 0;
 }
 
-int UserManager::login(int opt_idx, const Username &usr_str, const Password &pwd)
+int UserManager::login(unsigned long opt_idx, const Username &usr_str, const Password &pwd)
 {
     size_t usr = strhasher(usr_str);
     // user does not exist
@@ -59,7 +59,7 @@ int UserManager::login(int opt_idx, const Username &usr_str, const Password &pwd
     return 0;
 }
 
-int UserManager::logout(int opt_idx, const Username &usr_str) 
+int UserManager::logout(unsigned long opt_idx, const Username &usr_str) 
 {
     size_t usr = strhasher(usr_str);
     // user does not exist or have logged out
@@ -72,7 +72,7 @@ int UserManager::logout(int opt_idx, const Username &usr_str)
     return 0;    
 }
 
-int UserManager::query_profile(int opt_idx, const Username &cur_usr_str, const Username &qry_usr_str) 
+int UserManager::query_profile(unsigned long opt_idx, const Username &cur_usr_str, const Username &qry_usr_str) 
 {
     size_t cur_usr = strhasher(cur_usr_str);
     size_t qry_usr = strhasher(qry_usr_str);
@@ -105,7 +105,7 @@ int UserManager::query_profile(int opt_idx, const Username &cur_usr_str, const U
     return 0;
 }
 
-int UserManager::modify_profile(int opt_idx, const Username &cur_usr_str, const Username &mod_usr_str, const Password &mod_pwd, const Name &mod_name,const MailAddr &mod_maddr, int mod_priv) 
+int UserManager::modify_profile(unsigned long opt_idx, const Username &cur_usr_str, const Username &mod_usr_str, const Password &mod_pwd, const Name &mod_name,const MailAddr &mod_maddr, int mod_priv) 
 {
     size_t cur_usr = strhasher(cur_usr_str);
     size_t mod_usr = strhasher(mod_usr_str);
@@ -162,7 +162,7 @@ int UserManager::clear_user() {
     return 0;
 }
 
-int UserManager::rollback_user(int tstamp) {
+int UserManager::rollback_user(unsigned long tstamp) {
     online.clear();
     user.roll_back(tstamp);
     return 0;

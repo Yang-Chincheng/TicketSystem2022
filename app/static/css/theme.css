@@ -1,0 +1,27 @@
+.color-theme1 {
+    color: #3a90d9;
+}
+
+.color-theme2 {
+    color: rgb(172, 227, 247);
+}
+
+.color-theme3 {
+    color: rgb(34, 88, 132);
+}
+
+.bg-theme1 {
+    background-color: #3a90d9;
+}
+
+.bg-theme2 {
+    background-color: rgb(141, 234, 251);
+}
+
+.bg-theme3 {
+    background-color: rgb(68, 221, 235);
+}
+
+.bg-theme4 {
+    background-color: rgb(38, 202, 254);
+}

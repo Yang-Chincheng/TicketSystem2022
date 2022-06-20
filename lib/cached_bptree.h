@@ -129,10 +129,10 @@ public:
         return read(key, val, hint);
     }
 
-    void put(const _Key &key, const _Val &val, int opt_idx, bool rollback = 0) {
+    void put(const _Key &key, const _Val &val, unsigned long opt_idx, bool rollback = 0) {
         write(key, val, opt_idx, rollback);
     }
-    void remove(const _Key &key, int opt_idx, bool rollback = 0) {
+    void remove(const _Key &key, unsigned long opt_idx, bool rollback = 0) {
         bpt.Delete(key, opt_idx, rollback);
         auto iter = cache.find(key);
         if(iter != cache.end()) cache.erase(iter);

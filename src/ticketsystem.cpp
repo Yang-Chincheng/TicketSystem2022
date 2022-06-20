@@ -3,7 +3,7 @@
 
 namespace ticket {
 
-int SysManager::buy_ticket(int opt_idx, const Username &usr_str, const TrainID &id_str, const Date &date, Station &start_str, Station &term_str, int num, bool pending_tag) 
+int SysManager::buy_ticket(unsigned long opt_idx, const Username &usr_str, const TrainID &id_str, const Date &date, Station &start_str, Station &term_str, int num, bool pending_tag) 
 {
     size_t usr = strhasher(usr_str);
     size_t id = strhasher(id_str);
@@ -85,7 +85,7 @@ int SysManager::buy_ticket(int opt_idx, const Username &usr_str, const TrainID &
     return 0;
 }
 
-int SysManager::query_order(int opt_idx, const Username &usr_str) 
+int SysManager::query_order(unsigned long opt_idx, const Username &usr_str) 
 {
     size_t usr = strhasher(usr_str);
     try {
@@ -120,7 +120,7 @@ int SysManager::query_order(int opt_idx, const Username &usr_str)
     return 0;
 }
 
-int SysManager::refund_ticket(int opt_idx, const Username &usr_str, int idx) 
+int SysManager::refund_ticket(unsigned long opt_idx, const Username &usr_str, int idx) 
 {
     size_t usr = strhasher(usr_str);
     try {
@@ -157,7 +157,7 @@ int SysManager::refund_ticket(int opt_idx, const Username &usr_str, int idx)
             if(iter != last) {
                 PendInfo pd;
                 TraxInfo rec;
-                vector<int> suc;
+                vector<unsigned long> suc;
                 for(; iter != last; ++iter) {
                     pd = iter.getval();
                     if(st.query_seat(pd.sidx, pd.tidx) >= pd.num) {
@@ -171,7 +171,7 @@ int SysManager::refund_ticket(int opt_idx, const Username &usr_str, int idx)
                     }
                 }
                 // remove the succeeded request from the pending list
-                for(int i: suc) {
+                for(unsigned long i: suc) {
                     pending.remove(getPendID(id, rf.day, i), opt_idx, TRAX_ROLLBACK);
                 }
             }
@@ -194,7 +194,7 @@ int SysManager::refund_ticket(int opt_idx, const Username &usr_str, int idx)
 }
 
 
-int SysManager::rollback(int opt_idx, int time_idx) 
+int SysManager::rollback(unsigned long opt_idx, int time_idx) 
 {
     try {
         if(time_idx > opt_idx) {
@@ -211,7 +211,7 @@ int SysManager::rollback(int opt_idx, int time_idx)
     return 0;
 }
 
-int SysManager::clean(int opt_idx) 
+int SysManager::clean(unsigned long opt_idx) 
 {
     try {
         clear_user();
@@ -225,7 +225,7 @@ int SysManager::clean(int opt_idx)
     return 0;
 }
 
-int SysManager::exit(int opt_idx) 
+int SysManager::exit(unsigned long opt_idx) 
 {
     std::cout << "[" << opt_idx << "] bye\n";
     return 0;

@@ -41,7 +41,7 @@ protected:
 
     int clear_user();
 
-    int rollback_user(int opt_idx);
+    int rollback_user(unsigned long opt_idx);
 
 public:
     UserManager(): user("user"), online() {}
@@ -49,7 +49,7 @@ public:
     ~UserManager() = default;
 
     int add_user(
-        int opt_idx,
+        unsigned long opt_idx,
         const Username &cur_usr, 
         const Username &new_usr, 
         const Password &pwd, 
@@ -59,24 +59,24 @@ public:
     );
 
     int login(
-        int opt_idx,
+        unsigned long opt_idx,
         const Username &usr, 
         const Password &pwd
     );
 
     int logout(
-        int opt_idx,
+        unsigned long opt_idx,
         const Username &usr
     );
 
     int query_profile(
-        int opt_idx,
+        unsigned long opt_idx,
         const Username &cur_usr,
         const Username &qry_usr
     );
 
     int modify_profile(
-        int opt_idx,
+        unsigned long opt_idx,
         const Username &cur_usr, 
         const Username &mod_usr, 
         const Password &mod_pwd, 

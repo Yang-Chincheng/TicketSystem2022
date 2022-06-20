@@ -128,7 +128,7 @@ public:
         data_name_ = name_in + std::string("_data_storage");
         index_.open("" + index_name_);
         if (!index_) {
-            index_.open("./bin/" + index_name_, std::ostream::out);
+            index_.open("" + index_name_, std::ostream::out);
             node_num_ = 0;
             data_num_ = 0;
             record_num_ = 0;
@@ -140,10 +140,10 @@ public:
             index_.seekp(k_head_preserved + sizeof(Node_) * root_num_);
             index_.write(reinterpret_cast<char *>(&root_), sizeof(Node_));
             index_.close();
-            index_.open("./bin/" + index_name_);
-            data_.open("./bin/" + data_name_, std::ostream::out);
+            index_.open("" + index_name_);
+            data_.open("" + data_name_, std::ostream::out);
             data_.close();
-            data_.open("./bin/" + data_name_);
+            data_.open("" + data_name_);
         } else {
             index_.seekg(0);
             index_.read(reinterpret_cast<char *>(&node_num_), sizeof(int));
@@ -153,7 +153,7 @@ public:
             index_.read(reinterpret_cast<char *>(&root_num_), sizeof(int));
             index_.seekp(k_head_preserved + sizeof(Node_) * root_num_);
             index_.read(reinterpret_cast<char *>(&root_), sizeof(Node_));
-            data_.open("./bin/" + data_name_);
+            data_.open("" + data_name_);
         }
     }
 
@@ -175,12 +175,12 @@ public:
     }
 
     void Clear() {
-        index_.open("./bin/" + index_name_, std::ostream::out);
+        index_.open("" + index_name_, std::ostream::out);
         index_.close();
-        index_.open("./bin/" + index_name_);
-        data_.open("./bin/" + data_name_, std::ostream::out);
+        index_.open("" + index_name_);
+        data_.open("" + data_name_, std::ostream::out);
         data_.close();
-        data_.open("./bin/" + data_name_);
+        data_.open("" + data_name_);
         node_memory_pool_.Clear();
         data_memory_pool_.Clear();
         node_num_ = 0;
@@ -469,7 +469,7 @@ public:
         data_.read(reinterpret_cast<char *>(&object), sizeof(object));
     }
 
-    void Insert(key_type key_in, value_type value_in, int time, bool is_backup = true) {
+    void Insert(key_type key_in, value_type value_in, unsigned long time, bool is_backup = true) {
         Node_ object_node = FindObjectNode_(key_in);
         // 找到节点内的对应位置进行插入
         int l, r, mid, pos;
@@ -514,7 +514,7 @@ public:
             root_ = object_node;
     }
 
-    void Set(key_type key_in, value_type value_in, int time, bool is_backup = true) {
+    void Set(key_type key_in, value_type value_in, unsigned long time, bool is_backup = true) {
         Node_ object_node = FindObjectNode_(key_in);
         int l, r, mid, pos;
         l = 0;
@@ -549,7 +549,7 @@ public:
         Delete(key_in, time, is_backup);
     }
 
-    void Delete(key_type key_in, int time, bool is_backup = true) {
+    void Delete(key_type key_in, unsigned long time, bool is_backup = true) {
         Node_ object_node = FindObjectNode_(key_in);
         // 找到节点内的对应项进行删除
         int l, r, mid, pos;
@@ -596,8 +596,9 @@ public:
             root_ = object_node;
     }
 
-    void RollBack(int object_time) {// 回滚至目标时间之前
-        int time_now, op;
+    void RollBack(unsigned long object_time) {// 回滚至目标时间之前
+        unsigned long time_now;
+        int op;
         key_type key;
         value_type value;
         while (!backup_.Empty()) {// 需要执行回滚操作

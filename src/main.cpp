@@ -4,6 +4,8 @@
 #include "ticketsystem.h"
 #include <string>
 
+const std::string SUPER_ADMIN = "__Schale__";
+
 inline ticket::Date getDate(const std::string &str) {
     TokenScanner scan(str, '-');
     int mm = scan.Next_Token<int>();
@@ -22,12 +24,20 @@ int main() {
     std::cout.sync_with_stdio(false);
     ticket::SysManager ticksys;
     std::string cmd;
+
+    // try {
+    //     ticksys.add_user(
+    //         0, SUPER_ADMIN, SUPER_ADMIN, "DECAGRAMMATON", "sensei", "sensei@schale.com", 20
+    //     );
+    // }
+    // catch(...) {};
+
     while(1) {
         getline(std::cin, cmd);
         TokenScanner scan(cmd);
         
         std::string opt_idx_str = scan.Next_Token();
-        int opt_idx = TokenScanner(opt_idx_str.substr(1), ']').Next_Token<int>();
+        unsigned long opt_idx = TokenScanner(opt_idx_str.substr(1), ']').Next_Token<unsigned long>();
         std::string opt = scan.Next_Token();
         std::string tag;
 
@@ -309,11 +319,11 @@ int main() {
             }
 
             else if(opt == "rollback") {
-                int time_idx;
+                unsigned long time_idx;
                 while(!scan.Is_End()) {
                     tag = scan.Next_Token();
                     if(tag == "-t")
-                        time_idx = scan.Next_Token<int>();
+                        time_idx = scan.Next_Token<unsigned long>();
                     else ASSERT(0);
                 }
                 ticksys.rollback(opt_idx, time_idx);   
@@ -334,8 +344,8 @@ int main() {
         }
         catch(ticket::exception &e) {
             std::cout << opt_idx_str << " -1" << std::endl;
-            if(opt_idx_str == "[4463]")
-                std::cerr << ">> " << opt_idx << " note: " << e.what() << std::endl;
+            // if(opt_idx_str == "[4463]")
+                // std::cerr << ">> " << opt_idx << " note: " << e.what() << std::endl;
         }
         catch(std::string &msg) {
             std::cerr << "[error] " << msg << std::endl;
@@ -344,6 +354,8 @@ int main() {
             std::cerr << "[error] catch something else." << std::endl;
         }
 
+        std::cout << "!!$%!$" << std::endl;
+        
     }
 
     return 0;

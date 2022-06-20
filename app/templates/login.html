@@ -1,0 +1,114 @@
+
+<!DOCTYPE html>
+
+<html lang="zh-CN">
+
+<head>
+    <title>登录 · Ticket System</title>
+    <link rel="icon" href="../static/arona.ico">
+    
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="Modem514 EternalFir">
+    <meta name="description" content="a simple web front end for course assignment">
+
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.3.1/css/bootstrap.min.css">
+    <!-- <link rel="stylesheet" href="./static/index.css"> -->
+
+    <style type="text/css">
+        body { 
+            /* responsive full screen background image */
+            background: url(../static/bg.png) no-repeat center center fixed; 
+            background-size: cover;
+        }
+        button {
+            background-color: #3a90d9;
+            color: #3a90d9;
+        }
+    </style>
+
+</head>
+
+<body class="row">
+
+<div class="col-7">
+    <!-- place holder -->
+</div>
+<div class="text-center mt-5 col-3">
+    <div class="card border rounded-2">
+        <form class="card-body form-signin">
+            <img src="../static/avatars/arona.svg" class="rounded" height="100rem">
+            <h1 class="h3 mb-3 mt-2 font-weight-normal text-primary">登录</h1>
+            <label for="inputUsername" class="sr-only mt-2">用户名</label>
+            <input type="username" id="user" class="form-control" placeholder="用户名" required autofocus>
+            <label for="inputPassword" class="sr-only mt-2">密码</label>
+            <input type="password" id="pwd" class="form-control mt-1" placeholder="密码" required>
+            <button type="button" class="btn btn-primary my-2" id="userlogin">用户登录</button>
+            <button type="button" class="btn btn-primary my-2" id="adminlogin">管理员登录</button>
+            <p class="mt-5 mb-3 text-muted">Ticket System 2022</p>
+        </form>
+    </div>
+</div>
+
+</body>
+
+<script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+<script src="https://cdn.staticfile.org/popper.js/1.15.0/umd/popper.min.js"></script>
+<script src="https://cdn.staticfile.org/twitter-bootstrap/4.3.1/js/bootstrap.min.js"></script>
+<!-- <script src="./static/index.js"></script> -->
+
+<script>
+    $(function() {
+        $("#userlogin").click(function() {
+            let sendData = {
+                'user_name': $("#user").val(),
+                'user_password': $("#pwd").val()
+            }
+
+            $.ajax({
+                url: '/login',
+                type: 'post',
+                data: sendData,
+                success: function(str) {
+                    let data = JSON.parse(str)
+                    let code = data['code']
+                    let res = data['data']
+
+                    if(code == -1) {
+                        alert("FAILED");
+                    }
+                    else {
+                        window.location.replace("/user/index");
+                    }
+                }
+            });
+        });
+
+        $("#adminlogin").click(function() {
+            let sendData = {
+                'user_name': $("#user").val(),
+                'user_password': $("#pwd").val()
+            }
+
+            $.ajax({
+                url: '/login',
+                type: 'post',
+                data: sendData,
+                success: function(str) {
+                    let data = JSON.parse(str)
+                    let code = data['code']
+                    let res = data['data']
+
+                    if(code == -1) {
+                        alert("FAILED");
+                    }
+                    else {
+                        window.location.replace("/admin/index");
+                    }
+                }
+            });
+        });
+    });
+</script>
+
+</html>

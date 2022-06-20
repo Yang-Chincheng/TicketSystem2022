@@ -210,7 +210,7 @@ protected:
 
     int clear_train();
 
-    int rollback_train(int opt_idx);
+    int rollback_train(unsigned long opt_idx);
 
 public:
     TrainManager(): train("train", 2048), seat("seat", 2048), pass("pass", 2048) {}
@@ -218,7 +218,7 @@ public:
     ~TrainManager() = default;
 
     int add_train(
-        int opt_idx, 
+        unsigned long opt_idx, 
         const TrainID &id,
         int _stanum,  
         int _seatnum,
@@ -233,23 +233,23 @@ public:
     );
 
     int delete_train(
-        int opt_idx,
+        unsigned long opt_idx,
         const TrainID& id
     );
 
     int release_train(
-        int opt_idx, 
+        unsigned long opt_idx, 
         const TrainID &id
     );
     
     int query_train(
-        int opt_idx,
+        unsigned long opt_idx,
         const TrainID& id, 
         const Date &date
     );
 
     int query_ticket(
-        int opt_idx,
+        unsigned long opt_idx,
         const Station &strt,
         const Station &term,
         const Date &date,
@@ -257,7 +257,7 @@ public:
     );
 
     int query_transfer(
-        int opt_idx,
+        unsigned long opt_idx,
         const Station &strt,
         const Station &term,
         const Date &date,

@@ -23,7 +23,7 @@ public:
     explicit MemoryPool(const std::string &name_in) {
         pool_name_ = name_in + std::string("_memory_pool_storage");
         storage_.Clear();
-        pool_.open("./bin/"+pool_name_);
+        pool_.open(""+pool_name_);
         if (!pool_) {
             pool_.open(""+pool_name_, std::ostream::out);
             elements_num_ = 0;

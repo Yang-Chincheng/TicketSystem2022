@@ -11,14 +11,14 @@
 namespace ticket {
 
 struct PendInfo {
-    int opt_time;
+    unsigned long opt_time;
     size_t user; int idx;
     int sidx, tidx, num;
 
     PendInfo() = default;
     PendInfo(const PendInfo &o) = default;
     PendInfo(
-        int _opt_idx,
+        unsigned long _opt_idx,
         size_t &_user,
         int _idx,
         int _sidx,
@@ -31,7 +31,7 @@ struct PendInfo {
 
 enum Status {SUCCESS, PENDING, REFUNDED};
 struct TraxInfo {
-    int opt_time;
+    unsigned long opt_time;
     Status status;
     TrainID id;
     Station start;
@@ -44,7 +44,7 @@ struct TraxInfo {
     TraxInfo() = default;
     TraxInfo(const TraxInfo &o) = default;
     TraxInfo(
-        int _opt_idx,
+        unsigned long _opt_idx,
         const Status &_sta,
         const TrainID &_id,
         const Station &_s,
@@ -64,15 +64,15 @@ struct TraxInfo {
 };
 
 using TraxID = pair<size_t, int>;
-using PendID = pair<pair<size_t, int>, int>;
+using PendID = pair<pair<size_t, int>, unsigned long>;
 
 using TraxHasher = PairHasher<size_t, int>;
-using PendHasher = PairHasher<pair<size_t, int>, int, PairHasher<size_t, int>>;
+using PendHasher = PairHasher<pair<size_t, int>, unsigned long, PairHasher<size_t, int>>;
 
 inline TraxID getTraxID(size_t usr, int idx) {
     return make_pair(usr, idx);
 }
-inline PendID getPendID(size_t id, int day, int idx) {
+inline PendID getPendID(size_t id, int day, unsigned long idx) {
     return make_pair(make_pair(id, day), idx);
 }
 
@@ -87,7 +87,7 @@ protected:
 
     int clear_trax();
 
-    int rollback_trax(int opt_idx);
+    int rollback_trax(unsigned long opt_idx);
 
 public:
     TraxManager(): rnum("rnum", 128), record("record"), pending("pending") {}
